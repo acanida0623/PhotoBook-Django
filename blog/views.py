@@ -110,7 +110,7 @@ def save_urls(request):
         req = eval(request.body)
         print(req['url'])
         if request.method == 'POST':
-           url_list = Image(url=req['url'], row=2)
+           url_list = Image(author=request.user,url=req['url'], row=2)
            url_list.save()
            return HttpResponse( request )
 
@@ -119,7 +119,7 @@ def get_urls(request):
     if request.is_ajax():
         if request.method == 'GET':
             url_list = []
-            for name in Image.objects.all():
+            for name in Image.objects.filter(author=request.user):
                 url_list.append(name.url)
             return HttpResponse(
             json.dumps(url_list)

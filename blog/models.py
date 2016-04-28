@@ -36,6 +36,6 @@ def approved_comments(self):
     return self.comments.filter(approved_comment=True)
 
 class Image(models.Model):
+    author = models.ForeignKey('auth.User')
     url = models.CharField(max_length=200)
     row = models.CharField(max_length=200)
-    
