@@ -215,10 +215,9 @@
 	    method: "GET",
 			data: {}
 	  }).done(function (data) {
-	    alert(data[0]); //do what you want to do with response
 	  	img_lst = eval(data)
 
-			alert(img_lst[0])
+			alert("Images Loaded Succesfully")
 			img_lst.map(function(x){
 					update_img_list(x)
 			})

@@ -3,9 +3,10 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render_to_response
 from django.utils import timezone
 from .models import Post, Comment, Image
-from .forms import PostForm, CommentForm
+from .forms import PostForm, CommentForm, UserCreationForm
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.models import User
 import json
 
 
@@ -21,7 +22,7 @@ def read_images():
         print(images['images'])
 
 
-# Create your views here.
+@login_required
 def post_list(request):
     posts = Post.objects.filter(published_date__lte=timezone.now()).order_by('published_date')
     return render(request, 'blog/post_list.html', {
@@ -31,13 +32,24 @@ def post_list(request):
 def post_detail(request, pk):
     post = get_object_or_404(Post, pk=pk)
     return render(request, 'blog/post_detail.html', {'post': post})
-@login_required
+
+
+def new_account(request):
+    form = UserCreationForm(request.POST)
+    return render(request, 'blog/new_user.html',{'form': form})
+
+def submit_new_account(request):
+    if request.method == "POST":
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save(commit=True)
+    return redirect('blog.views.post_list')
 
 def post_draft_list(request):
     posts = Post.objects.filter(published_date__isnull=True).order_by('created_date')
     return render(request, 'blog/post_draft_list.html', {'posts': posts})
-@login_required
 
+@login_required
 def post_new(request):
     if request.method == "POST":
         form = PostForm(request.POST)

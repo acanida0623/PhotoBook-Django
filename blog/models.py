@@ -39,3 +39,7 @@ class Image(models.Model):
     author = models.ForeignKey('auth.User')
     url = models.CharField(max_length=200)
     row = models.CharField(max_length=200)
+
+class New_User(models.Model):
+    username =  models.CharField(max_length=200)
+    password =  models.CharField(max_length=200)
