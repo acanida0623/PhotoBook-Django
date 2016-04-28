@@ -1,0 +1,55 @@
+.col-sm {
+    height: 10vw;
+    width: 10vw;
+    border: black 1pt solid;
+    margin: 1vw;
+    position: relative;
+}
+.main_img_container{
+  height: 40vw;
+  border: black 1pt solid;
+  width: 45vw;
+  overflow: hidden;
+  background-size: cover;
+    background-repeat: no-repeat;
+    background-position: 50% 50%;
+}
+
+
+
+body {
+
+  border: 0;
+  margin: 0;
+}
+
+#left div{
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  border: 0;
+}
+#right{
+  position: fixed;
+  left:50vw;
+  height: 100vh;
+  border: 0;
+  width: 50vw;
+}
+#upload{
+  position: fixed;
+  top:50vw;
+  height: 100vh;
+  border: 0;
+  width: 50vw;
+}
+
+
+
+.2{
+  height: 2vw;
+  width: 2vw;
+
+  margin-top: 20rem;
+}
