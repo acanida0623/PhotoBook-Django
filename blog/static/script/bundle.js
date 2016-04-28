@@ -197,9 +197,11 @@
 	      image: base64 // base64 string, not a data URI
 	    }
 	  }).done(function (res) {
-	    console.log(res);
+	    alert(res);
+			var link = res.data.link
+			alert(link)
 			img_lst.push(res.data.link);
-	    update_img_list(res) // image successfully uploaded
+	    update_img_list(link) // image successfully uploaded
 			remount_left()
 			update_server_url(res)
 	  }).error(function (err) {
@@ -207,28 +209,33 @@
 	  });
 	}
 
-	function get_urls() {
+	function get_urls(res) {
 	  $.ajax({
 	    url: "http://127.0.0.1:8000/get/",
 	    method: "GET",
 			data: {}
 	  }).done(function (data) {
-	    alert(data); //do what you want to do with response
-	    img_lst = JSON.parse(data)
+	    alert(data[0]); //do what you want to do with response
+	  	img_lst = eval(data)
+
+			alert(img_lst[0])
 			img_lst.map(function(x){
 					update_img_list(x)
 			})
 			remount_left()
-	  }).error(function (err) {
+	  })
+			.error(function (err) {
 	    console.log(err);
 	  });
 	}
 
 	function update_server_url(res) {
+		var result = {'url':res.data.link}
+		result = JSON.stringify(result)
 		$.ajax({
 	    url: "http://127.0.0.1:8000/save/",
 	    method: "POST",
-	    data: { res }
+	    data: result
 	  }).done(function (data) {
 	    alert(data); //do what you want to do with response
 	    console.log(data);
@@ -240,9 +247,9 @@
 
 	function update_img_list(res) {
 	  if (images[images.length - 1].images.length < 4) {
-	    images[images.length - 1].images.push(res.data.link);
+	    images[images.length - 1].images.push(res);
 	  } else {
-	    images.push({ images: [res.data.link], row: images.length });
+	    images.push({ images: [res], row: images.length });
 	  }
 	}
 

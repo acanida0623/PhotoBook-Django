@@ -107,9 +107,10 @@ def comment_remove(request, pk):
 def save_urls(request):
     if request.is_ajax():
         print('1')
-        print(request)
+        req = eval(request.body)
+        print(req['url'])
         if request.method == 'POST':
-           url_list = Image(url='google.com', row=2)
+           url_list = Image(url=req['url'], row=2)
            url_list.save()
            return HttpResponse( request )
 
