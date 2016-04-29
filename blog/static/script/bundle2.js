@@ -70,7 +70,6 @@
 					var _this2 = this;
 
 					return React.createElement('div', null, React.createElement('table', null, React.createElement('tbody', null, images.map(function (src, i) {
-
 							return React.createElement(Row, { select_source: _this2.state.select_source, select_source_method: _this2.updateSelectedImg, row: i });
 					}).map(function (x) {
 							return x;
@@ -98,15 +97,13 @@
 
 			render: function render() {
 					var _this3 = this;
-					console.log("1234"+_this3.props.select_source)
+
 					var row = this.props.row;
 					var img_list = filter_row(images, row);
 					console.log(img_list);
-					console.log(_this3.props.select_source);
 					return React.createElement('tr', { id: "row" + this.props.row, key: this.props.row }, img_list[0].map(function (src, i) {
-
-							if (src === _this3.props.select_source) {
-
+							console.log(src + _this3.state.select_source);
+							if (src === _this3.state.select_source) {
 									return React.createElement('td', null, React.createElement(View_IMG, { select_source_method: _this3.state.select_source_method, class_name: "col-sm selected", img_number: i, img_source: src }));
 							} else {
 									return React.createElement('td', null, React.createElement(View_IMG, { select_source_method: _this3.state.select_source_method, class_name: "col-sm", img_number: i, img_source: src }));
@@ -134,8 +131,7 @@
 					ReactDOM.render(React.createElement(Rotate_IMG, { img_source: this.props.img_source }), document.getElementById('right'));
 			},
 			render: function render() {
-					console.log(this.props.class_name)
-					return React.createElement('img', { onMouseDown: this.onMouseDownHandler, src: this.props.img_source, className: this.props.class_name, id: "img_" + this.props.img_number });
+					return React.createElement('img', { onMouseDown: this.onMouseDownHandler, src: this.props.img_source, className: this.state.class_name, id: "img_" + this.props.img_number });
 			}
 
 	});
@@ -15291,7 +15287,7 @@
 	 * of patent rights can be found in the PATENTS file in the same directory.
 	 *
 	 * @typechecks
-	 *
+	 * 
 	 */
 
 	/*eslint-disable no-self-compare */

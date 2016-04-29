@@ -45,6 +45,10 @@ def submit_new_account(request):
             form.save(commit=True)
     return redirect('blog.views.post_list')
 
+def upload_images(request):
+    return render(request, 'blog/upload.html')
+
+
 def post_draft_list(request):
     posts = Post.objects.filter(published_date__isnull=True).order_by('created_date')
     return render(request, 'blog/post_draft_list.html', {'posts': posts})
