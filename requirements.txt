@@ -1,6 +1,11 @@
+Babel==2.3.4
 dj-database-url==0.4.1
 Django==1.9.5
 django-password-validation==0.1.1
 gunicorn==19.4.5
+optional-django==0.3.0
 psycopg2==2.6.1
+pytz==2016.4
+requests==2.9.1
+webpack==6.0.0
 whitenoise==3.0

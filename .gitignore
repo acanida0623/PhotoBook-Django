@@ -5,3 +5,7 @@ db.sqlite3
 venv
 __pycache__
 local_settings.py
+.babelrc
+node_modules
+package.json
+webpack.config.js

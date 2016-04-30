@@ -126,8 +126,18 @@ def save_urls(request):
         req = eval(request.body)
         print(req['url'])
         if request.method == 'POST':
-           url_list = Image(author=request.user,url=req['url'], row=2)
-           url_list.save()
+            url_list = Image(author=request.user,url=req['url'], row=2)
+            url_list.save()
+            return HttpResponse( request )
+
+@csrf_exempt
+def delete_url(request):
+    if request.is_ajax():
+        req = eval(request.body)
+        print(req['url'])
+        if request.method == 'POST':
+           url_list = Image.objects.filter(author=request.user,url=req['url'])
+           url_list.all().delete()
            return HttpResponse( request )
 
 @csrf_exempt

@@ -1,7 +1,11 @@
 .page-header {
-    background-color: #ff9400;
+    background-color: #406BA7;
     margin-top: 0;
     padding: 20px 20px 20px 40px;
+    width:100vw;
+    position: fixed;
+    z-index: 1;
+    border: none;
 }
 
 #list img {
@@ -9,8 +13,35 @@
   max-width: 14vh;
 }
 
+.delete_img{
+    float:right;
+    cursor:pointer;
+    color: #fff;
+    border: 1px solid #AEAEAE;
+    border-radius: 30px;
+    background: #605F61;
+    font-size: 31px;
+    font-weight: bold;
+    display: inline-block;
+    line-height: 0px;
+    padding: 11px 3px;
+}
+
+.delete_img:before {
+    content: "×";
+
+}
+
+.hidden {
+  visibility: hidden;
+}
+
+.show {
+  visibility: visible;
+}
+
 .selected{
-    box-shadow:0px 1rem 1rem 1px #333;
+    box-shadow:0px 1rem 1rem .5rem #333;
 }
 
 .page-header h1, .page-header h1 a, .page-header h1 a:visited, .page-header h1 a:active {

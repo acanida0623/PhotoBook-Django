@@ -6,6 +6,7 @@ from . import views
 urlpatterns = [
     url(r'^$', views.post_list),
     url(r'^save/$', views.save_urls, name='save_urls'),
+    url(r'^delete/$', views.delete_url, name='delete_url'),
     url(r'^upload/$', views.upload_images, name='upload'),
     url(r'^get/$', views.get_urls, name='get_urls'),
     url(r'^post/(?P<pk>\d+)/$', views.post_detail,name='post_detail'),

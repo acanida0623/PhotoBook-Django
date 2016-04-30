@@ -1,23 +1,26 @@
+var React = require('react')
+var ReactDOM = require('react-dom')
+
 var images = [{ images: [], row: 0 }];
 var img_lst = [];
 
 var Min_Container = React.createClass({
 
-  updateSelectedImg: function updateSelectedImg(source) {
+  updateSelectedImg: function(source) {
       this.setState({ select_source: source });
   },
 
-  getInitialState: function getInitialState() {
+  getInitialState: function() {
       return {
           select_source: this.props.select_source
-      };
+      }
   },
-  render:() => {
-    return    <div>
-                <table>
+  render: function() {
+    return    <div className="table_holder">
+                <table className="main_table">
                     <tbody>
                       {
-                        images.map(function (src, i) {
+                        images.map((src, i) => {
                           return <Row select_source={this.state.select_source} select_source_method={this.updateSelectedImg} row={i} key={i} />
                         }).map(function(src){
                             return src
@@ -26,40 +29,42 @@ var Min_Container = React.createClass({
                     </tbody>
                   </table>
               </div>
+
   }
 });
 
 function filter_row(image_list, row) {
-    return image_list.map(function (src) {
+    return image_list.map((src) => {
         if (src.row === row) {
             return src.images;
         }
     }).filter(function (x) {
-        return typeof x !== 'undefined';
-    });
+        return (typeof x !== 'undefined')
+    })
 };
 
 var Row = React.createClass({
-    getInitialState: function getInitialState() {
+    getInitialState: function() {
         return {
             select_source_method: this.props.select_source_method,
             select_source: this.props.select_source
         }
     },
 
-    render:() => {
+    render: function() {
         var row = this.props.row;
         var img_list = filter_row(images, row);
-        return <tr id="row"+this.props.row, key=this.props.row>
+        return  <tr id={"row"+this.props.row} key={this.props.row}>
                 {
-                  img_list[0].map(function (src, i) {
+                  img_list[0].map((src, i) => {
                     if (src === this.props.select_source) {
 
                         return <td>
                                   <View_IMG select_source_method={this.props.select_source_method} class_name={"col-sm selected"} img_number={i} img_source={src} />
                               </td>
                     } else {
-                            <td>
+
+                      return <td>
                                 <View_IMG select_source_method={this.props.select_source_method} class_name={"col-sm"} img_number={i} img_source={src} />
                             </td>
                           }
@@ -70,47 +75,63 @@ var Row = React.createClass({
 });
 
 var View_IMG = React.createClass({
-    getInitialState:() => {
+    getInitialState: function() {
         return {
-            hover: false,
+            hidden: 'hidden',
             select_source_method: this.props.select_source_method,
             img_source: this.props.img_source,
             img_number: this.props.img_number,
             class_name: this.props.class_name
         };
     },
-    onMouseDownHandler:() => {
+    onMouseEnterHandler: function() {
+      this.setState({
+        hidden:'show'
+      })
+    },
+    onMouseLeaveHandler: function() {
+      this.setState({
+        hidden:'hidden'
+      })
+    },
+
+    deleteImg: function() {
+      delete_url(this.state.img_source);
+    },
+    onMouseDownHandler: function() {
         this.state.select_source_method(this.state.img_source);
         ReactDOM.unmountComponentAtNode(document.getElementById("right"));
         ReactDOM.render(React.createElement(Rotate_IMG, { img_source: this.props.img_source }), document.getElementById('right'));
     },
-    render:() => {
+    render: function() {
       var divStyle = {
           backgroundImage: 'url(' + this.props.img_source + ')'
       };
         console.log(this.props.class_name)
-        return <div onMouseDown={this.onMouseDownHandler} className={this.props.class_name} id={"img_" + this.props.img_number} style=divStyle>
+        return  <div onMouseDown={this.onMouseDownHandler} onMouseEnter={this.onMouseEnterHandler} onMouseLeave={this.onMouseLeaveHandler} className={this.props.class_name} id={"img_" + this.props.img_number} style={divStyle}>
+                <div className={"delete_img "+this.state.hidden} onMouseDown={this.deleteImg}></div>
                 </div>
+
     }
 });
 
 var Rotate_IMG = React.createClass({
-    getInitialState:() => {
+    getInitialState: function() {
         return {
             source: this.props.img_source
         }
     },
-    componentDidMount:() => {
+    componentDidMount: function() {
         var intervalId = setInterval(() => {
             this.rotate_images();
         }, 3000);
         this.setState({ intervalId: intervalId });
     },
 
-    componentWillUnmount:() => {
+    componentWillUnmount: function() {
         clearInterval(this.state.intervalId);
     },
-    rotate_images:() => {
+    rotate_images: function() {
         var index = img_lst.indexOf(this.state.source);
         if (index !== img_lst.length - 1) {
             index += 1;
@@ -119,20 +140,19 @@ var Rotate_IMG = React.createClass({
             this.setState({ source: img_lst[0] });
         }
     },
-    render: function render() {
+    render:  function() {
         var divStyle = {
             backgroundImage: 'url(' + this.state.source + ')'
         };
-        return <div style=divStyle className="main_img_container">
+        return <div style={divStyle} className={"main_img_container"}>
               </div>
+
     }
 
 });
 
 var File_Input = React.createClass({
-    displayName: 'File_Input',
-
-    onChangeHandler: function onChangeHandler(event) {
+        onChangeHandler: function(event) {
         var file = event.target.files[0];
         var reader = new FileReader();
         reader.onload = function (event) {
@@ -141,8 +161,9 @@ var File_Input = React.createClass({
         reader.readAsDataURL(file);
     },
 
-    render:() => {
-        return <input onChange={this.onChangeHandler} type="file" />
+    render: function() {
+        return  <input onChange={this.onChangeHandler} type={"file"} />
+
     }
 });
 
@@ -159,8 +180,13 @@ function remount_left() {
     ReactDOM.unmountComponentAtNode(document.getElementById("left"));
     ReactDOM.render(React.createElement(Min_Container), document.getElementById('left'));
 }
+try {
+  ReactDOM.render(React.createElement(File_Input), document.getElementById('upload'));
 
-ReactDOM.render(React.createElement(File_Input), document.getElementById('upload'));
+}
+catch(err) {
+    alert( err.message );
+}
 
 window.onbeforeunload = function (e) {
     return 'Please press the Logout button to logout.';
@@ -201,9 +227,9 @@ function uploadImgur(base64) {
         var link = res.data.link;
         console.log(link);
         update_img_list(link); // image successfully uploaded
-        remount_left();
+
         update_server_url(res);
-        saveFile(link);
+        // saveFile(link);
     }).error(function (err) {
         console.log(err);
         alert(err);
@@ -237,7 +263,26 @@ function update_server_url(res) {
         method: "POST",
         data: result
     }).done(function (data) {
-        console.log(data);
+
+    }).error(function (err) {
+        console.log(err);
+        alert(err);
+    });
+}
+
+function delete_url(res) {
+    var result = { 'url': res };
+    result = JSON.stringify(result);
+    $.ajax({
+        url: "http://127.0.0.1:8000/delete/",
+        method: "POST",
+        data: result
+    }).done(function (data) {
+    images.length = 0;
+    img_lst.length = 0;
+    images = [{ images: [], row: 0 }];
+    img_lst = [];
+    get_urls();
     }).error(function (err) {
         console.log(err);
         alert(err);
@@ -280,8 +325,9 @@ if (window.FileReader) {
 
                 reader.readAsDataURL(file);
                 addEventHandler(reader, 'loadend', function (e, file) {
-                    console.log(this.result);
+
                     var bin = this.result;
+                    uploadImgur(bin)
                     var newFile = document.createElement('div');
                     newFile.innerHTML = 'Loaded : ' + file.name + ' size ' + file.size + ' B';
                     list.appendChild(newFile);
