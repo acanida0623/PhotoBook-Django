@@ -2,18 +2,18 @@
 
 <html>
   <head>
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+    <script src="{% static 'script/jscolor.js' %}"></script>
     <link rel="stylesheet" href="{% static 'css/blog.css' %}" />
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <script>
-    var images = "{{ url_list }}";
-    </script>
+
   </head>
 
   <body>
-    <div class="page-header">
+      <input class="jscolor" id="page-header-color">
+      <div class="page-header" id="page-header" >
         {% if user.is_authenticated %}
         <a href="{% url 'upload' %}" class="top-menu"><span class="glyphicon glyphicon-plus"></span></a>
 

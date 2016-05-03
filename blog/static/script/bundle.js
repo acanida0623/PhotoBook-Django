@@ -353,7 +353,10 @@
 	        alert(err);
 	    });
 	}
-	get_urls()
+	try {
+	    get_urls();
+	} catch (x) {}
+
 	if (window.FileReader) {
 	    var drop;
 	    addEventHandler(window, 'load', function () {
@@ -369,56 +372,60 @@
 	        }
 
 	        // Tells the browser that we *can* drop on this target
-	        addEventHandler(drop, 'dragover', cancel);
-	        addEventHandler(drop, 'dragenter', cancel);
+	        try {
+	            addEventHandler(drop, 'dragover', cancel);
+	            addEventHandler(drop, 'dragenter', cancel);
+	            addEventHandler(drop, 'drop', function (e) {
 
-	        addEventHandler(drop, 'drop', function (e) {
-	            e = e || window.event; // get window.event if e argument missing (in IE)
-	            if (e.preventDefault) {
-	                e.preventDefault();
-	            } // stops the browser from redirecting off to the image.
-
-	            var dt = e.dataTransfer;
-	            var files = dt.files;
-	            for (var i = 0; i < files.length; i++) {
-	                var file = files[i];
-	                var reader = new FileReader();
-
-	                //attach event handlers here...
-
-	                reader.readAsDataURL(file);
-	                addEventHandler(reader, 'loadend', function (e, file) {
-
-	                    var bin = this.result;
-	                    uploadImgur(bin);
-	                    var newFile = document.createElement('div');
-	                    newFile.innerHTML = 'Loaded : ' + file.name + ' size ' + file.size + ' B';
-	                    list.appendChild(newFile);
-	                    var fileNumber = list.getElementsByTagName('div').length;
-	                    status.innerHTML = fileNumber < files.length ? 'Loaded 100% of file ' + fileNumber + ' of ' + files.length + '...' : 'Done loading. processed ' + fileNumber + ' files.';
-
-	                    var img = document.createElement("img");
-	                    img.file = file;
-	                    img.src = bin;
-	                    list.appendChild(img);
-	                }.bindToEventHandler(file));
-	            }
-	            return false;
-	        });
-	        Function.prototype.bindToEventHandler = function bindToEventHandler() {
-	            var handler = this;
-	            var boundParameters = Array.prototype.slice.call(arguments);
-	            //create closure
-	            return function (e) {
 	                e = e || window.event; // get window.event if e argument missing (in IE)
-	                boundParameters.unshift(e);
-	                handler.apply(this, boundParameters);
+	                if (e.preventDefault) {
+	                    e.preventDefault();
+	                } // stops the browser from redirecting off to the image.
+
+	                var dt = e.dataTransfer;
+	                var files = dt.files;
+	                for (var i = 0; i < files.length; i++) {
+	                    var file = files[i];
+	                    var reader = new FileReader();
+
+	                    //attach event handlers here...
+
+	                    reader.readAsDataURL(file);
+	                    addEventHandler(reader, 'loadend', function (e, file) {
+
+	                        var bin = this.result;
+	                        uploadImgur(bin);
+	                        var newFile = document.createElement('div');
+	                        newFile.innerHTML = 'Loaded : ' + file.name + ' size ' + file.size + ' B';
+	                        list.appendChild(newFile);
+	                        var fileNumber = list.getElementsByTagName('div').length;
+	                        status.innerHTML = fileNumber < files.length ? 'Loaded 100% of file ' + fileNumber + ' of ' + files.length + '...' : 'Done loading. processed ' + fileNumber + ' files.';
+
+	                        var img = document.createElement("img");
+	                        img.file = file;
+	                        img.src = bin;
+	                        list.appendChild(img);
+	                    }.bindToEventHandler(file));
+	                }
+	                return false;
+	            });
+
+	            Function.prototype.bindToEventHandler = function bindToEventHandler() {
+	                var handler = this;
+	                var boundParameters = Array.prototype.slice.call(arguments);
+	                //create closure
+	                return function (e) {
+	                    e = e || window.event; // get window.event if e argument missing (in IE)
+	                    boundParameters.unshift(e);
+	                    handler.apply(this, boundParameters);
+	                };
 	            };
-	        };
+	        } catch (x) {}
 	    });
 	} else {
 	    document.getElementById('status').innerHTML = 'Your browser does not support the HTML5 FileReader.';
 	}
+
 	function addEventHandler(obj, evt, handler) {
 	    if (obj.addEventListener) {
 	        // W3C method
@@ -431,6 +438,12 @@
 	        obj['on' + evt] = handler;
 	    }
 	}
+
+	addEventHandler(document.getElementById('page-header-color'), 'change', function () {
+	    console.log("change");
+	    var value = document.getElementById('page-header-color').value;
+	    document.getElementById('page-header').style.backgroundColor = "#" + value;
+	});
 
 /***/ },
 /* 1 */
@@ -15351,7 +15364,7 @@
 	 * of patent rights can be found in the PATENTS file in the same directory.
 	 *
 	 * @typechecks
-	 *
+	 * 
 	 */
 
 	/*eslint-disable no-self-compare */

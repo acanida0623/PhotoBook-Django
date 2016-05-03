@@ -181,11 +181,9 @@ function remount_left() {
     ReactDOM.render(React.createElement(Min_Container), document.getElementById('left'));
 }
 try {
-  ReactDOM.render(React.createElement(File_Input), document.getElementById('upload'));
-
-}
-catch(err) {
-    alert( err.message );
+    ReactDOM.render(React.createElement(File_Input), document.getElementById('upload'));
+} catch (err) {
+    alert(err.message);
 }
 
 window.onbeforeunload = function (e) {
@@ -262,9 +260,7 @@ function update_server_url(res) {
         url: "http://127.0.0.1:8000/save/",
         method: "POST",
         data: result
-    }).done(function (data) {
-
-    }).error(function (err) {
+    }).done(function (data) {}).error(function (err) {
         console.log(err);
         alert(err);
     });
@@ -278,18 +274,21 @@ function delete_url(res) {
         method: "POST",
         data: result
     }).done(function (data) {
-    images.length = 0;
-    img_lst.length = 0;
-    images = [{ images: [], row: 0 }];
-    img_lst = [];
-    get_urls();
+        images.length = 0;
+        img_lst.length = 0;
+        images = [{ images: [], row: 0 }];
+        img_lst = [];
+        get_urls();
     }).error(function (err) {
         console.log(err);
         alert(err);
     });
 }
+try {
+  get_urls()
+}catch(x) {
 
-get_urls();
+}
 
 if (window.FileReader) {
     var drop;
@@ -306,10 +305,12 @@ if (window.FileReader) {
         }
 
         // Tells the browser that we *can* drop on this target
-        addEventHandler(drop, 'dragover', cancel);
-        addEventHandler(drop, 'dragenter', cancel);
+        try {
+            addEventHandler(drop, 'dragover', cancel);
+            addEventHandler(drop, 'dragenter', cancel);
+            addEventHandler(drop, 'drop', function (e) {
 
-        addEventHandler(drop, 'drop', function (e) {
+
             e = e || window.event; // get window.event if e argument missing (in IE)
             if (e.preventDefault) {
                 e.preventDefault();
@@ -327,7 +328,7 @@ if (window.FileReader) {
                 addEventHandler(reader, 'loadend', function (e, file) {
 
                     var bin = this.result;
-                    uploadImgur(bin)
+                    uploadImgur(bin);
                     var newFile = document.createElement('div');
                     newFile.innerHTML = 'Loaded : ' + file.name + ' size ' + file.size + ' B';
                     list.appendChild(newFile);
@@ -341,7 +342,9 @@ if (window.FileReader) {
                 }.bindToEventHandler(file));
             }
             return false;
-        });
+        })
+
+
         Function.prototype.bindToEventHandler = function bindToEventHandler() {
             var handler = this;
             var boundParameters = Array.prototype.slice.call(arguments);
@@ -351,11 +354,15 @@ if (window.FileReader) {
                 boundParameters.unshift(e);
                 handler.apply(this, boundParameters);
             };
-        };
+        }
+      } catch(x) {
+
+      }
     });
 } else {
     document.getElementById('status').innerHTML = 'Your browser does not support the HTML5 FileReader.';
 }
+
 function addEventHandler(obj, evt, handler) {
     if (obj.addEventListener) {
         // W3C method
@@ -368,3 +375,9 @@ function addEventHandler(obj, evt, handler) {
         obj['on' + evt] = handler;
     }
 }
+
+addEventHandler(document.getElementById('page-header-color'),'change',function(){
+  console.log("change")
+    var value = document.getElementById('page-header-color').value;
+    document.getElementById('page-header').style.backgroundColor = "#"+value;
+})
