@@ -48,9 +48,198 @@
 
 	var React = __webpack_require__(1);
 	var ReactDOM = __webpack_require__(32);
-
 	var images = [{ images: [], row: 0 }];
+	var user_album_images = [{ albums: [] }];
+	var contr_album_images = [{ albums: [] }];
 	var img_lst = [];
+	var albums = [];
+
+	// <br />
+	//
+	// <h1>Contributing Albums</h1>
+	// <table className="main_table">
+	//     <tbody>
+	//       { if (contr_album_images[0].albums.length > 0) {
+	//         contr_album_images.map((src, i) => {
+	//           return <Album_Row images={contr_album_images} row={i} key={i} />
+	//         }).map(function(src){
+	//             return src
+	//         })
+	//       }
+	//
+	//       }
+	//     </tbody>
+	//   </table>
+
+	function AddLoad(selected) {
+	    if (window.FileReader) {
+	        // var list = document.getElementById('list');
+
+	        var cancel = function cancel(e) {
+	            if (e.preventDefault) {
+	                e.preventDefault();
+	            }
+	            return false;
+	        };
+
+	        // Tells the browser that we *can* drop on this target
+
+
+	        var drop;
+
+	        // var status = document.getElementById('status');
+	        drop = document.getElementById('table');try {
+	            addEventHandler(window, 'dragover', cancel);
+	            addEventHandler(window, 'dragenter', cancel);
+	            addEventHandler(window, 'drop', function (e) {
+	                console.log('test');
+
+	                e = e || window.event; // get window.event if e argument missing (in IE)
+	                if (e.preventDefault) {
+	                    e.preventDefault();
+	                } // stops the browser from redirecting off to the image.
+
+	                var dt = e.dataTransfer;
+	                var files = dt.files;
+	                for (var i = 0; i < files.length; i++) {
+	                    var file = files[i];
+	                    var reader = new FileReader();
+
+	                    //attach event handlers here...
+
+	                    reader.readAsDataURL(file);
+	                    addEventHandler(reader, 'loadend', function (e, file) {
+
+	                        var bin = this.result;
+	                        uploadImgur(bin, selected);
+	                        // var newFile = document.createElement('div');
+	                        // newFile.innerHTML = 'Loaded : ' + file.name + ' size ' + file.size + ' B';
+	                        // list.appendChild(newFile);
+	                        // var fileNumber = list.getElementsByTagName('div').length;
+	                        // status.innerHTML = fileNumber < files.length ? 'Loaded 100% of file ' + fileNumber + ' of ' + files.length + '...' : 'Done loading. processed ' + fileNumber + ' files.';
+
+	                        // var img = document.createElement("img");
+	                        // img.file = file;
+	                        // img.src = bin;
+	                        // list.appendChild(img);
+	                    }.bindToEventHandler(file));
+	                }
+	                return false;
+	            });
+
+	            Function.prototype.bindToEventHandler = function bindToEventHandler() {
+	                var handler = this;
+	                var boundParameters = Array.prototype.slice.call(arguments);
+	                //create closure
+	                return function (e) {
+	                    e = e || window.event; // get window.event if e argument missing (in IE)
+	                    boundParameters.unshift(e);
+	                    handler.apply(this, boundParameters);
+	                };
+	            };
+	        } catch (x) {}
+	    } else {
+	        document.getElementById('status').innerHTML = 'Your browser does not support the HTML5 FileReader.';
+	    }
+	}
+
+	var Album_Container = React.createClass({
+	    displayName: 'Album_Container',
+
+	    render: function render() {
+	        return React.createElement(
+	            'div',
+	            { className: 'table_holder' },
+	            React.createElement(
+	                'h1',
+	                null,
+	                'Your Albums'
+	            ),
+	            React.createElement(
+	                'table',
+	                { className: 'main_table' },
+	                React.createElement(
+	                    'tbody',
+	                    null,
+	                    user_album_images.map(function (src, i) {
+	                        return React.createElement(Album_Row, { images: user_album_images, row: i, key: i });
+	                    }).map(function (src) {
+	                        return src;
+	                    })
+	                )
+	            )
+	        );
+	    }
+	});
+
+	var Album_Row = React.createClass({
+	    displayName: 'Album_Row',
+
+	    getInitialState: function getInitialState() {
+	        return {
+	            select_source_method: this.props.select_source_method,
+	            select_source: this.props.select_source
+	        };
+	    },
+
+	    render: function render() {
+	        var row = this.props.row;
+	        var img_urls = this.props.images[row].albums[0].urls.split(',');
+	        var album_cover = img_urls[0];
+	        var album_name = this.props.images[row].albums[row].name;
+	        return React.createElement(
+	            'tr',
+	            { id: "row" + this.props.row, key: this.props.row },
+	            React.createElement(
+	                'td',
+	                null,
+	                React.createElement(Album_IMG, { album_name: album_name, class_name: "col-sm album_img", urls: img_urls, img_source: album_cover })
+	            )
+	        );
+	    }
+	});
+
+	var Album_IMG = React.createClass({
+	    displayName: 'Album_IMG',
+
+	    getInitialState: function getInitialState() {
+	        return {
+	            hidden: 'hidden',
+	            album_name: this.props.album_name,
+	            img_source: this.props.img_source,
+	            class_name: this.props.class_name,
+	            urls: this.props.urls
+	        };
+	    },
+	    onMouseEnterHandler: function onMouseEnterHandler() {},
+	    onMouseLeaveHandler: function onMouseLeaveHandler() {},
+
+	    onMouseDownHandler: function onMouseDownHandler() {
+	        img_lst.length = 0;
+	        this.state.urls.map(function (x) {
+	            update_img_list(x);
+	        });
+	        remount_left(this.state.album_name);
+	    },
+
+	    selectAlbum: function selectAlbum() {},
+
+	    render: function render() {
+	        var divStyle = {
+	            backgroundImage: 'url(' + this.props.img_source + ')'
+	        };
+	        return React.createElement(
+	            'div',
+	            null,
+	            React.createElement(
+	                'h5',
+	                null,
+	                this.props.album_name
+	            ),
+	            React.createElement('div', { onMouseDown: this.onMouseDownHandler, onMouseEnter: this.onMouseEnterHandler, onMouseLeave: this.onMouseLeaveHandler, className: this.props.class_name, id: "img_" + this.props.img_number, style: divStyle })
+	        );
+	    }
+	});
 
 	var Min_Container = React.createClass({
 	    displayName: 'Min_Container',
@@ -62,7 +251,8 @@
 
 	    getInitialState: function getInitialState() {
 	        return {
-	            select_source: this.props.select_source
+	            select_source: this.props.select_source,
+	            album_selected: this.props.album_selected
 	        };
 	    },
 	    render: function render() {
@@ -70,7 +260,7 @@
 
 	        return React.createElement(
 	            'div',
-	            { className: 'table_holder' },
+	            { id: 'table', className: 'table_holder' },
 	            React.createElement(
 	                'table',
 	                { className: 'main_table' },
@@ -85,8 +275,47 @@
 	                )
 	            )
 	        );
+	    },
+	    componentDidMount: function componentDidMount() {
+	        console.log("mounted");
+	        AddLoad(this.state.album_selected);
 	    }
 	});
+
+	function update_album_list(res) {
+	    console.log(res.user_albums);
+	    res.user_albums.map(function (x) {
+	        if (user_album_images[user_album_images.length - 1].albums.length < 4) {
+	            user_album_images[user_album_images.length - 1].albums.push(x);
+	        } else {
+	            user_album_images.push({ albums: [res] });
+	        }
+	    });
+	    res.contr_albums.map(function (x) {
+	        if (contr_album_images[contr_album_images.length - 1].albums.length < 4) {
+	            contr_album_images[contr_album_images.length - 1].albums.push(x);
+	        } else {
+	            contr_album_images.push({ albums: [res] });
+	        }
+	    });
+	}
+
+	function get_albums(res) {
+	    $.ajax({
+	        url: "http://127.0.0.1:8000/get/",
+	        method: "GET",
+	        data: {}
+	    }).done(function (data) {
+	        console.log(data);
+	        albums = JSON.parse(data);
+	        console.log(albums);
+	        update_album_list(albums);
+	        ReactDOM.unmountComponentAtNode(document.getElementById("left"));
+	        ReactDOM.render(React.createElement(Album_Container), document.getElementById('left'));
+	    }).error(function (err) {
+	        console.log(err);
+	    });
+	}
 
 	function filter_row(image_list, row) {
 	    return image_list.map(function (src) {
@@ -117,18 +346,19 @@
 	            'tr',
 	            { id: "row" + this.props.row, key: this.props.row },
 	            img_list[0].map(function (src, i) {
+	                var ran = Math.floor(Math.random() * (9999 - 1)) + 1;
 	                if (src === _this2.props.select_source) {
 
 	                    return React.createElement(
 	                        'td',
-	                        null,
+	                        { key: ran },
 	                        React.createElement(View_IMG, { select_source_method: _this2.props.select_source_method, class_name: "col-sm selected", img_number: i, img_source: src })
 	                    );
 	                } else {
 
 	                    return React.createElement(
 	                        'td',
-	                        null,
+	                        { key: ran },
 	                        React.createElement(View_IMG, { select_source_method: _this2.props.select_source_method, class_name: "col-sm", img_number: i, img_source: src })
 	                    );
 	                }
@@ -245,9 +475,9 @@
 	    }
 	}
 
-	function remount_left() {
+	function remount_left(album_name) {
 	    ReactDOM.unmountComponentAtNode(document.getElementById("left"));
-	    ReactDOM.render(React.createElement(Min_Container), document.getElementById('left'));
+	    ReactDOM.render(React.createElement(Min_Container, { album_selected: album_name }), document.getElementById('left'));
 	}
 	try {
 	    ReactDOM.render(React.createElement(File_Input), document.getElementById('upload'));
@@ -277,7 +507,7 @@
 	    xhr.send();
 	}
 
-	function uploadImgur(base64) {
+	function uploadImgur(base64, album) {
 	    var base64 = base64.replace(/^.*base64,/, '');
 
 	    $.ajax({
@@ -293,9 +523,10 @@
 
 	        var link = res.data.link;
 	        console.log(link);
+	        console.log(album);
 	        update_img_list(link); // image successfully uploaded
 
-	        update_server_url(res);
+	        update_server_url(res, album);
 	        // saveFile(link);
 	    }).error(function (err) {
 	        console.log(err);
@@ -303,27 +534,8 @@
 	    });
 	}
 
-	function get_urls(res) {
-	    $.ajax({
-	        url: "http://127.0.0.1:8000/get/",
-	        method: "GET",
-	        data: {}
-	    }).done(function (data) {
-	        img_lst = eval(data);
-
-	        img_lst.map(function (x) {
-	            update_img_list(x);
-	        });
-	        remount_left();
-	    }).error(function (err) {
-	        alert(err);
-
-	        console.log(err);
-	    });
-	}
-
-	function update_server_url(res) {
-	    var result = { 'url': res.data.link };
+	function update_server_url(res, album) {
+	    var result = { 'url': res.data.link, 'album': album };
 	    result = JSON.stringify(result);
 	    $.ajax({
 	        url: "http://127.0.0.1:8000/save/",
@@ -354,77 +566,8 @@
 	    });
 	}
 	try {
-	    get_urls();
+	    get_albums();
 	} catch (x) {}
-
-	if (window.FileReader) {
-	    var drop;
-	    addEventHandler(window, 'load', function () {
-	        var status = document.getElementById('status');
-	        drop = document.getElementById('drop');
-	        var list = document.getElementById('list');
-
-	        function cancel(e) {
-	            if (e.preventDefault) {
-	                e.preventDefault();
-	            }
-	            return false;
-	        }
-
-	        // Tells the browser that we *can* drop on this target
-	        try {
-	            addEventHandler(drop, 'dragover', cancel);
-	            addEventHandler(drop, 'dragenter', cancel);
-	            addEventHandler(drop, 'drop', function (e) {
-
-	                e = e || window.event; // get window.event if e argument missing (in IE)
-	                if (e.preventDefault) {
-	                    e.preventDefault();
-	                } // stops the browser from redirecting off to the image.
-
-	                var dt = e.dataTransfer;
-	                var files = dt.files;
-	                for (var i = 0; i < files.length; i++) {
-	                    var file = files[i];
-	                    var reader = new FileReader();
-
-	                    //attach event handlers here...
-
-	                    reader.readAsDataURL(file);
-	                    addEventHandler(reader, 'loadend', function (e, file) {
-
-	                        var bin = this.result;
-	                        uploadImgur(bin);
-	                        var newFile = document.createElement('div');
-	                        newFile.innerHTML = 'Loaded : ' + file.name + ' size ' + file.size + ' B';
-	                        list.appendChild(newFile);
-	                        var fileNumber = list.getElementsByTagName('div').length;
-	                        status.innerHTML = fileNumber < files.length ? 'Loaded 100% of file ' + fileNumber + ' of ' + files.length + '...' : 'Done loading. processed ' + fileNumber + ' files.';
-
-	                        var img = document.createElement("img");
-	                        img.file = file;
-	                        img.src = bin;
-	                        list.appendChild(img);
-	                    }.bindToEventHandler(file));
-	                }
-	                return false;
-	            });
-
-	            Function.prototype.bindToEventHandler = function bindToEventHandler() {
-	                var handler = this;
-	                var boundParameters = Array.prototype.slice.call(arguments);
-	                //create closure
-	                return function (e) {
-	                    e = e || window.event; // get window.event if e argument missing (in IE)
-	                    boundParameters.unshift(e);
-	                    handler.apply(this, boundParameters);
-	                };
-	            };
-	        } catch (x) {}
-	    });
-	} else {
-	    document.getElementById('status').innerHTML = 'Your browser does not support the HTML5 FileReader.';
-	}
 
 	function addEventHandler(obj, evt, handler) {
 	    if (obj.addEventListener) {

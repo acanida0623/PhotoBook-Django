@@ -12,7 +12,7 @@
   </head>
 
   <body>
-      <input class="jscolor" id="page-header-color">
+
       <div class="page-header" id="page-header" >
         {% if user.is_authenticated %}
         <a href="{% url 'upload' %}" class="top-menu"><span class="glyphicon glyphicon-plus"></span></a>
@@ -22,6 +22,7 @@
         <a href="{% url 'django.contrib.auth.views.login' %}" class="top-menu"><span class="glyphicon glyphicon-lock"></span></a>
         {% endif %}
         <h1><a href="{% url 'blog.views.post_list' %}">Photo Album</a></h1>
+          <input class="jscolor" id="page-header-color">
   </div>
       <div class="content">
           <div class="row">
@@ -32,6 +33,7 @@
               </div>
           </div>
       </div>
+
       <script src="{% static 'script/csrf_token.js' %}"></script>
       <script src="{% static 'script/bundle.js' %}"></script>
 

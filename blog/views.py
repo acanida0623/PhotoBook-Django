@@ -2,14 +2,16 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render_to_response
 from django.utils import timezone
-from .models import Post, Comment, Image
+from .models import Post, Comment, Image, Album
 from .forms import PostForm, CommentForm, UserCreationForm
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 import json
 
-
+# a1 = Album(images=[Image(url='http://imgur.com/gallery/DOn1x3l.jpg')],name='TestAlbum')
+# a1.save()
+# print(a1)
 
 def write_images():
     with open('urls.txt', 'w') as outfile:
@@ -126,8 +128,13 @@ def save_urls(request):
         req = eval(request.body)
         print(req['url'])
         if request.method == 'POST':
-            url_list = Image(author=request.user,url=req['url'], row=2)
-            url_list.save()
+            album = Album.objects.filter(name=req['album'])
+            for x in album:
+                if x.author == request.user:
+                    url_list = Image(author=request.user,url=req['url'])
+                    url_list.save()
+                    x.images += req['url']+","
+                    x.save()
             return HttpResponse( request )
 
 @csrf_exempt
@@ -149,4 +156,20 @@ def get_urls(request):
                 url_list.append(name.url)
             return HttpResponse(
             json.dumps(url_list)
+            )
+
+@csrf_exempt
+def get_albums(request):
+    if request.is_ajax():
+        if request.method == 'GET':
+            album_url_list = {'user_albums':[],'contr_albums':[]}
+            for name in Album.objects.all():
+                if request.user == name.author:
+                    print(name.images)
+                    album_url_list['user_albums'].append({'urls':name.images,'name':name.name})
+                for x in name.users:
+                    if x == request.user:
+                        album_url_list['contr_albums'].append({'urls':name.urls,'name':name.name})
+            return HttpResponse(
+            json.dumps(album_url_list)
             )

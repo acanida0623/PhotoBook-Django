@@ -43,3 +43,13 @@ class Image(models.Model):
 class New_User(models.Model):
     username =  models.CharField(max_length=200)
     password =  models.CharField(max_length=200)
+
+class Album(models.Model):
+    author = models.ForeignKey('auth.User')
+    users = models.CharField(max_length=2000)
+    images = models.CharField(max_length=2000)
+    name = models.CharField(max_length=200)
+    created_date = models.DateTimeField(default=timezone.now)
+
+    def Publish(self):
+        self.save()    
