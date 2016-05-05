@@ -101,7 +101,9 @@
 
 	                var dt = e.dataTransfer;
 	                var files = dt.files;
+
 	                for (var i = 0; i < files.length; i++) {
+	                    update_temp_img();
 	                    var file = files[i];
 	                    var reader = new FileReader();
 
@@ -124,6 +126,7 @@
 	                        // list.appendChild(img);
 	                    }.bindToEventHandler(file));
 	                }
+	                remount_left(selected);
 	                return false;
 	            });
 
@@ -185,6 +188,7 @@
 	    render: function render() {
 	        var row = this.props.row;
 	        var img_urls = this.props.images[row].albums[0].urls.split(',');
+	        console.log(img_urls);
 	        var album_cover = img_urls[0];
 	        var album_name = this.props.images[row].albums[row].name;
 	        return React.createElement(
@@ -466,6 +470,42 @@
 	    }
 	});
 
+	//i.imgur.com/JzVkr04.gif
+	function update_temp_img() {
+	    var loading = 'http://i.imgur.com/JzVkr04.gif';
+	    // img_lst.push(loading);
+	    if (images[images.length - 1].images.length < 4) {
+	        images[images.length - 1].images.push(loading);
+	    } else {
+	        images.push({ images: [loading], row: images.length });
+	    }
+	    console.log("imagetest" + images);
+	}
+
+	function replace_temp_img(res) {
+	    var loading = 'http://i.imgur.com/JzVkr04.gif';
+	    // for(var x = 0; x < img_lst.length; x++) {
+	    //     if (img_lst[x] === loading) {
+	    //         img_lst[x] = res
+	    //         break;
+	    //     }
+	    // }
+	    console.log(img_lst);
+	    for (var y = 0; y < images.length; y++) {
+	        var done = false;
+	        for (var z = 0; z < images[y].images.length; z++) {
+	            if (images[y].images[z] === loading) {
+	                images[y].images[z] = res;
+	                done = true;
+	                break;
+	            }
+	        }
+	        if (done) {
+	            break;
+	        }
+	    }
+	}
+
 	function update_img_list(res) {
 	    img_lst.push(res);
 	    if (images[images.length - 1].images.length < 4) {
@@ -473,12 +513,14 @@
 	    } else {
 	        images.push({ images: [res], row: images.length });
 	    }
+	    console.log(images);
 	}
 
 	function remount_left(album_name) {
 	    ReactDOM.unmountComponentAtNode(document.getElementById("left"));
 	    ReactDOM.render(React.createElement(Min_Container, { album_selected: album_name }), document.getElementById('left'));
 	}
+
 	try {
 	    ReactDOM.render(React.createElement(File_Input), document.getElementById('upload'));
 	} catch (err) {
@@ -524,9 +566,12 @@
 	        var link = res.data.link;
 	        console.log(link);
 	        console.log(album);
-	        update_img_list(link); // image successfully uploaded
+	        replace_temp_img(link);
+	        setTimeout(function () {
+	            update_server_url(res, album);
+	            remount_left(album);
+	        }, 100);
 
-	        update_server_url(res, album);
 	        // saveFile(link);
 	    }).error(function (err) {
 	        console.log(err);

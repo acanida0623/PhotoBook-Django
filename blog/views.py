@@ -133,7 +133,7 @@ def save_urls(request):
                 if x.author == request.user:
                     url_list = Image(author=request.user,url=req['url'])
                     url_list.save()
-                    x.images += req['url']+","
+                    x.images += ","+req['url']
                     x.save()
             return HttpResponse( request )
 
