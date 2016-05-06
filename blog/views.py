@@ -68,8 +68,8 @@ def post_new(request):
     else:
         form = PostForm()
     return render(request, 'blog/post_edit.html', {'form': form})
-@login_required
 
+@login_required
 def post_edit(request, pk):
     post = get_object_or_404(Post, pk=pk)
     if request.method == "POST":
@@ -83,8 +83,8 @@ def post_edit(request, pk):
     else:
         form = PostForm(instance=post)
     return render(request, 'blog/post_edit.html', {'form': form})
-@login_required
 
+@login_required
 def post_publish(request, pk):
     post = get_object_or_404(Post, pk=pk)
     post.publish()
@@ -129,8 +129,9 @@ def save_urls(request):
         print(req['url'])
         if request.method == 'POST':
             album = Album.objects.filter(name=req['album'])
+            user = str(request.user)
             for x in album:
-                if x.author == request.user:
+                if x.author == request.user or user in x.users:
                     url_list = Image(author=request.user,url=req['url'])
                     url_list.save()
                     x.images += ","+req['url']
@@ -141,11 +142,21 @@ def save_urls(request):
 def delete_url(request):
     if request.is_ajax():
         req = eval(request.body)
-        print(req['url'])
+        print(req['album'])
         if request.method == 'POST':
            url_list = Image.objects.filter(author=request.user,url=req['url'])
            url_list.all().delete()
-           return HttpResponse( request )
+        for album in Album.objects.filter(author=request.user,name=req['album']):
+            print("1")
+            print(album.name)
+            alb_delete = ","+req['url']
+            print("2")
+            print(album.images)
+            album.images = album.images.replace(alb_delete,"")
+            print("3")
+            print(album.images)
+            album.save()
+            return HttpResponse( request )
 
 @csrf_exempt
 def get_urls(request):
@@ -158,18 +169,26 @@ def get_urls(request):
             json.dumps(url_list)
             )
 
-@csrf_exempt
+def get_user(request):
+    if request.is_ajax():
+        if request.method == 'GET':
+            user = str(request.user)
+            return HttpResponse(
+            json.dumps(user)
+            )
+
 def get_albums(request):
     if request.is_ajax():
         if request.method == 'GET':
             album_url_list = {'user_albums':[],'contr_albums':[]}
             for name in Album.objects.all():
+                author = str(name.author)
                 if request.user == name.author:
                     print(name.images)
-                    album_url_list['user_albums'].append({'urls':name.images,'name':name.name})
-                for x in name.users:
-                    if x == request.user:
-                        album_url_list['contr_albums'].append({'urls':name.urls,'name':name.name})
+                    album_url_list['user_albums'].append({'urls':name.images,'name':name.name,'author':author})
+                user = str(request.user)
+                if user in name.users:
+                    album_url_list['contr_albums'].append({'urls':name.images,'name':name.name,'author':author})
             return HttpResponse(
             json.dumps(album_url_list)
             )

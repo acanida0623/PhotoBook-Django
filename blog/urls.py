@@ -9,6 +9,7 @@ urlpatterns = [
     url(r'^delete/$', views.delete_url, name='delete_url'),
     url(r'^upload/$', views.upload_images, name='upload'),
     url(r'^get/$', views.get_albums, name='get_albums'),
+    url(r'^get/user$', views.get_user, name='get_user'),
     url(r'^post/(?P<pk>\d+)/$', views.post_detail,name='post_detail'),
     url(r'^post/new/$', views.post_new, name='post_new'),
     url(r'^post/(?P<pk>\d+)/edit/$', views.post_edit, name='post_edit'),

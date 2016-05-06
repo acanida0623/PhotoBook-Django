@@ -61,7 +61,12 @@ body {
   width: 50vw;
 }
 
-
+#drop_here {
+  color: #BDBDBD;
+  font-size: 20pt;
+  margin-left: 26%;
+  margin-top: 10%;
+}
 
 .2{
   height: 2vw;
