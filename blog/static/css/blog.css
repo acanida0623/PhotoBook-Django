@@ -29,7 +29,12 @@
 
 }
 
-
+#trash{height: 5vw;
+width: 5vw;
+background-image: url('http://i.imgur.com/uXoQ3e0.png');
+background-size: contain;
+background-repeat: no-repeat;
+}
 
 
 body {

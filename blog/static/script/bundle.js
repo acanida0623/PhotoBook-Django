@@ -208,6 +208,7 @@
 	            update_img_list(x);
 	        });
 	        remount_left(this.state.album_name, this.state.album_author);
+	        img_lst.length = 0;
 	    },
 
 	    selectAlbum: function selectAlbum() {},
@@ -238,11 +239,25 @@
 
 	    getInitialState: function getInitialState() {
 	        return {
-	            select_source: this.props.select_source,
+	            select_source: [],
 	            album_selected: this.props.album_selected,
 	            album_author: this.props.album_author,
-	            current_user: this.props.current_user
+	            current_user: this.props.current_user,
+	            key_code: null
 	        };
+	    },
+
+	    keyDown: function keyDown(event) {
+	        console.log(event.keyCode);
+	        this.setState({
+	            key_code: event.keyCode
+	        });
+	    },
+
+	    keyUp: function keyUp(event) {
+	        this.setState({
+	            key_code: null
+	        });
 	    },
 
 	    render: function render() {
@@ -258,7 +273,7 @@
 	                    'tbody',
 	                    null,
 	                    images.map(function (src, i) {
-	                        return React.createElement(Row, { current_user: _this.state.current_user, album_author: _this.props.album_author, album_selected: _this.props.album_selected, select_source: _this.state.select_source, select_source_method: _this.updateSelectedImg, row: i, key: i });
+	                        return React.createElement(Row, { key_code: _this.state.key_code, current_user: _this.state.current_user, album_author: _this.props.album_author, album_selected: _this.props.album_selected, select_source: _this.state.select_source, select_source_method: _this.updateSelectedImg, row: i, key: i });
 	                    }).map(function (src) {
 	                        return src;
 	                    })
@@ -289,7 +304,18 @@
 	        });
 	    },
 
+	    deleteImgs: function deleteImgs() {
+	        var _this3 = this;
+
+	        img_lst.map(function (x) {
+	            delete_url(x, _this3.state.album_selected);
+	        });
+	    },
+
 	    componentDidMount: function componentDidMount() {
+	        window.addEventListener("keydown", this.keyDown, false);
+	        window.addEventListener("keyup", this.keyUp, false);
+	        document.getElementById('trash').addEventListener('click', this.deleteImgs, false);
 	        console.log("mounted");
 	        AddLoad(this.state.album_selected, this.state.album_author);
 	    },
@@ -311,7 +337,7 @@
 	    },
 
 	    render: function render() {
-	        var _this3 = this;
+	        var _this4 = this;
 
 	        var row = this.props.row;
 	        var img_list = filter_row(images, row);
@@ -320,19 +346,25 @@
 	            { id: "row" + this.props.row, key: this.props.row },
 	            img_list[0].map(function (src, i) {
 	                var ran = Math.floor(Math.random() * (9999 - 1)) + 1;
-	                if (src === _this3.props.select_source) {
+	                var selected = false;
+	                for (var x = 0; x < _this4.props.select_source.length; x++) {
+	                    if (_this4.props.select_source[x] === src) {
+	                        selected = true;
+	                    }
+	                }
+	                if (selected) {
 
 	                    return React.createElement(
 	                        'td',
 	                        { key: ran },
-	                        React.createElement(View_IMG, { current_user: _this3.props.current_user, album_author: _this3.props.album_author, album_selected: _this3.props.album_selected, select_source_method: _this3.props.select_source_method, class_name: "col-sm selected", img_number: i, img_source: src })
+	                        React.createElement(View_IMG, { key_code: _this4.props.key_code, current_user: _this4.props.current_user, album_author: _this4.props.album_author, album_selected: _this4.props.album_selected, select_source_method: _this4.props.select_source_method, class_name: "col-sm selected", img_number: i, img_source: src })
 	                    );
 	                } else {
 
 	                    return React.createElement(
 	                        'td',
 	                        { key: ran },
-	                        React.createElement(View_IMG, { current_user: _this3.props.current_user, album_author: _this3.props.album_author, album_selected: _this3.props.album_selected, select_source_method: _this3.props.select_source_method, class_name: "col-sm", img_number: i, img_source: src })
+	                        React.createElement(View_IMG, { key_code: _this4.props.key_code, current_user: _this4.props.current_user, album_author: _this4.props.album_author, album_selected: _this4.props.album_selected, select_source_method: _this4.props.select_source_method, class_name: "col-sm", img_number: i, img_source: src })
 	                    );
 	                }
 	            })
@@ -352,7 +384,9 @@
 	            select_source_method: this.props.select_source_method,
 	            img_source: this.props.img_source,
 	            img_number: this.props.img_number,
-	            class_name: this.props.class_name
+	            class_name: this.props.class_name,
+	            key_code: this.props.key_code
+
 	        };
 	    },
 
@@ -375,7 +409,21 @@
 	    },
 
 	    onMouseDownHandler: function onMouseDownHandler() {
-	        this.state.select_source_method(this.state.img_source);
+	        var _this5 = this;
+
+	        console.log(this.state.key_code + "key");
+	        if (this.state.key_code === 16) {
+	            var exists = img_lst.filter(function (x) {
+	                return x === _this5.state.img_source;
+	            });
+	            if (exists.length === 0) {
+	                img_lst.push(this.state.img_source);
+	            }
+	        } else {
+	            img_lst.length = 0;
+	            img_lst.push(this.state.img_source);
+	        }
+	        this.state.select_source_method(img_lst);
 	        ReactDOM.unmountComponentAtNode(document.getElementById("right"));
 	        ReactDOM.render(React.createElement(Rotate_IMG, { img_source: this.props.img_source }), document.getElementById('right'));
 	    },
@@ -386,7 +434,7 @@
 	        };
 	        return React.createElement(
 	            'div',
-	            { onMouseDown: this.onMouseDownHandler, onMouseEnter: this.onMouseEnterHandler, onMouseLeave: this.onMouseLeaveHandler, className: this.props.class_name, id: "img_" + this.props.img_number, style: divStyle },
+	            { draggable: 'true', onMouseDown: this.onMouseDownHandler, onMouseEnter: this.onMouseEnterHandler, onMouseLeave: this.onMouseLeaveHandler, className: this.props.class_name, id: "img_" + this.props.img_number, style: divStyle },
 	            React.createElement('div', { className: "delete_img " + this.state.hidden, onMouseDown: this.deleteImg })
 	        );
 	    }
@@ -402,10 +450,10 @@
 	    },
 
 	    componentDidMount: function componentDidMount() {
-	        var _this4 = this;
+	        var _this6 = this;
 
 	        var intervalId = setInterval(function () {
-	            _this4.rotate_images();
+	            _this6.rotate_images();
 	        }, 3000);
 	        this.setState({ intervalId: intervalId });
 	    },
@@ -495,10 +543,9 @@
 	    }
 	});
 
-	//i.imgur.com/JzVkr04.gif
 	function update_temp_img() {
 	    var loading = 'http://i.imgur.com/JzVkr04.gif';
-	    // img_lst.push(loading);
+
 	    if (images[images.length - 1].images.length < 4) {
 	        images[images.length - 1].images.push(loading);
 	    } else {
@@ -509,13 +556,6 @@
 
 	function replace_temp_img(res) {
 	    var loading = 'http://i.imgur.com/JzVkr04.gif';
-	    // for(var x = 0; x < img_lst.length; x++) {
-	    //     if (img_lst[x] === loading) {
-	    //         img_lst[x] = res
-	    //         break;
-	    //     }
-	    // }
-	    console.log(img_lst);
 	    for (var y = 0; y < images.length; y++) {
 	        var done = false;
 	        for (var z = 0; z < images[y].images.length; z++) {

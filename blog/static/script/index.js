@@ -142,7 +142,7 @@ var Album_IMG = React.createClass({
             update_img_list(x);
         })
         remount_left(this.state.album_name,this.state.album_author);
-
+        img_lst.length = 0;
     },
 
     selectAlbum: function() {
@@ -168,11 +168,25 @@ var Min_Container = React.createClass({
 
   getInitialState: function() {
       return {
-          select_source: this.props.select_source,
+          select_source: [],
           album_selected: this.props.album_selected,
           album_author: this.props.album_author,
-          current_user: this.props.current_user
+          current_user: this.props.current_user,
+          key_code: null
       }
+  },
+
+  keyDown: function(event){
+    console.log(event.keyCode)
+    this.setState({
+    key_code:event.keyCode
+    })
+  },
+
+  keyUp:function(event){
+    this.setState({
+      key_code:null
+    })
   },
 
   render: function() {
@@ -181,14 +195,14 @@ var Min_Container = React.createClass({
                     <tbody>
                       {
                         images.map((src, i) => {
-                          return <Row current_user={this.state.current_user} album_author={this.props.album_author} album_selected={this.props.album_selected} select_source={this.state.select_source} select_source_method={this.updateSelectedImg} row={i} key={i} />
+                          return <Row key_code = {this.state.key_code} current_user = {this.state.current_user} album_author = {this.props.album_author} album_selected = {this.props.album_selected} select_source={this.state.select_source} select_source_method={this.updateSelectedImg} row={i} key={i} />
                         }).map(function(src){
                             return src
                         })
                       }
                     </tbody>
                   </table>
-                  <div id="drop_here">DROP IMAGE FILES HERE</div>
+                  <div id = "drop_here">DROP IMAGE FILES HERE</div>
               </div>
   },
 
@@ -207,9 +221,19 @@ var Min_Container = React.createClass({
     });
   },
 
+  deleteImgs: function() {
+      img_lst.map((x) => {
+          delete_url(x,this.state.album_selected)
+      })
+  },
+
   componentDidMount: function() {
+    window.addEventListener("keydown", this.keyDown, false);
+    window.addEventListener("keyup", this.keyUp, false);
+    document.getElementById('trash').addEventListener('click', this.deleteImgs, false);
     console.log("mounted");
     AddLoad(this.state.album_selected,this.state.album_author);
+
 
   },
   componentWillMount: function() {
@@ -234,15 +258,21 @@ var Row = React.createClass({
                 {
                   img_list[0].map((src, i) => {
                     var ran = (Math.floor(Math.random() * (9999 - 1)) + 1)
-                    if (src === this.props.select_source) {
+                    var selected = false;
+                    for(var x = 0; x < this.props.select_source.length; x++) {
+                        if (this.props.select_source[x] === src) {
+                          selected = true;
+                        }
+                    }
+                    if (selected) {
 
                       return <td key={ran}>
-                                  <View_IMG current_user={this.props.current_user} album_author={this.props.album_author} album_selected={this.props.album_selected} select_source_method={this.props.select_source_method} class_name={"col-sm selected"} img_number={i} img_source={src} />
+                                  <View_IMG key_code={this.props.key_code} current_user={this.props.current_user} album_author={this.props.album_author} album_selected={this.props.album_selected} select_source_method={this.props.select_source_method} class_name={"col-sm selected"} img_number={i} img_source={src} />
                               </td>
                     } else {
 
                       return <td key={ran}>
-                                <View_IMG current_user={this.props.current_user} album_author={this.props.album_author} album_selected={this.props.album_selected} select_source_method={this.props.select_source_method} class_name={"col-sm"} img_number={i} img_source={src} />
+                                <View_IMG key_code={this.props.key_code} current_user={this.props.current_user} album_author={this.props.album_author} album_selected={this.props.album_selected} select_source_method={this.props.select_source_method} class_name={"col-sm"} img_number={i} img_source={src} />
                             </td>
                           }
                   })
@@ -261,31 +291,45 @@ var View_IMG = React.createClass({
             select_source_method: this.props.select_source_method,
             img_source: this.props.img_source,
             img_number: this.props.img_number,
-            class_name: this.props.class_name
+            class_name: this.props.class_name,
+            key_code: this.props.key_code
+
         };
     },
 
     onMouseEnterHandler: function() {
-      if (this.state.album_author === this.state.current_user) {
-        this.setState({
+        if (this.state.album_author === this.state.current_user) {
+            this.setState({
             hidden:'show'
-        })
-      }
-
+            })
+        }
     },
 
     onMouseLeaveHandler: function() {
-      this.setState({
-        hidden:'hidden'
-      })
+        this.setState({
+          hidden:'hidden'
+        })
     },
 
     deleteImg: function() {
-      delete_url(this.state.img_source,this.state.album_selected);
+        delete_url(this.state.img_source,this.state.album_selected);
     },
 
     onMouseDownHandler: function() {
-        this.state.select_source_method(this.state.img_source);
+        console.log(this.state.key_code+"key")
+        if(this.state.key_code === 16) {
+            var exists = img_lst.filter((x) => {
+                return(x === this.state.img_source)
+            })
+            if (exists.length === 0) {
+                img_lst.push(this.state.img_source);
+            }
+        }else {
+            img_lst.length = 0;
+            img_lst.push(this.state.img_source)
+
+        }
+          this.state.select_source_method(img_lst);
         ReactDOM.unmountComponentAtNode(document.getElementById("right"));
         ReactDOM.render(React.createElement(Rotate_IMG, { img_source: this.props.img_source }), document.getElementById('right'));
     },
@@ -294,7 +338,7 @@ var View_IMG = React.createClass({
       var divStyle = {
           backgroundImage: 'url(' + this.props.img_source + ')'
       };
-        return  <div onMouseDown={this.onMouseDownHandler} onMouseEnter={this.onMouseEnterHandler} onMouseLeave={this.onMouseLeaveHandler} className={this.props.class_name} id={"img_" + this.props.img_number} style={divStyle}>
+        return  <div draggable="true" onMouseDown={this.onMouseDownHandler} onMouseEnter={this.onMouseEnterHandler} onMouseLeave={this.onMouseLeaveHandler} className={this.props.class_name} id={"img_" + this.props.img_number} style={divStyle}>
                 <div className={"delete_img "+this.state.hidden} onMouseDown={this.deleteImg}></div>
                 </div>
     }
@@ -402,10 +446,10 @@ var File_Input = React.createClass({
     }
 });
 
-//i.imgur.com/JzVkr04.gif
+
 function update_temp_img() {
   var loading = 'http://i.imgur.com/JzVkr04.gif'
-    // img_lst.push(loading);
+
     if (images[images.length - 1].images.length < 4) {
         images[images.length - 1].images.push(loading);
     } else {
@@ -416,13 +460,6 @@ function update_temp_img() {
 
 function replace_temp_img(res) {
     var loading = 'http://i.imgur.com/JzVkr04.gif'
-    // for(var x = 0; x < img_lst.length; x++) {
-    //     if (img_lst[x] === loading) {
-    //         img_lst[x] = res
-    //         break;
-    //     }
-    // }
-    console.log(img_lst)
     for(var y = 0; y < images.length; y++) {
         var done = false;
         for(var z = 0; z < images[y].images.length; z++) {
@@ -540,11 +577,6 @@ try {
 }catch(x) {
 
 }
-
-
-
-
-
 
 function addEventHandler(obj, evt, handler) {
     if (obj.addEventListener) {

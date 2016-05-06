@@ -13,16 +13,6 @@ import json
 # a1.save()
 # print(a1)
 
-def write_images():
-    with open('urls.txt', 'w') as outfile:
-        json.dump(images, outfile)
-
-def read_images():
-    with open('urls.txt', 'r') as infile:
-        images = json.load(infile)
-        print("hello")
-        print(images['images'])
-
 
 @login_required
 def post_list(request):
