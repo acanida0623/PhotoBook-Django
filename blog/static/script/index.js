@@ -120,6 +120,7 @@ var New_Album = React.createClass({
 var Album_Container = React.createClass({
 
   render: function() {
+    console.log(user_album_images[1])
     return    <div className="table_holder">
                 <h1>Your Albums</h1>
                 <table className="main_table">
@@ -127,9 +128,8 @@ var Album_Container = React.createClass({
                       {
                         user_album_images.map((src, i) => {
                           return <Album_Row images = {user_album_images} row = {i} key = {i} />
-                        }).map(function(src){
-                            return src
                         })
+
                       }
                     </tbody>
                   </table>
@@ -139,8 +139,6 @@ var Album_Container = React.createClass({
                         {
                           contr_album_images.map((src, i) => {
                             return <Album_Row images={contr_album_images} row={i} key={i} />
-                          }).map(function(src){
-                              return src
                           })
                         }
                       </tbody>
@@ -160,9 +158,10 @@ var Album_Row = React.createClass({
     render: function() {
         try {
           var row = this.props.row;
+
           return  <tr id = {"row" + this.props.row} key = {this.props.row}>
                     {
-                        this.props.images[0].albums.map((x) => {
+                        this.props.images[row].albums.map((x) => {
                         var img_urls = x.urls.split(',');
                         var album_cover = img_urls[0];
                         var album_name = x.name;
@@ -446,18 +445,20 @@ var Rotate_IMG = React.createClass({
 });
 
 function update_album_list(res) {
+  console.log("RESULT")
+  console.log(res)
     res.user_albums.map((x) => {
       if (user_album_images[user_album_images.length - 1].albums.length < 4) {
           user_album_images[user_album_images.length - 1].albums.push(x);
       } else {
-          user_album_images.push({ albums: [res]});
+          user_album_images.push({ albums: [x]});
       }
     })
     res.contr_albums.map((x) => {
       if (contr_album_images[contr_album_images.length - 1].albums.length < 4) {
           contr_album_images[contr_album_images.length - 1].albums.push(x);
       } else {
-          contr_album_images.push({ albums: [res]});
+          contr_album_images.push({ albums: [x]});
       }
 
     })

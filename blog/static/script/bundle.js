@@ -190,6 +190,7 @@
 
 
 	    render: function render() {
+	        console.log(user_album_images[1]);
 	        return React.createElement(
 	            'div',
 	            { className: 'table_holder' },
@@ -206,8 +207,6 @@
 	                    null,
 	                    user_album_images.map(function (src, i) {
 	                        return React.createElement(Album_Row, { images: user_album_images, row: i, key: i });
-	                    }).map(function (src) {
-	                        return src;
 	                    })
 	                )
 	            ),
@@ -224,8 +223,6 @@
 	                    null,
 	                    contr_album_images.map(function (src, i) {
 	                        return React.createElement(Album_Row, { images: contr_album_images, row: i, key: i });
-	                    }).map(function (src) {
-	                        return src;
 	                    })
 	                )
 	            )
@@ -246,10 +243,11 @@
 	    render: function render() {
 	        try {
 	            var row = this.props.row;
+
 	            return React.createElement(
 	                'tr',
 	                { id: "row" + this.props.row, key: this.props.row },
-	                this.props.images[0].albums.map(function (x) {
+	                this.props.images[row].albums.map(function (x) {
 	                    var img_urls = x.urls.split(',');
 	                    var album_cover = img_urls[0];
 	                    var album_name = x.name;
@@ -561,18 +559,20 @@
 	});
 
 	function update_album_list(res) {
+	    console.log("RESULT");
+	    console.log(res);
 	    res.user_albums.map(function (x) {
 	        if (user_album_images[user_album_images.length - 1].albums.length < 4) {
 	            user_album_images[user_album_images.length - 1].albums.push(x);
 	        } else {
-	            user_album_images.push({ albums: [res] });
+	            user_album_images.push({ albums: [x] });
 	        }
 	    });
 	    res.contr_albums.map(function (x) {
 	        if (contr_album_images[contr_album_images.length - 1].albums.length < 4) {
 	            contr_album_images[contr_album_images.length - 1].albums.push(x);
 	        } else {
-	            contr_album_images.push({ albums: [res] });
+	            contr_album_images.push({ albums: [x] });
 	        }
 	    });
 	}
