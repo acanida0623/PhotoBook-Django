@@ -17,7 +17,9 @@
   background-repeat: no-repeat;
   background-position: 50% 50%;
 }
-
+.new_album {
+  margin-top: 30vh;
+}
 .main_table{
 
    width:45vw;
@@ -36,6 +38,13 @@ background-size: contain;
 background-repeat: no-repeat;
 }
 
+#add_album {
+  height: 5vw;
+  width: 5vw;
+  background-image: url('http://i.imgur.com/H1smiYX.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+}
 
 body {
   background-color: #C2D4EC;

@@ -1,1 +1,0 @@
-{"images": [{"row": 0, "images": ["./photos/1.jpg", "./photos/2.jpg", "./photos/3.jpg", "./photos/4.jpg"]}, {"row": 1, "images": ["./photos/5.jpg", "./photos/6.jpg", "./photos/7.jpg", "./photos/8.jpg"]}, {"row": 2, "images": ["./photos/9.jpg", "./photos/10.jpg", "./photos/11.jpg", "./photos/12.jpg"]}]}
