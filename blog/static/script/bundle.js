@@ -131,7 +131,6 @@
 	                data: result
 	            }).done(function (data) {
 	                console.log(data);
-	                alert(data);
 	            }).error(function (err) {
 	                console.log(err);
 	            });
@@ -188,9 +187,76 @@
 	var Album_Container = React.createClass({
 	    displayName: 'Album_Container',
 
+	    updateSelectedImg: function updateSelectedImg(source, author) {
+	        this.setState({
+	            album_selected: source
+	        });
+	    },
+
+	    getInitialState: function getInitialState() {
+	        return {
+	            user_albums: this.props.user_albums,
+	            contr_albums: this.props.contr_albums,
+	            album_selected: this.props.album_selected,
+	            current_user: this.props.current_user,
+	            key_code: null
+	        };
+	    },
+
+	    keyDown: function keyDown(event) {
+	        try {
+	            if (event.keyCode === 16) {
+	                this.setState({
+	                    key_code: event.keyCode
+	                });
+	            }
+	        } catch (x) {}
+	    },
+
+	    keyUp: function keyUp(event) {
+	        if (this.state.key_code === 16) {
+	            try {
+	                this.setState({
+	                    key_code: null
+	                });
+	            } catch (x) {}
+	        }
+	    },
+
+	    getUserInfo: function getUserInfo() {
+	        var _this = this;
+
+	        $.ajax({
+	            url: "http://127.0.0.1:8000/get/user",
+	            method: "GET",
+	            data: {}
+	        }).done(function (data) {
+	            var user_info = JSON.parse(data);
+	            _this.setState({
+	                current_user: user_info
+	            });
+	        }).error(function (err) {
+	            console.log(err);
+	        });
+	    },
+
+	    deleteAlbum: function deleteAlbum() {
+	        delete_album(this.state.album_selected);
+	    },
+
+	    componentDidMount: function componentDidMount() {
+	        window.addEventListener("keydown", this.keyDown, false);
+	        window.addEventListener("keyup", this.keyUp, false);
+	        document.getElementById('trash').addEventListener('click', this.deleteAlbum, false);
+	    },
+
+	    componentWillMount: function componentWillMount() {
+	        this.getUserInfo();
+	    },
 
 	    render: function render() {
-	        console.log(user_album_images[1]);
+	        var _this2 = this;
+
 	        return React.createElement(
 	            'div',
 	            { className: 'table_holder' },
@@ -205,8 +271,8 @@
 	                React.createElement(
 	                    'tbody',
 	                    null,
-	                    user_album_images.map(function (src, i) {
-	                        return React.createElement(Album_Row, { images: user_album_images, row: i, key: i });
+	                    this.props.user_albums.map(function (src, i) {
+	                        return React.createElement(Album_Row, { images: _this2.props.user_albums, key_code: _this2.state.key_code, current_user: _this2.state.current_user, album_selected: _this2.state.album_selected, select_source_method: _this2.updateSelectedImg, row: i, key: i });
 	                    })
 	                )
 	            ),
@@ -221,8 +287,8 @@
 	                React.createElement(
 	                    'tbody',
 	                    null,
-	                    contr_album_images.map(function (src, i) {
-	                        return React.createElement(Album_Row, { images: contr_album_images, row: i, key: i });
+	                    this.props.contr_albums.map(function (src, i) {
+	                        return React.createElement(Album_Row, { images: _this2.props.contr_albums, key_code: _this2.state.key_code, current_user: _this2.state.current_user, album_selected: _this2.state.album_selected, select_source_method: _this2.updateSelectedImg, row: i, key: i });
 	                    })
 	                )
 	            )
@@ -233,17 +299,11 @@
 	var Album_Row = React.createClass({
 	    displayName: 'Album_Row',
 
-	    getInitialState: function getInitialState() {
-	        return {
-	            select_source_method: this.props.select_source_method,
-	            select_source: this.props.select_source
-	        };
-	    },
-
 	    render: function render() {
+	        var _this3 = this;
+
 	        try {
 	            var row = this.props.row;
-
 	            return React.createElement(
 	                'tr',
 	                { id: "row" + this.props.row, key: this.props.row },
@@ -252,11 +312,20 @@
 	                    var album_cover = img_urls[0];
 	                    var album_name = x.name;
 	                    var album_author = x.author;
-	                    return React.createElement(
-	                        'td',
-	                        null,
-	                        React.createElement(Album_IMG, { album_author: album_author, album_name: album_name, class_name: "col-sm album_img", urls: img_urls, img_source: album_cover })
-	                    );
+	                    console.log(x.author);
+	                    if (album_name === _this3.props.album_selected) {
+	                        return React.createElement(
+	                            'td',
+	                            null,
+	                            React.createElement(Album_IMG, { select_source_method: _this3.props.select_source_method, current_user: _this3.props.current_user, key_code: _this3.props.key_code, album_author: album_author, album_name: album_name, class_name: "col-sm album_img selected", urls: img_urls, img_source: album_cover })
+	                        );
+	                    } else {
+	                        return React.createElement(
+	                            'td',
+	                            null,
+	                            React.createElement(Album_IMG, { select_source_method: _this3.props.select_source_method, current_user: _this3.props.current_user, key_code: _this3.props.key_code, album_author: album_author, album_name: album_name, class_name: "col-sm album_img", urls: img_urls, img_source: album_cover })
+	                        );
+	                    }
 	                })
 	            );
 	        } catch (x) {
@@ -276,28 +345,37 @@
 	            album_name: this.props.album_name,
 	            img_source: this.props.img_source,
 	            class_name: this.props.class_name,
-	            urls: this.props.urls
+	            urls: this.props.urls,
+	            select_source_method: this.props.select_source_method,
+
+	            key_code: this.props.key_code,
+	            current_user: this.props.current_user
 	        };
 	    },
+
 	    onMouseEnterHandler: function onMouseEnterHandler() {},
 	    onMouseLeaveHandler: function onMouseLeaveHandler() {},
 
 	    onMouseDownHandler: function onMouseDownHandler() {
-	        img_lst.length = 0;
-	        AddLoad(this.state.album_name, this.state.album_author);
-	        this.state.urls.map(function (x) {
-	            update_img_list(x);
-	        });
-	        remount_left(this.state.album_name, this.state.album_author);
-	        img_lst.length = 0;
+	        console.log(this.state.album_author);
+	        if (this.props.key_code === 16 && this.state.album_author === this.props.current_user) {
+	            this.state.select_source_method(this.state.album_name);
+	        } else {
+	            img_lst.length = 0;
+	            AddLoad(this.state.album_name, this.state.album_author);
+	            this.state.urls.map(function (x) {
+	                update_img_list(x);
+	            });
+	            remount_left(this.state.album_name, this.state.album_author);
+	            img_lst.length = 0;
+	        }
 	    },
-
-	    selectAlbum: function selectAlbum() {},
 
 	    render: function render() {
 	        var divStyle = {
 	            backgroundImage: 'url(' + this.props.img_source + ')'
 	        };
+
 	        return React.createElement(
 	            'div',
 	            null,
@@ -329,7 +407,7 @@
 	    },
 
 	    keyDown: function keyDown(event) {
-	        console.log(event.keyCode);
+
 	        this.setState({
 	            key_code: event.keyCode
 	        });
@@ -342,7 +420,7 @@
 	    },
 
 	    render: function render() {
-	        var _this = this;
+	        var _this4 = this;
 
 	        return React.createElement(
 	            'div',
@@ -354,7 +432,7 @@
 	                    'tbody',
 	                    null,
 	                    images.map(function (src, i) {
-	                        return React.createElement(Row, { key_code: _this.state.key_code, current_user: _this.state.current_user, album_author: _this.props.album_author, album_selected: _this.props.album_selected, select_source: _this.state.select_source, select_source_method: _this.updateSelectedImg, row: i, key: i });
+	                        return React.createElement(Row, { key_code: _this4.state.key_code, current_user: _this4.state.current_user, album_author: _this4.props.album_author, album_selected: _this4.props.album_selected, select_source: _this4.state.select_source, select_source_method: _this4.updateSelectedImg, row: i, key: i });
 	                    }).map(function (src) {
 	                        return src;
 	                    })
@@ -369,7 +447,7 @@
 	    },
 
 	    getUserInfo: function getUserInfo() {
-	        var _this2 = this;
+	        var _this5 = this;
 
 	        $.ajax({
 	            url: "http://127.0.0.1:8000/get/user",
@@ -377,7 +455,7 @@
 	            data: {}
 	        }).done(function (data) {
 	            var user_info = JSON.parse(data);
-	            _this2.setState({
+	            _this5.setState({
 	                current_user: user_info
 	            });
 	        }).error(function (err) {
@@ -386,7 +464,6 @@
 	    },
 
 	    deleteImgs: function deleteImgs() {
-
 	        delete_url(img_lst, this.state.album_selected);
 	    },
 
@@ -414,7 +491,7 @@
 	    },
 
 	    render: function render() {
-	        var _this3 = this;
+	        var _this6 = this;
 
 	        var row = this.props.row;
 	        var img_list = filter_row(images, row);
@@ -424,8 +501,8 @@
 	            img_list[0].map(function (src, i) {
 	                var ran = Math.floor(Math.random() * (9999 - 1)) + 1;
 	                var selected = false;
-	                for (var x = 0; x < _this3.props.select_source.length; x++) {
-	                    if (_this3.props.select_source[x] === src) {
+	                for (var x = 0; x < _this6.props.select_source.length; x++) {
+	                    if (_this6.props.select_source[x] === src) {
 	                        selected = true;
 	                    }
 	                }
@@ -434,14 +511,14 @@
 	                    return React.createElement(
 	                        'td',
 	                        { key: ran },
-	                        React.createElement(View_IMG, { key_code: _this3.props.key_code, current_user: _this3.props.current_user, album_author: _this3.props.album_author, album_selected: _this3.props.album_selected, select_source_method: _this3.props.select_source_method, class_name: "col-sm selected", img_number: i, img_source: src })
+	                        React.createElement(View_IMG, { key_code: _this6.props.key_code, current_user: _this6.props.current_user, album_author: _this6.props.album_author, album_selected: _this6.props.album_selected, select_source_method: _this6.props.select_source_method, class_name: "col-sm selected", img_number: i, img_source: src })
 	                    );
 	                } else {
 
 	                    return React.createElement(
 	                        'td',
 	                        { key: ran },
-	                        React.createElement(View_IMG, { key_code: _this3.props.key_code, current_user: _this3.props.current_user, album_author: _this3.props.album_author, album_selected: _this3.props.album_selected, select_source_method: _this3.props.select_source_method, class_name: "col-sm", img_number: i, img_source: src })
+	                        React.createElement(View_IMG, { key_code: _this6.props.key_code, current_user: _this6.props.current_user, album_author: _this6.props.album_author, album_selected: _this6.props.album_selected, select_source_method: _this6.props.select_source_method, class_name: "col-sm", img_number: i, img_source: src })
 	                    );
 	                }
 	            })
@@ -488,11 +565,11 @@
 	    },
 
 	    onMouseDownHandler: function onMouseDownHandler() {
-	        var _this4 = this;
+	        var _this7 = this;
 
 	        if (this.state.key_code === 16) {
 	            var exists = img_lst.filter(function (x) {
-	                return x === _this4.state.img_source;
+	                return x === _this7.state.img_source;
 	            });
 	            if (exists.length === 0) {
 	                img_lst.push(this.state.img_source);
@@ -528,10 +605,10 @@
 	    },
 
 	    componentDidMount: function componentDidMount() {
-	        var _this5 = this;
+	        var _this8 = this;
 
 	        var intervalId = setInterval(function () {
-	            _this5.rotate_images();
+	            _this8.rotate_images();
 	        }, 3000);
 	        this.setState({ intervalId: intervalId });
 	    },
@@ -559,8 +636,8 @@
 	});
 
 	function update_album_list(res) {
-	    console.log("RESULT");
-	    console.log(res);
+	    var user_album_images = [{ albums: [] }];
+	    var contr_album_images = [{ albums: [] }];
 	    res.user_albums.map(function (x) {
 	        if (user_album_images[user_album_images.length - 1].albums.length < 4) {
 	            user_album_images[user_album_images.length - 1].albums.push(x);
@@ -575,7 +652,8 @@
 	            contr_album_images.push({ albums: [x] });
 	        }
 	    });
-	}
+	    return [user_album_images, contr_album_images];
+	};
 
 	function get_albums(res) {
 	    $.ajax({
@@ -584,9 +662,11 @@
 	        data: {}
 	    }).done(function (data) {
 	        albums = JSON.parse(data);
-	        update_album_list(albums);
+	        var user_albums = update_album_list(albums);
+	        var contr_albums = user_albums[1];
+	        user_albums = user_albums[0];
 	        ReactDOM.unmountComponentAtNode(document.getElementById("left"));
-	        ReactDOM.render(React.createElement(Album_Container), document.getElementById('left'));
+	        ReactDOM.render(React.createElement(Album_Container, { user_albums: user_albums, contr_albums: contr_albums }), document.getElementById('left'));
 	    }).error(function (err) {
 	        console.log(err);
 	    });
@@ -728,9 +808,25 @@
 	        console.log(err);
 	    });
 	}
-	try {
-	    get_albums();
-	} catch (x) {}
+
+	function delete_album(album) {
+	    var result = { 'album': album };
+	    result = JSON.stringify(result);
+	    $.ajax({
+	        url: "http://127.0.0.1:8000/delete/album",
+	        method: "POST",
+	        data: result
+	    }).done(function (data) {
+	        var albums = JSON.parse(data);
+	        var user_albums = update_album_list(albums);
+	        var contr_albums = user_albums[1];
+	        user_albums = user_albums[0];
+	        ReactDOM.unmountComponentAtNode(document.getElementById("left"));
+	        ReactDOM.render(React.createElement(Album_Container, { user_albums: user_albums, contr_albums: contr_albums }), document.getElementById('left'));
+	    }).error(function (err) {
+	        console.log(err);
+	    });
+	}
 
 	function addEventHandler(obj, evt, handler) {
 	    if (obj.addEventListener) {
@@ -744,15 +840,21 @@
 	        obj['on' + evt] = handler;
 	    }
 	}
+	function main() {
+	    try {
+	        get_albums();
+	    } catch (x) {}
+	    addEventHandler(document.getElementById('page-header-color'), 'change', function () {
+	        var value = document.getElementById('page-header-color').value;
+	        document.getElementById('page-header').style.backgroundColor = "#" + value;
+	    });
+	    addEventHandler(document.getElementById('add_album'), 'click', function () {
+	        ReactDOM.unmountComponentAtNode(document.getElementById("right"));
+	        ReactDOM.render(React.createElement(New_Album), document.getElementById('right'));
+	    });
+	}
 
-	addEventHandler(document.getElementById('page-header-color'), 'change', function () {
-	    var value = document.getElementById('page-header-color').value;
-	    document.getElementById('page-header').style.backgroundColor = "#" + value;
-	});
-	addEventHandler(document.getElementById('add_album'), 'click', function () {
-	    ReactDOM.unmountComponentAtNode(document.getElementById("right"));
-	    ReactDOM.render(React.createElement(New_Album), document.getElementById('right'));
-	});
+	main();
 
 /***/ },
 /* 1 */

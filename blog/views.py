@@ -192,3 +192,25 @@ def get_albums(request):
             return HttpResponse(
             json.dumps(album_url_list)
             )
+
+@csrf_exempt
+def delete_album(request):
+    if request.is_ajax():
+        req = eval(request.body)
+        print(req)
+        print(req)
+        if request.method == 'POST':
+            album_to_delete = Album.objects.filter(author=request.user,name=req['album'])
+            album_to_delete.all().delete()
+            album_url_list = {'user_albums':[],'contr_albums':[]}
+            for name in Album.objects.all():
+                author = str(name.author)
+                if request.user == name.author:
+                    album_url_list['user_albums'].append({'urls':name.images,'name':name.name,'author':author})
+                user = str(request.user)
+                if user in name.users:
+                    album_url_list['contr_albums'].append({'urls':name.images,'name':name.name,'author':author})
+            print(album_url_list['user_albums'])
+            return HttpResponse(
+            json.dumps(album_url_list)
+            )

@@ -7,6 +7,7 @@ urlpatterns = [
     url(r'^$', views.post_list),
     url(r'^save/$', views.save_urls, name='save_urls'),
     url(r'^delete/$', views.delete_url, name='delete_url'),
+    url(r'^delete/album$', views.delete_album, name='delete_album'),
     url(r'^upload/$', views.upload_images, name='upload'),
     url(r'^get/$', views.get_albums, name='get_albums'),
     url(r'^get/user$', views.get_user, name='get_user'),
