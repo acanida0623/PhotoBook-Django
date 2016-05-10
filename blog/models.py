@@ -1,7 +1,6 @@
 from django.db import models
 from django.utils import timezone
 
-
 class Post(models.Model):
     author = models.ForeignKey('auth.User')
     title = models.CharField(max_length=200)
@@ -47,9 +46,9 @@ class New_User(models.Model):
 class Album(models.Model):
     author = models.ForeignKey('auth.User')
     users = models.CharField(max_length=2000)
-    images = models.CharField(max_length=2000)
+    images = models.ManyToManyField(Image)
     name = models.CharField(max_length=200)
     created_date = models.DateTimeField(default=timezone.now)
 
     def Publish(self):
-        self.save()    
+        self.save()

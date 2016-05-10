@@ -63,7 +63,9 @@ def new_album(request):
                 json.dumps(error)
                 )
         except:
-            new_album = Album(author=request.user,name=album_name,users=users,images="http://i.imgur.com/wFpjb8w.jpg")
+            new_album = Album(author=request.user,name=album_name,users=users)
+            new_album.save()
+            new_album.images.add("http://i.imgur.com/wFpjb8w.jpg")
             new_album.save()
             success = "Success!"
             return HttpResponse(
@@ -135,7 +137,7 @@ def save_urls(request):
                 if x.author == request.user or user in x.users:
                     url_list = Image(author=request.user,url=req['url'])
                     url_list.save()
-                    x.images += ","+req['url']
+                    x.images.add(url_list)
                     x.save()
             return HttpResponse( request )
 
@@ -148,14 +150,10 @@ def delete_url(request):
         if request.method == 'POST':
             for x in req['url']:
                 url_list = Image.objects.filter(author=request.user,url=x)
-                url_list.all().delete()
                 for album in Album.objects.filter(author=request.user,name=req['album']):
-                    alb_delete = ","+x
-                    alb2_delete = x+","
-                    album.images = album.images.replace(alb_delete,"")
+                    album.images.remove(url_list)
                     album.save()
-                    album.images = album.images.replace(alb2_delete,"")
-                    album.save()
+                url_list.all().delete()
             return HttpResponse( request )
 
 @csrf_exempt
@@ -180,14 +178,28 @@ def get_user(request):
 def get_albums(request):
     if request.is_ajax():
         if request.method == 'GET':
+            a1 = Album(Album(author=request.user,name="whatever",users="none"))
+            a1.save()
+            a1.images.add("http://i.imgur.com/wFpjb8w.jpg")
+            a1.save()
             album_url_list = {'user_albums':[],'contr_albums':[]}
             for name in Album.objects.all():
                 author = str(name.author)
                 if request.user == name.author:
-                    album_url_list['user_albums'].append({'urls':name.images,'name':name.name,'author':author})
+                    urls = list(name.images.all())
+                    print("123")
+                    print(urls)
+                    images = []
+                    for x in urls:
+                        images.append(x)
+                    album_url_list['user_albums'].append({'urls':images,'name':name.name,'author':author})
                 user = str(request.user)
                 if user in name.users:
-                    album_url_list['contr_albums'].append({'urls':name.images,'name':name.name,'author':author})
+                    urls2 = list(name.images.all())
+                    images2 = []
+                    for x in urls2:
+                        images2.append(x)
+                    album_url_list['contr_albums'].append({'urls':images2,'name':name.name,'author':author})
             print(album_url_list['user_albums'])
             return HttpResponse(
             json.dumps(album_url_list)

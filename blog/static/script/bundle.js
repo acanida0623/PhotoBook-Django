@@ -204,8 +204,9 @@
 	    },
 
 	    keyDown: function keyDown(event) {
+	        console.log(event.keyCode);
 	        try {
-	            if (event.keyCode === 16) {
+	            if (event.keyCode === 17) {
 	                this.setState({
 	                    key_code: event.keyCode
 	                });
@@ -214,7 +215,7 @@
 	    },
 
 	    keyUp: function keyUp(event) {
-	        if (this.state.key_code === 16) {
+	        if (this.state.key_code === 17) {
 	            try {
 	                this.setState({
 	                    key_code: null
@@ -358,7 +359,7 @@
 
 	    onMouseDownHandler: function onMouseDownHandler() {
 	        console.log(this.state.album_author);
-	        if (this.props.key_code === 16 && this.state.album_author === this.props.current_user) {
+	        if (this.props.key_code === 17 && this.state.album_author === this.props.current_user) {
 	            this.state.select_source_method(this.state.album_name);
 	        } else {
 	            img_lst.length = 0;
