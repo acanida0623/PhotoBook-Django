@@ -269,6 +269,10 @@
 	        document.getElementById('trash').addEventListener('click', this.deleteAlbum, false);
 	    },
 
+	    componentWillUnmount: function componentWillUnmount() {
+	        document.getElementById('trash').removeEventListener('click', this.deleteAlbum, false);
+	    },
+
 	    componentWillMount: function componentWillMount() {
 	        this.getUserInfo();
 	    },
@@ -495,6 +499,9 @@
 	        window.addEventListener("keydown", this.keyDown, false);
 	        window.addEventListener("keyup", this.keyUp, false);
 	        document.getElementById('trash').addEventListener('click', this.deleteImgs, false);
+	    },
+	    componentWillUnmount: function componentWillUnmount() {
+	        document.getElementById('trash').removeEventListener('click', this.deleteImgs, false);
 	    },
 	    componentWillMount: function componentWillMount() {
 	        this.getUserInfo();
@@ -789,6 +796,7 @@
 	            image: base64 // base64 string, not a data URI
 	        }
 	    }).done(function (res) {
+	        alert();
 	        var link = res.data.link;
 	        // replace_temp_img(link);
 	        update_server_url(res, album, author, link);

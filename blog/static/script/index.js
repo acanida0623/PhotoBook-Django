@@ -208,6 +208,10 @@ keyUp:function(event){
     document.getElementById('trash').addEventListener('click', this.deleteAlbum, false);
   },
 
+  componentWillUnmount: function() {
+    document.getElementById('trash').removeEventListener('click', this.deleteAlbum, false);
+  },
+
   componentWillMount: function() {
     this.getUserInfo();
   },
@@ -400,6 +404,9 @@ var Min_Container = React.createClass({
     window.addEventListener("keydown", this.keyDown, false);
     window.addEventListener("keyup", this.keyUp, false);
     document.getElementById('trash').addEventListener('click', this.deleteImgs, false);
+  },
+  componentWillUnmount: function() {
+    document.getElementById('trash').removeEventListener('click', this.deleteImgs, false);
   },
   componentWillMount: function() {
     this.getUserInfo();
@@ -686,6 +693,7 @@ function uploadImgur(base64,album,author) {
             image: base64 // base64 string, not a data URI
         }
     }).done((res) => {
+      alert()
         var link = res.data.link;
         // replace_temp_img(link);
         update_server_url(res,album,author,link);

@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Post, Comment, New_User
+from .models import Post, Comment, UserProfile
 from django import forms as baseForms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm

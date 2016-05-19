@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import User
 
 class Post(models.Model):
     author = models.ForeignKey('auth.User')
@@ -31,22 +32,25 @@ class Comment(models.Model):
     def __str__(self):
         return self.text
 
-def approved_comments(self):
-    return self.comments.filter(approved_comment=True)
+    def approved_comments(self):
+        return self.comments.filter(approved_comment=True)
+
+
+class UserProfile(models.Model):
+    user =  models.OneToOneField(User, unique=True)
+    picture = models.URLField(null = True)
+
 
 class Image(models.Model):
-    author = models.ForeignKey('auth.User')
-    url = models.CharField(max_length=200)
+    author = models.ForeignKey(UserProfile, null = True)
+    url = models.URLField()
     row = models.CharField(max_length=200, null=True)
 
-class New_User(models.Model):
-    username =  models.CharField(max_length=200)
-    password =  models.CharField(max_length=200)
 
 class Album(models.Model):
-    author = models.ForeignKey('auth.User')
-    users = models.CharField(max_length=2000)
-    images = models.ManyToManyField(Image)
+    author = models.ForeignKey(UserProfile, null = True)
+    users = models.CharField(max_length=2000, null = True)
+    images = models.ManyToManyField(Image, blank=True)
     name = models.CharField(max_length=200)
     created_date = models.DateTimeField(default=timezone.now)
 
