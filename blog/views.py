@@ -29,13 +29,18 @@ def post_detail(request, pk):
 def new_account(request):
     form = UserCreationForm(request.POST)
     return render(request, 'blog/new_user.html',{'form': form})
-
+@csrf_exempt
 def submit_new_account(request):
     if request.method == "POST":
         form = UserCreationForm(request.POST)
         if form.is_valid():
             form.save(commit=True)
-    return redirect('blog.views.post_list')
+            return redirect('blog.views.post_list')
+    else:
+        form = UserCreationForm()
+    return render(request,'blog/new_user.html', {'form': form})
+
+
 
 def upload_images(request):
     return render(request, 'blog/upload.html')
@@ -65,7 +70,9 @@ def new_album(request):
         except:
             new_album = Album(author=request.user,name=album_name,users=users)
             new_album.save()
-            new_album.images.add("http://i.imgur.com/wFpjb8w.jpg")
+            new_image = Image(url="http://i.imgur.com/wFpjb8w.jpg",author=request.user)
+            new_image.save()
+            new_album.images.add(new_image)
             new_album.save()
             success = "Success!"
             return HttpResponse(
@@ -127,19 +134,22 @@ def comment_remove(request, pk):
 @csrf_exempt
 def save_urls(request):
     if request.is_ajax():
-        print('1')
         req = eval(request.body)
-        print(req['url'])
         if request.method == 'POST':
             album = Album.objects.filter(name=req['album'])
             user = str(request.user)
+            images = []
             for x in album:
                 if x.author == request.user or user in x.users:
                     url_list = Image(author=request.user,url=req['url'])
                     url_list.save()
                     x.images.add(url_list)
                     x.save()
-            return HttpResponse( request )
+                    img = x.images.all()
+                    for y in img:
+                        images.append(y.url)
+            done = {'album':req['album'], 'images':images, 'author':user}
+            return HttpResponse( json.dumps(done) )
 
 @csrf_exempt
 def delete_url(request):
@@ -149,11 +159,12 @@ def delete_url(request):
         print(req['url'])
         if request.method == 'POST':
             for x in req['url']:
-                url_list = Image.objects.filter(author=request.user,url=x)
-                for album in Album.objects.filter(author=request.user,name=req['album']):
-                    album.images.remove(url_list)
-                    album.save()
-                url_list.all().delete()
+                x = str(x)
+                url_list = Image.objects.get(author=request.user,url=x)
+                album = Album.objects.get(author=request.user,name=req['album'])
+                album.images.remove(url_list)
+                album.save()
+                url_list.delete()
             return HttpResponse( request )
 
 @csrf_exempt
@@ -178,51 +189,49 @@ def get_user(request):
 def get_albums(request):
     if request.is_ajax():
         if request.method == 'GET':
-            a1 = Album(Album(author=request.user,name="whatever",users="none"))
-            a1.save()
-            a1.images.add("http://i.imgur.com/wFpjb8w.jpg")
-            a1.save()
-            album_url_list = {'user_albums':[],'contr_albums':[]}
-            for name in Album.objects.all():
-                author = str(name.author)
-                if request.user == name.author:
-                    urls = list(name.images.all())
-                    print("123")
-                    print(urls)
-                    images = []
-                    for x in urls:
-                        images.append(x)
-                    album_url_list['user_albums'].append({'urls':images,'name':name.name,'author':author})
-                user = str(request.user)
-                if user in name.users:
-                    urls2 = list(name.images.all())
-                    images2 = []
-                    for x in urls2:
-                        images2.append(x)
-                    album_url_list['contr_albums'].append({'urls':images2,'name':name.name,'author':author})
-            print(album_url_list['user_albums'])
+            user = str(request.user)
+            album_url_list = fill_albums(user)
+            print(album_url_list)
+            print("123")
             return HttpResponse(
             json.dumps(album_url_list)
             )
+
+def fill_albums(user):
+    album_url_list = {'user_albums':[],'contr_albums':[]}
+    for name in Album.objects.all():
+        author = str(name.author)
+        print(user)
+        print(author)
+        if user == author:
+            urls = list(name.images.all())
+            print("123")
+            print(urls)
+            images = []
+            for x in urls:
+                images.append(x.url)
+                print(images)
+                print('1')
+                print(images)
+            album_url_list['user_albums'].append({'urls':images,'name':name.name,'author':author})
+        if user in name.users:
+            urls2 = list(name.images.all())
+            images2 = []
+            for x in urls2:
+                images2.append(x.url)
+            album_url_list['contr_albums'].append({'urls':images2,'name':name.name,'author':author})
+    return (album_url_list)
 
 @csrf_exempt
 def delete_album(request):
     if request.is_ajax():
         req = eval(request.body)
-        print(req)
-        print(req)
+
         if request.method == 'POST':
             album_to_delete = Album.objects.filter(author=request.user,name=req['album'])
             album_to_delete.all().delete()
-            album_url_list = {'user_albums':[],'contr_albums':[]}
-            for name in Album.objects.all():
-                author = str(name.author)
-                if request.user == name.author:
-                    album_url_list['user_albums'].append({'urls':name.images,'name':name.name,'author':author})
-                user = str(request.user)
-                if user in name.users:
-                    album_url_list['contr_albums'].append({'urls':name.images,'name':name.name,'author':author})
-            print(album_url_list['user_albums'])
+            user = str(request.user)
+            album_url_list = fill_albums(user)
             return HttpResponse(
             json.dumps(album_url_list)
             )

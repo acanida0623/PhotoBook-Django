@@ -20,13 +20,10 @@ class CommentForm(forms.ModelForm):
 
 
 class UserCreationForm(forms.ModelForm):
-    """
-    A form that creates a user, with no privileges, from the given username and
-    password.
-    """
     error_messages = {
         'duplicate_username': ("A user with that username already exists."),
         'password_mismatch': ("The two password fields didn't match."),
+        'invalid_email': ('Email addresses do not match.'),
     }
     username = forms.RegexField(label=("Username"), max_length=30,
         regex=r'^[\w.@+-]+$',
@@ -35,6 +32,8 @@ class UserCreationForm(forms.ModelForm):
         error_messages={
             'invalid': ("This value may contain only letters, numbers and "
                          "@/./+/-/_ characters.")})
+    email = forms.EmailField(label=("Email"))
+    confirm = forms.EmailField(label=("Confirm Email"))
     password1 = forms.CharField(label=("Password"),
         widget=forms.PasswordInput)
     password2 = forms.CharField(label=("Password confirmation"),
@@ -45,23 +44,38 @@ class UserCreationForm(forms.ModelForm):
         model = User
         fields = ("username",)
 
-    def clean_username(self):
-        # Since User.username is unique, this check is redundant,
-        # but it sets a nicer error message than the ORM. See #13147.
-        username = self.cleaned_data["username"]
+    def clean(self):
+        username = self.cleaned_data.get("username")
+        print("x {x}".format(x=username))
+        dupe = True
         try:
             User._default_manager.get(username=username)
         except User.DoesNotExist:
-            return username
-        raise forms.ValidationError(self.error_messages['duplicate_username'])
+            dupe = False
+        if dupe:
+            raise forms.ValidationError(self.error_messages['duplicate_username'])
+        cleaned_data = super(UserCreationForm, self).clean()
+        email = cleaned_data.get("email")
+        confirm_email = cleaned_data.get("confirm")
+        print(email)
+        print(confirm_email)
+        if email and confirm_email:
+        # Only do something if both fields are valid so far.
+            if email != confirm_email:
+                raise forms.ValidationError("Emails do not match.")
+            if email != confirm_email:
+                raise forms.ValidationError("Emails do not match.")
 
-    def clean_password2(self):
         password1 = self.cleaned_data.get("password1")
         password2 = self.cleaned_data.get("password2")
         if password1 and password2 and password1 != password2:
             raise forms.ValidationError(
                 self.error_messages['password_mismatch'])
-        return password2
+
+
+
+        return cleaned_data
+
 
     def save(self, commit=True):
         user = super(UserCreationForm, self).save(commit=False)

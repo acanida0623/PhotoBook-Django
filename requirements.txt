@@ -2,6 +2,7 @@ Babel==2.3.4
 dj-database-url==0.4.1
 Django==1.9.5
 django-password-validation==0.1.1
+django-widget-tweaks==1.4.1
 gunicorn==19.4.5
 optional-django==0.3.0
 psycopg2==2.6.1
