@@ -7,6 +7,7 @@ from .forms import PostForm, CommentForm, UserCreationForm
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
+from django.db.models import Count
 import json
 
 
@@ -68,7 +69,7 @@ def new_album(request):
             new_album.save()
             print("TEST")
             print(new_album.author)
-            new_image = Image(url="http://i.imgur.com/wFpjb8w.jpg",author=user)
+            new_image = Image(url="http://i.imgur.com/wFpjb8w.jpg",author=user,album_name=new_album.name)
             new_image.save()
             new_album.images.add(new_image)
             new_album.save()
@@ -137,11 +138,10 @@ def save_urls(request):
             album = Album.objects.filter(name=req['album'])
             user = str(request.user)
             user_profile = UserProfile.objects.get(user__username=request.user)
-
             images = []
             for x in album:
                 if x.author == user_profile or user in x.users:
-                    url_list = Image(author=user_profile,url=req['url'])
+                    url_list = Image(author=user_profile,url=req['url'],album_name=req['album'])
                     url_list.save()
                     print(url_list.url)
                     x.images.add(url_list)
@@ -162,7 +162,7 @@ def delete_url(request):
             user = UserProfile.objects.get(user__username=request.user)
             for x in req['url']:
                 x = str(x)
-                url_list = Image.objects.get(author=user,url=x)
+                url_list = Image.objects.get(author=user,url=x,album_name=req['album'])
                 album = Album.objects.get(author=user,name=req['album'])
                 album.images.remove(url_list)
                 album.save()
@@ -193,18 +193,16 @@ def get_albums(request):
         if request.method == 'GET':
             user = str(request.user)
             album_url_list = fill_albums(user)
-            print(album_url_list)
-            print("123")
             return HttpResponse(
             json.dumps(album_url_list)
             )
 
 def fill_albums(user):
     album_url_list = {'user_albums':[],'contr_albums':[]}
-    for name in Album.objects.all():
+    for name in Album.objects.annotate(entry_count=Count('images')).order_by('-entry_count'):
         author = str(name.author.user)
         if user == author:
-            urls = list(name.images.all())
+            urls = list(name.images.all().order_by('-created_date'))
             images = []
             for x in urls:
                 images.append(x.url)
@@ -223,8 +221,11 @@ def delete_album(request):
         req = eval(request.body)
         if request.method == 'POST':
             user = UserProfile.objects.get(user__username=request.user)
-            album_to_delete = Album.objects.filter(author=user,name=req['album'])
-            album_to_delete.all().delete()
+            album_to_delete = Album.objects.get(author=user,name=req['album'])
+            imgs = list(album_to_delete.images.all().order_by('-created_date'))
+            for x in imgs:
+                x.delete()
+            album_to_delete.delete()
             user = str(request.user)
             album_url_list = fill_albums(user)
             return HttpResponse(

@@ -55,6 +55,12 @@
 	var temp_count = 0;
 	var load = null;
 
+	$().ready(function () {
+	    $(document).mousemove(function (e) {
+	        $('#trash_follow').css({ 'top': e.pageY + 1, 'left': e.pageX + 1 });
+	    });
+	});
+
 	function Load(selected, author, images) {
 	    this.album_selected = selected;
 	    this.album_author = author;
@@ -214,26 +220,39 @@
 
 	    getInitialState: function getInitialState() {
 	        return {
+	            delete_album: false,
 	            user_albums: this.props.user_albums,
 	            contr_albums: this.props.contr_albums,
-	            album_selected: this.props.album_selected,
+	            album_selected: null,
 	            current_user: this.props.current_user,
-	            key_code: null
+	            key_code: null,
+	            class_name: null
 	        };
 	    },
 
 	    keyDown: function keyDown(event) {
 	        try {
-	            if (event.keyCode === 17) {
-	                this.setState({
-	                    key_code: event.keyCode
-	                });
+	            switch (event.keyCode) {
+	                case 16:
+	                    this.setState({
+	                        key_code: event.keyCode
+	                    });
+	                    break;
+	                case 27:
+	                    document.getElementById("trash_follow").style.visibility = 'hidden';
+	                    document.body.style.cursor = "default";
+	                    document.getElementById("trash").style.visibility = 'visible';
+
+	                    this.setState({
+	                        delete_album: false
+	                    });
+	                    break;
 	            }
 	        } catch (x) {}
 	    },
 
 	    keyUp: function keyUp(event) {
-	        if (this.state.key_code === 17) {
+	        if (this.state.key_code === 16) {
 	            try {
 	                this.setState({
 	                    key_code: null
@@ -260,7 +279,16 @@
 	    },
 
 	    deleteAlbum: function deleteAlbum() {
-	        delete_album(this.state.album_selected);
+	        if (this.state.album_selected === null) {
+	            document.getElementById("trash").style.visibility = 'collapse';
+	            document.getElementById("trash_follow").style.visibility = 'visible';
+	            document.body.style.cursor = "none";
+	            this.setState({
+	                delete_album: true
+	            });
+	        } else {
+	            delete_album(this.state.album_selected);
+	        }
 	    },
 
 	    componentDidMount: function componentDidMount() {
@@ -277,12 +305,23 @@
 	        this.getUserInfo();
 	    },
 
+	    mouseDownHandler: function mouseDownHandler() {
+	        document.getElementById("trash_follow").style.visibility = 'hidden';
+	        document.body.style.cursor = "default";
+	        document.getElementById("trash").style.visibility = 'visible';
+	    },
+
 	    render: function render() {
 	        var _this2 = this;
 
+	        if (this.props.user_albums[0].albums.length > 2) {
+	            var class_name = "main_table";
+	        } else {
+	            var class_name = "main_table_1row";
+	        }
 	        return React.createElement(
 	            'div',
-	            { className: 'table_holder' },
+	            { className: 'table_holder', onMouseDown: this.mouseDownHandler },
 	            React.createElement(
 	                'h1',
 	                null,
@@ -290,12 +329,12 @@
 	            ),
 	            React.createElement(
 	                'table',
-	                { id: 'main_table', className: 'main_table' },
+	                { id: 'main_table', className: class_name },
 	                React.createElement(
 	                    'tbody',
 	                    null,
 	                    this.props.user_albums.map(function (src, i) {
-	                        return React.createElement(Album_Row, { images: _this2.props.user_albums, key_code: _this2.state.key_code, current_user: _this2.state.current_user, album_selected: _this2.state.album_selected, select_source_method: _this2.updateSelectedImg, row: i, key: i });
+	                        return React.createElement(Album_Row, { delete_album: _this2.state.delete_album, images: _this2.props.user_albums, key_code: _this2.state.key_code, current_user: _this2.state.current_user, album_selected: _this2.state.album_selected, select_source_method: _this2.updateSelectedImg, row: i, key: i });
 	                    })
 	                )
 	            ),
@@ -333,20 +372,22 @@
 	                this.props.images[row].albums.map(function (x) {
 	                    var img_urls = x.urls;
 
-	                    var album_cover = img_urls[0];
+	                    var random = Math.floor(Math.random() * (img_urls.length - 1 - 0) + 0);
+
+	                    var album_cover = img_urls[random];
 	                    var album_name = x.name;
 	                    var album_author = x.author;
 	                    if (album_name === _this3.props.album_selected) {
 	                        return React.createElement(
 	                            'td',
 	                            null,
-	                            React.createElement(Album_IMG, { select_source_method: _this3.props.select_source_method, current_user: _this3.props.current_user, key_code: _this3.props.key_code, album_author: album_author, album_name: album_name, class_name: "col-sm album_img selected", urls: img_urls, img_source: album_cover })
+	                            React.createElement(Album_IMG, { delete_album: _this3.props.delete_album, select_source_method: _this3.props.select_source_method, current_user: _this3.props.current_user, key_code: _this3.props.key_code, album_author: album_author, album_name: album_name, class_name: "col-sm album_img selected", urls: img_urls, img_source: album_cover })
 	                        );
 	                    } else {
 	                        return React.createElement(
 	                            'td',
 	                            null,
-	                            React.createElement(Album_IMG, { select_source_method: _this3.props.select_source_method, current_user: _this3.props.current_user, key_code: _this3.props.key_code, album_author: album_author, album_name: album_name, class_name: "col-sm album_img", urls: img_urls, img_source: album_cover })
+	                            React.createElement(Album_IMG, { delete_album: _this3.props.delete_album, select_source_method: _this3.props.select_source_method, current_user: _this3.props.current_user, key_code: _this3.props.key_code, album_author: album_author, album_name: album_name, class_name: "col-sm album_img", urls: img_urls, img_source: album_cover })
 	                        );
 	                    }
 	                })
@@ -362,6 +403,7 @@
 
 	    getInitialState: function getInitialState() {
 	        return {
+	            delete_album: this.props.delete_album,
 	            hidden: 'hidden',
 	            album_author: this.props.album_author,
 	            album_name: this.props.album_name,
@@ -369,7 +411,6 @@
 	            class_name: this.props.class_name,
 	            urls: this.props.urls,
 	            select_source_method: this.props.select_source_method,
-
 	            key_code: this.props.key_code,
 	            current_user: this.props.current_user
 	        };
@@ -379,27 +420,35 @@
 	    onMouseLeaveHandler: function onMouseLeaveHandler() {},
 
 	    onMouseDownHandler: function onMouseDownHandler() {
-	        if (this.props.key_code === 17 && this.state.album_author === this.props.current_user) {
-	            this.state.select_source_method(this.state.album_name);
+	        if (this.props.delete_album) {
+	            delete_album(this.state.album_name);
+	            document.getElementById("trash").style.visibility = 'visible';
+	            document.getElementById("trash_follow").style.visibility = 'collapse';
+	            document.body.style.cursor = "default";
 	        } else {
-	            album_selected = this.state.album_name;
-	            album_author = this.state.album_author;
-	            if (load === null) {
-	                load = new Load(this.state.album_name, this.state.album_author, this.state.urls);
-
-	                load.listenForDrop();
+	            if (this.props.key_code === 16 && this.state.album_author === this.props.current_user) {
+	                this.state.select_source_method(this.state.album_name);
 	            } else {
-	                load.updateImages(this.state.urls);
-	                load.updateSelected(this.state.album_name, this.state.album_author);
+	                album_selected = this.state.album_name;
+	                album_author = this.state.album_author;
+	                if (load === null) {
+	                    load = new Load(this.state.album_name, this.state.album_author, this.state.urls);
+
+	                    load.listenForDrop();
+	                } else {
+	                    load.updateImages(this.state.urls);
+	                    load.updateSelected(this.state.album_name, this.state.album_author);
+	                }
+	                var img_urls = update_img_list(this.state.urls);
+	                remount_left(this.state.album_name, this.state.album_author, img_urls);
 	            }
-	            var img_urls = update_img_list(this.state.urls);
-	            remount_left(this.state.album_name, this.state.album_author, img_urls);
 	        }
 	    },
 
 	    render: function render() {
 	        var divStyle = {
 	            backgroundImage: 'url(' + this.props.img_source + ')'
+
 	        };
 
 	        return React.createElement(
@@ -796,7 +845,7 @@
 	            image: base64 // base64 string, not a data URI
 	        }
 	    }).done(function (res) {
-	        alert();
+
 	        var link = res.data.link;
 	        // replace_temp_img(link);
 	        update_server_url(res, album, author, link);

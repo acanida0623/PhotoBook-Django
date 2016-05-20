@@ -44,14 +44,15 @@ class UserProfile(models.Model):
 class Image(models.Model):
     author = models.ForeignKey(UserProfile, null = True)
     url = models.URLField()
+    album_name = models.CharField(max_length=200, null = True)
     row = models.CharField(max_length=200, null=True)
-
+    created_date = models.DateTimeField(default=timezone.now)
 
 class Album(models.Model):
     author = models.ForeignKey(UserProfile, null = True)
     users = models.CharField(max_length=2000, null = True)
-    images = models.ManyToManyField(Image, blank=True)
-    name = models.CharField(max_length=200)
+    images = models.ManyToManyField(Image)
+    name = models.CharField(max_length=200, unique=True)
     created_date = models.DateTimeField(default=timezone.now)
 
     def Publish(self):
