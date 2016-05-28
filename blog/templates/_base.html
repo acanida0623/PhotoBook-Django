@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
     <link href="//db.onlinewebfonts.com/c/0e2b0519b67be85165679ddd038fea4a?family=Chela+One" rel="stylesheet" type="text/css"/>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
-    <link rel="stylesheet" href="{% static '1920res.css' %}" />
+
     <link rel="stylesheet" href="{% static 'style.css' %}" />
     <link rel="stylesheet" href="{% static 'main.css' %}" />
     <link rel="stylesheet" href="{% static 'new_album.css' %}" />
@@ -14,6 +14,7 @@
   </head>
 
   <body>
+      {% csrf_token %}
       <div id="trash_follow"></div>
       <div class="page-header" id="page-header" >
         {% if user.is_authenticated %}
@@ -37,7 +38,7 @@
           <div class="row">
               <div class="col-md-8">
               {% block content %}
-              {% csrf_token %}
+
               {% endblock %}
               </div>
           </div>

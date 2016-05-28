@@ -25,7 +25,7 @@ AWS_ACCESS_KEY = os.environ.get('AWS_ACCESS_KEY')
 AWS_SECRET_KEY = os.environ.get('AWS_SECRET_KEY')
 AWS_BUCKET_NAME = os.environ.get('S3_BUCKET_NAME')
 
-@csrf_exempt
+
 def upload_img(request):
     if request.is_ajax():
         if request.method == 'POST':
@@ -58,7 +58,6 @@ def login_home(request):
     return render(request, 'login.html', {
     })
 
-@csrf_exempt
 def login_user(request):
     username = ''
     password = ''
@@ -94,7 +93,6 @@ def new_account(request):
     return render(request, 'new_user.html',{'form': form})
 
 
-@csrf_exempt
 def submit_new_account(request):
     if request.method == "POST":
         form = UserCreationForm(request.POST)
@@ -112,7 +110,6 @@ def upload_images(request):
 
 
 @login_required
-@csrf_exempt
 def new_album(request):
     user = UserProfile.objects.get(user__username=request.user)
     req = eval(request.body)
@@ -140,7 +137,6 @@ def new_album(request):
             json.dumps(success)
             )
 
-@csrf_exempt
 def save_urls(request):
     if request.is_ajax():
         req = eval(request.body)
@@ -165,7 +161,6 @@ def save_urls(request):
             done = {'album':req['album'], 'images':images, 'author':user, 'albums':album_url_list}
             return HttpResponse( json.dumps(done) )
 
-@csrf_exempt
 def delete_url(request):
     if request.is_ajax():
         req = eval(request.body)
@@ -182,7 +177,6 @@ def delete_url(request):
                 url_list.delete()
             return HttpResponse( request )
 
-@csrf_exempt
 def get_urls(request):
 
     if request.is_ajax():
@@ -232,7 +226,6 @@ def fill_albums(user):
             album_url_list['contr_albums'].append({'urls':images2,'name':name.name,'author':author})
     return (album_url_list)
 
-@csrf_exempt
 def delete_album(request):
     if request.is_ajax():
         req = eval(request.body)

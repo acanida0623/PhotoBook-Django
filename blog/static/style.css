@@ -25,6 +25,21 @@ table {
 
 }
 
+@media screen and (min-width:100px){
+  .main_img_container{
+    position: fixed;
+    top: 15em;
+    right: 40em;
+    height: 35em;
+    border-style: inset;
+    width: 100em;
+    overflow: hidden;
+    background-color: rgba(230, 230, 230, 0.8);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: 50% 50%;
+  }
+}
 
 
 .smaller {

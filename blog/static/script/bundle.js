@@ -90,6 +90,32 @@
 	      $shared.css("visibility", "visible");
 	    }
 	  });
+	  // Set up CSRF TOKEN for Ajax requests
+	  function getCookie(name) {
+	    var cookieValue = null;
+	    if (document.cookie && document.cookie != '') {
+	      var cookies = document.cookie.split(';');
+	      for (var i = 0; i < cookies.length; i++) {
+	        var cookie = jQuery.trim(cookies[i]);
+	        // Does this cookie string begin with the name we want?
+
+	        if (cookie.substring(0, name.length + 1) == name + '=') {
+	          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+	          break;
+	        }
+	      }
+	    }
+	    return cookieValue;
+	  }
+
+	  $.ajaxSetup({
+	    beforeSend: function beforeSend(xhr, settings) {
+	      if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+	        // Only send the token to relative URLs i.e. locally.
+	        xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+	      }
+	    }
+	  });
 	});
 
 	function Load(selected, author, images, user_albums, contr_albums) {
@@ -552,6 +578,7 @@
 	    //   key_code:null
 	    // })
 	  },
+
 	  backAlbums: function backAlbums() {
 	    album_lst.length = 0;
 	    img_lst.length = 0;
@@ -562,6 +589,7 @@
 	  },
 
 	  nextImg: function nextImg() {
+	    alert("confused");
 	    var current_index = album_lst.indexOf(this.state.main_img);
 	    var new_img = "";
 	    if (current_index !== album_lst.length - 1) {
@@ -778,33 +806,51 @@
 	  getInitialState: function getInitialState() {
 	    return {
 	      source: this.props.img_source,
-	      images: this.props.images
+	      nextImg: this.props.nextImg,
+	      previousImg: this.props.previousImg,
+	      full_screen: false
 	    };
 	  },
 
-	  componentDidMount: function componentDidMount() {
-	    // var intervalId = setInterval(() => {
-	    //     this.rotate_images();
-	    // }, 3000);
-	    // this.setState({ intervalId: intervalId });
+	  nextImg: function nextImg() {
+	    if (window.innerHeight == screen.height) {
+	      var current_index = album_lst.indexOf(this.state.source);
+	      var new_img = "";
+	      if (current_index !== album_lst.length - 1) {
+	        new_img = album_lst[current_index + 1];
+	      } else {
+	        new_img = album_lst[0];
+	      }
+	      this.setState({
+	        source: new_img
+	      });
+	    } else {
+
+	      this.state.nextImg();
+	    }
 	  },
 
-	  componentWillUnmount: function componentWillUnmount() {
-	    // clearInterval(this.state.intervalId);
+	  previousImg: function previousImg() {
+	    if (window.innerHeight == screen.height) {
+	      alert("YES");
+	      var current_index = album_lst.indexOf(this.state.source);
+	      var new_img = "";
+	      if (current_index > 0) {
+	        new_img = album_lst[current_index - 1];
+	      } else if (current_index === 0 && album_lst.length === 1) {} else {
+	        new_img = album_lst[album_lst.length - 1];
+	      }
+	      this.setState({
+	        source: new_img
+	      });
+	    } else {
+	      this.state.previousImg();
+	    }
 	  },
 
-	  onMouseDownHandler: function onMouseDownHandler() {
-	    // var elem = document.getElementById("main_img_container");
-	    // if (elem.requestFullscreen) {
-	    //   elem.requestFullscreen();
-	    // } else if (elem.msRequestFullscreen) {
-	    //   elem.msRequestFullscreen();
-	    // } else if (elem.mozRequestFullScreen) {
-	    //   elem.mozRequestFullScreen();
-	    // } else if (elem.webkitRequestFullscreen) {
-	    //   elem.webkitRequestFullscreen();
-	    // }
-	  },
+	  componentDidMount: function componentDidMount() {},
+
+	  onMouseDownHandler: function onMouseDownHandler() {},
 
 	  rotate_images: function rotate_images() {
 	    var index = img_lst.indexOf(this.state.source);
@@ -824,11 +870,15 @@
 	    return React.createElement(
 	      'div',
 	      { style: divStyle, id: 'main_img_container', onMouseDown: this.onMouseDownHandler, className: "main_img_container" },
-	      React.createElement(Next_IMG_Button, { nextImg: this.props.nextImg }),
-	      React.createElement(Previous_IMG_Button, { previousImg: this.props.previousImg })
+	      React.createElement(Next_IMG_Button, { nextImg: this.nextImg }),
+	      React.createElement(Previous_IMG_Button, { previousImg: this.previousImg })
 	    );
 	  }
 	});
+
+	// var Full_Screen_Button = React.createClass ({
+	//
+	// })
 
 	var Next_IMG_Button = React.createClass({
 	  displayName: 'Next_IMG_Button',
@@ -992,6 +1042,7 @@
 	    method: 'POST',
 	    url: '/upload/s3/',
 	    data: {
+	      csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken').value,
 	      image: base64, // base64 string, not a data URI
 	      mime_type: mime_type
 	    }
@@ -1017,6 +1068,7 @@
 	      Authorization: 'Client-ID 4d075e399079cdc'
 	    },
 	    data: {
+
 	      image: base64
 	    }
 	  }).done(function (res) {

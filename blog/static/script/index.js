@@ -42,7 +42,33 @@ $().ready(function(){
       $shared.css("visibility", "visible");
     }
   });
+// Set up CSRF TOKEN for Ajax requests
+      function getCookie(name)
+    {
+        var cookieValue = null;
+        if (document.cookie && document.cookie != '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
 
+                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    $.ajaxSetup({
+         beforeSend: function(xhr, settings) {
+             if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                 // Only send the token to relative URLs i.e. locally.
+                 xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+             }
+         }
+    });
 
 })
 
@@ -410,7 +436,6 @@ var Album_IMG = React.createClass({
 
       return  <div>
                 <div className={album_title_box}><p>{this.props.album_name}</p></div>
-
                 <div onMouseDown={this.onMouseDownHandler} onMouseEnter={this.onMouseEnterHandler} onMouseLeave={this.onMouseLeaveHandler} className={img_size} id={"img_" + this.props.img_number} style={divStyle}>
                 </div>
               </div>
@@ -466,6 +491,7 @@ var Min_Container = React.createClass({
     //   key_code:null
     // })
   },
+
   backAlbums: function () {
     album_lst.length = 0;
     img_lst.length = 0;
@@ -476,6 +502,7 @@ var Min_Container = React.createClass({
   },
 
   nextImg: function () {
+    alert("confused")
     var current_index = album_lst.indexOf(this.state.main_img);
     var new_img = "";
     if (current_index !== album_lst.length - 1) {
@@ -663,32 +690,55 @@ var Rotate_IMG = React.createClass({
     getInitialState: function() {
         return {
             source: this.props.img_source,
-            images: this.props.images
+            nextImg: this.props.nextImg,
+            previousImg: this.props.previousImg,
+            full_screen: false
         }
     },
 
-    componentDidMount: function() {
-        // var intervalId = setInterval(() => {
-        //     this.rotate_images();
-        // }, 3000);
-        // this.setState({ intervalId: intervalId });
+    nextImg: function() {
+      if ( window.innerHeight == screen.height) {
+        var current_index = album_lst.indexOf(this.state.source);
+        var new_img = "";
+        if (current_index !== album_lst.length - 1) {
+          new_img = album_lst[current_index+1];
+        } else {
+          new_img = album_lst[0];
+        }
+        this.setState({
+          source: new_img
+        })
+      } else {
+
+        this.state.nextImg();
+      }
     },
 
-    componentWillUnmount: function() {
-        // clearInterval(this.state.intervalId);
+    previousImg: function() {
+      if ( window.innerHeight == screen.height) {
+        alert("YES")
+        var current_index = album_lst.indexOf(this.state.source);
+        var new_img = "";
+        if (current_index > 0) {
+          new_img = album_lst[current_index-1];
+        } else if (current_index === 0 && album_lst.length === 1) {
+        } else {
+          new_img = album_lst[album_lst.length - 1];
+        }
+        this.setState({
+          source: new_img
+        })
+      } else {
+        this.state.previousImg();
+      }
+
+    },
+
+    componentDidMount: function() {
     },
 
     onMouseDownHandler: function() {
-      // var elem = document.getElementById("main_img_container");
-      // if (elem.requestFullscreen) {
-      //   elem.requestFullscreen();
-      // } else if (elem.msRequestFullscreen) {
-      //   elem.msRequestFullscreen();
-      // } else if (elem.mozRequestFullScreen) {
-      //   elem.mozRequestFullScreen();
-      // } else if (elem.webkitRequestFullscreen) {
-      //   elem.webkitRequestFullscreen();
-      // }
+
     },
 
     rotate_images: function() {
@@ -707,11 +757,16 @@ var Rotate_IMG = React.createClass({
             backgroundImage: 'url(' + this.state.source + ')'
         };
         return <div style={divStyle} id="main_img_container" onMouseDown = {this.onMouseDownHandler} className={"main_img_container"}>
-                <Next_IMG_Button nextImg = {this.props.nextImg}  />
-                <Previous_IMG_Button previousImg = {this.props.previousImg} />
+                <Next_IMG_Button nextImg = {this.nextImg}  />
+                <Previous_IMG_Button previousImg = {this.previousImg} />
+
               </div>
     }
 });
+
+// var Full_Screen_Button = React.createClass ({
+//
+// })
 
 var Next_IMG_Button = React.createClass ({
   getInitialState: function () {
@@ -880,6 +935,7 @@ function uploadImg(base64,album,author,mime_type) {
         method: 'POST',
         url: '/upload/s3/',
         data: {
+            csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken').value,
             image: base64, // base64 string, not a data URI
             mime_type: mime_type
         }
@@ -905,6 +961,7 @@ function uploadImgur(base64,album,author) {
             Authorization: 'Client-ID 4d075e399079cdc'
         },
         data: {
+
             image: base64
         }
     }).done((res) => {
