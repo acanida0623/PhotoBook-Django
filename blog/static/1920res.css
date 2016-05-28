@@ -1,0 +1,18 @@
+
+@media screen and (min-width: (1919px){
+  .main_img_container{
+    position: fixed;
+    top: 15em;
+    right: 20em;
+    height: 35em;
+    border-style: inset;
+    width: 40em;
+
+
+    overflow: hidden;
+    background-color: rgba(230, 230, 230, 0.8);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: 50% 50%;
+  }
+}

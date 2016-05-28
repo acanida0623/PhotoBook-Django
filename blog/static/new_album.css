@@ -4,7 +4,7 @@ input, textarea {
     outline: 0;
     font: normal 13px/100% Verdana, Tahoma, sans-serif;
     width: 200px;
-    background: #FFFFFF url('bg_form.png') left top repeat-x;
+
     background: -webkit-gradient(linear, left top, left 25, from(#FFFFFF), color-stop(4%, #EEEEEE), to(#FFFFFF));
     background: -moz-linear-gradient(top, #FFFFFF, #EEEEEE 1px, #FFFFFF 25px);
     box-shadow: rgba(0,0,0, 0.1) 0px 0px 8px;
@@ -21,17 +21,30 @@ input:focus, textarea:focus {
     }
 
 .form label,  {
-
     color: #999999;
     }
 
-.create_album {
-
-
+.name {
+  margin-left: 12vw;
+  margin-top: 5vh;
 }
 
+.users {
+  margin-left: 12vw;
+margin-top: 1vh;
+}
 
-@import url(https://fonts.googleapis.com/css?family=Roboto:300);
+.submit {
+  margin-left: 12vw;
+  margin-top: 1vh;
+}
+
+.create_album {
+  height: 8vh;
+  width: 30vw;
+  position: relative;
+  margin-left: 5vw;
+}
 
 .login-page {
   width: 360px;
@@ -49,7 +62,7 @@ input:focus, textarea:focus {
   box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
 }
 .form input {
-  font-family: "Roboto", sans-serif;
+  font-family:  sans-serif;
   outline: 0;
   background: #f2f2f2;
   width: 100%;
@@ -60,7 +73,7 @@ input:focus, textarea:focus {
   font-size: 14px;
 }
 .form button {
-  font-family: "Roboto", sans-serif;
+  font-family:  sans-serif;
   text-transform: uppercase;
   outline: 0;
   background: -webkit-linear-gradient(top,  #0067E3,#003473);
@@ -123,9 +136,6 @@ input:focus, textarea:focus {
   color: #EF3B3A;
 }
 body {
-
-
-  font-family: "Roboto", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
