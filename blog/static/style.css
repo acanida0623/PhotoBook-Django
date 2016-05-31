@@ -190,7 +190,8 @@ background-repeat: no-repeat;
 
 body {
   background-color: #FFFFFF;
-  border: 0;
+
+
   margin: 0;
   width: 98vw;
 	/*cursor: url('http://i.imgur.com/55WMSWY.png'), default;*/
@@ -361,7 +362,8 @@ z-index: 1;
     background-image: url("http://i.imgur.com/pnvKxMq.jpg");
     background-size: 100% 100%;
     background-repeat: no-repeat;
-    margin-top: 0;
+    top: 0;
+
     padding: 2em 0 2em 0;
     width:100vw;
     height: 11.98em;
@@ -413,9 +415,9 @@ z-index: 1;
     text-decoration: none;
 }
 
-.content {
+/*.content {
     margin-left: 40px;
-}
+}*/
 
 h1, h2, h3, h4 {
     font-family: 'Lobster', cursive;

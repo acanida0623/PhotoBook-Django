@@ -2,14 +2,16 @@
 
 <html>
   <head>
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+
     <link href="//db.onlinewebfonts.com/c/0e2b0519b67be85165679ddd038fea4a?family=Chela+One" rel="stylesheet" type="text/css"/>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+    <!-- <script src="https://fb.me/react-with-addons-0.13.3.min.js"></script> -->
+
 
     <link rel="stylesheet" href="{% static 'style.css' %}" />
     <link rel="stylesheet" href="{% static 'main.css' %}" />
     <link rel="stylesheet" href="{% static 'new_album.css' %}" />
+
 
   </head>
 
@@ -34,16 +36,12 @@
         <a href="{% url 'blog.views.main_view' %}"><div class="logo"></div></a>
           <input class="jscolor" id="page-header-color">
   </div>
-      <div class="content">
-          <div class="row">
-              <div class="col-md-8">
+
               {% block content %}
 
               {% endblock %}
-              </div>
-          </div>
-      </div>
-      <script src="{% static 'script/bundle.js' %}"></script>
 
+      <script src="{% static 'script/bundle.js' %}"></script>
+      <link rel="stylesheet" href="{% static '1920res.css' %}" />
   </body>
 </html>

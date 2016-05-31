@@ -1,5 +1,7 @@
+
 var React = require('react')
 var ReactDOM = require('react-dom')
+var ReactCSSTransitionGroup = require('react-addons-css-transition-group');
 var img_lst = [];
 var album_lst = [];
 var albums = [];
@@ -309,36 +311,60 @@ keyUp:function(event){
 
   render: function() {
     window.scrollTo(0, 0);
-    if (this.props.user_albums[0].albums.length > 2) {
-      var class_name = "main_table";
-    }else {
-        var class_name = "main_table_1row";
-    }
-    return    <div className="table_holder" onMouseDown = {this.mouseDownHandler}>
-                <div className="your_albums"><p>Your Albums</p></div>
+    return <div id="wrapper">
 
-                <table id="main_table" className={class_name}>
-                    <tbody>
-                      {
-                        this.props.user_albums.map((src, i) => {
-                          return <Album_Row  contr_albums = {this.props.contr_albums} user_albums = {this.props.user_albums} delete_album = {this.state.delete_album} images = {this.props.user_albums} key_code = {this.state.key_code} current_user = {this.state.current_user} album_selected = {this.state.album_selected} select_source_method={this.updateSelectedImg} row={i} key={i} />
-                        })
+    <div id="columns">
 
-                      }
-                    </tbody>
-                  </table>
-                  <div className="shared_albums"><p>Shared Albums</p></div>
-                  <div className="shared_albums2"><p>Shared Albums</p></div>
-                  <table id="main_table2" className="main_table2">
-                      <tbody>
-                        {
-                          this.props.contr_albums.map((src, i) => {
-                            return <Album_Row contr_albums = {this.props.contr_albums} user_albums = {this.props.user_albums} images = {this.props.contr_albums} key_code = {this.state.key_code} current_user = {this.state.current_user} album_selected = {this.state.album_selected} select_source_method={this.updateSelectedImg} row={i} key={i} />
-                          })
-                        }
-                      </tbody>
-                    </table>
-              </div>
+    <div className="pin-leave">
+      <img src="http://cssdeck.com/uploads/media/items/2/2v3VhAp.png" />
+
+    </div>
+
+    <div className="pin-leave">
+      <img src="http://i.imgur.com/wFpjb8w.jpg" />
+
+    </div>
+
+    <div className="pin-leave">
+      <img src="http://i.imgur.com/wFpjb8w.jpg" />
+
+    </div>
+
+    <div className="pin-leave">
+      <img src="https://s3-us-west-2.amazonaws.com/cloudimgs/66d0465c" />
+
+    </div>
+
+    <div className="pin-leave">
+      <img src="http://i.imgur.com/jGk5KTZ.png" />
+
+    </div>
+    <div className="pin-leave">
+      <img src="https://s3-us-west-2.amazonaws.com/cloudimgs/1567250e" />
+
+    </div>
+
+    <div className="pin-leave">
+      <img src="http://cssdeck.com/uploads/media/items/2/2v3VhAp.png" />
+
+    </div>
+
+    <div className="pin-leave">
+      <img src="https://s3-us-west-2.amazonaws.com/cloudimgs/e42ff0fd" />
+
+    </div>
+
+    <div className="pin-leave">
+      <img src="http://i.imgur.com/wFpjb8w.jpg" />
+
+    </div>
+
+   </div>
+
+
+      </div>
+
+
       }
 });
 
@@ -831,8 +857,7 @@ function get_albums(res) {
         var user_albums = update_album_list(albums.album_url_list);
         var contr_albums = user_albums[1];
         user_albums = user_albums[0];
-        ReactDOM.unmountComponentAtNode(document.getElementById('main'));
-        ReactDOM.render(React.createElement(Album_Container, {current_user:albums.user, user_albums:user_albums,contr_albums:contr_albums}), document.getElementById('main'));
+        ReactDOM.render(React.createElement(Album_Container, {current_user:albums.user, user_albums:user_albums, contr_albums:contr_albums}) , document.getElementById('main'));
 
 
 
@@ -1064,11 +1089,7 @@ function main() {
       var value = document.getElementById('page-header-color').value;
       document.getElementById('page-header').style.backgroundColor = "#"+value;
   })
-  addEventHandler(document.getElementById('add_album'),'click',function(){
-    ReactDOM.unmountComponentAtNode(document.getElementById("right"));
-    ReactDOM.render(React.createElement(New_Album), document.getElementById('right'));
 
-  })
 
 }
 
