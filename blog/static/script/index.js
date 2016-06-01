@@ -2,6 +2,10 @@
 var React = require('react')
 var ReactDOM = require('react-dom')
 var ReactCSSTransitionGroup = require('react-addons-css-transition-group');
+var Masonry = require('react-masonry-component');
+var masonryOptions = {
+    transitionDuration: 0
+};
 var img_lst = [];
 var album_lst = [];
 var albums = [];
@@ -289,8 +293,6 @@ keyUp:function(event){
     }
   },
 
-
-
   componentDidMount: function() {
     window.addEventListener("keydown", this.keyDown, false);
     window.addEventListener("keyup", this.keyUp, false);
@@ -311,17 +313,40 @@ keyUp:function(event){
 
   render: function() {
     window.scrollTo(0, 0);
-    return <div id="wrapper">
+    return <Masonry
+                className={'wrapper'} // default ''
+                elementType={'div'} // default 'div'
+                options={masonryOptions} // default {}
+                disableImagesLoaded={false} // default false
+            >
 
-    <div id="columns">
+
+            <div className="pin-leave">
+            <div className="what">
+              <img src="http://cssdeck.com/uploads/media/items/2/2v3VhAp.png" />
+              <div className="circle1"></div>
+              <div className="circle2"></div>
+              <div className="circle3"></div>
+              <div className="title_cont"><p>Pictures</p></div>
+            </div>
+            <img src="http://cssdeck.com/uploads/media/items/2/2v3VhAp.png" />
+
+            </div>
+
 
     <div className="pin-leave">
       <img src="http://cssdeck.com/uploads/media/items/2/2v3VhAp.png" />
-
     </div>
 
     <div className="pin-leave">
+    <div className="what">
       <img src="http://i.imgur.com/wFpjb8w.jpg" />
+      <div className="circle1"></div>
+      <div className="circle2"></div>
+      <div className="circle3"></div>
+      <div className="title_cont"><p>Pictures</p></div>
+    </div>
+    <img src="http://i.imgur.com/wFpjb8w.jpg" />
 
     </div>
 
@@ -359,10 +384,9 @@ keyUp:function(event){
 
     </div>
 
-   </div>
 
 
-      </div>
+      </Masonry>
 
 
       }

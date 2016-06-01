@@ -6,11 +6,7 @@
 
 }
 
-img {
-    vertical-align: middle;
-    border: 0;
 
-}
 table {
     border-spacing: 0;
     border-collapse: collapse;
@@ -358,7 +354,7 @@ z-index: 1;
 }
 
 .page-header {
-
+  visibility: hidden;
     background-image: url("http://i.imgur.com/pnvKxMq.jpg");
     background-size: 100% 100%;
     background-repeat: no-repeat;
