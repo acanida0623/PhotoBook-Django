@@ -2,41 +2,22 @@
 
 <html>
   <head>
-
-    <link href="//db.onlinewebfonts.com/c/0e2b0519b67be85165679ddd038fea4a?family=Chela+One" rel="stylesheet" type="text/css"/>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+
     <!-- <script src="https://fb.me/react-with-addons-0.13.3.min.js"></script> -->
 
 
     <link rel="stylesheet" href="{% static 'style.css' %}" />
     <link rel="stylesheet" href="{% static 'main.css' %}" />
     <link rel="stylesheet" href="{% static 'new_album.css' %}" />
-
+    <link rel="stylesheet" href="{% static 'search_album.css' %}" />
+    <link rel="stylesheet" href="{% static 'header.css' %}" />
 
   </head>
 
   <body>
       {% csrf_token %}
-      <div id="trash_follow"></div>
-      <div class="page-header" id="page-header" >
-        {% if user.is_authenticated %}
-        <div class="top-menu">
-          <label class="switch">
-            <input id="imgur_check" type="checkbox" >
-            <div class="slider round"></div>
-          </label>
-        </div>
-        <div class="top-menu" id="settings_icon"></div>
-        <div class="top-menu" id="trash"></div>
-        <div class="top-menu" id="add_album"></div>
-        <p class="top-menu"><small>Hello {{ user.username }}(<a href="{% url 'logout_the_user' %}">Log out</a>)</small></p>
-        {% else %}
-        <a href="{% url 'blog.views.login_home' %}" class="top-menu"><span class="glyphicon glyphicon-lock"></span></a>
-        {% endif %}
-        <a href="{% url 'blog.views.main_view' %}"><div class="logo"></div></a>
-          <input class="jscolor" id="page-header-color">
-  </div>
-
               {% block content %}
 
               {% endblock %}

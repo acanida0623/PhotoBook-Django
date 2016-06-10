@@ -17,9 +17,6 @@ import base64
 import uuid
 import os
 
-os.environ["AWS_ACCESS_KEY"] = 'AKIAJEIU7WAJGRORW4MQ'
-os.environ["AWS_SECRET_KEY"] = '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'
-os.environ["S3_BUCKET_NAME"] = 'cloudimgs'
 
 AWS_ACCESS_KEY = os.environ.get('AWS_ACCESS_KEY')
 AWS_SECRET_KEY = os.environ.get('AWS_SECRET_KEY')
@@ -64,16 +61,11 @@ def login_user(request):
     if request.POST:
         username = request.POST['username']
         password = request.POST['password']
-        print(username)
-        print(password)
         user = authenticate(username=username, password=password)
         login(request,user)
-        print("!@#!@#!@")
-        print(user)
         if user is not None:
             if user.is_active:
-                return render(request, 'main_view.html', {
-                })
+                return redirect('/')
     return render(request, 'main_view.html', {
     })
 
@@ -191,6 +183,11 @@ def get_urls(request):
 def get_user(request):
     if request.is_ajax():
         if request.method == 'GET':
+
+            if request.user.is_authenticated():
+                print("authenticated")
+            else:
+                print("not_authenticated")
             user = str(request.user)
             return HttpResponse(
             json.dumps(user)
@@ -198,32 +195,79 @@ def get_user(request):
 
 def get_albums(request):
     uuid_key = uuid.uuid4()
-    print(AWS_ACCESS_KEY)
     if request.is_ajax():
         if request.method == 'GET':
+            sorting_method = request.GET.get("sorting_method")
+            direction = request.GET.get("direction")
             user = str(request.user)
-            album_url_list = fill_albums(user)
+            album_url_list = fill_albums(user,sorting_method,direction)
             result = {'album_url_list':album_url_list,'user':user}
             return HttpResponse(
             json.dumps(result)
             )
 
-def fill_albums(user):
+def fill_albums(user,sorting_method,direction):
     album_url_list = {'user_albums':[],'contr_albums':[]}
-    for name in Album.objects.annotate(entry_count=Count('images')).order_by('-entry_count'):
-        author = str(name.author.user)
-        if user == author:
-            urls = list(name.images.all().order_by('?'))
-            images = []
-            for x in urls:
-                images.append(x.url)
-            album_url_list['user_albums'].append({'urls':images,'name':name.name,'author':author})
-        if user in name.users:
-            urls2 = list(name.images.all())
-            images2 = []
-            for x in urls2:
-                images2.append(x.url)
-            album_url_list['contr_albums'].append({'urls':images2,'name':name.name,'author':author})
+    if sorting_method == "image_count":
+        for name in Album.objects.annotate(entry_count=Count('images')).order_by(direction+'entry_count'):
+            author = str(name.author.user)
+            if user == author:
+                urls = list(name.images.all().order_by('?'))
+                images = []
+                for x in urls:
+                    images.append(x.url)
+                album_url_list['user_albums'].append({'urls':images,'name':name.name,'author':author})
+            if user in name.users:
+                urls2 = list(name.images.all())
+                images2 = []
+                for x in urls2:
+                    images2.append(x.url)
+                album_url_list['contr_albums'].append({'urls':images2,'name':name.name,'author':author})
+    elif sorting_method == "a-z":
+        for name in Album.objects.all().order_by(direction+'name'):
+            author = str(name.author.user)
+            if user == author:
+                urls = list(name.images.all().order_by('?'))
+                images = []
+                for x in urls:
+                    images.append(x.url)
+                album_url_list['user_albums'].append({'urls':images,'name':name.name,'author':author})
+            if user in name.users:
+                urls2 = list(name.images.all())
+                images2 = []
+                for x in urls2:
+                    images2.append(x.url)
+                album_url_list['contr_albums'].append({'urls':images2,'name':name.name,'author':author})
+    elif sorting_method == "date":
+        for name in Album.objects.all().order_by(direction+"created_date"):
+            author = str(name.author.user)
+            if user == author:
+                urls = list(name.images.all().order_by('?'))
+                images = []
+                for x in urls:
+                    images.append(x.url)
+                album_url_list['user_albums'].append({'urls':images,'name':name.name,'author':author})
+            if user in name.users:
+                urls2 = list(name.images.all())
+                images2 = []
+                for x in urls2:
+                    images2.append(x.url)
+                album_url_list['contr_albums'].append({'urls':images2,'name':name.name,'author':author})
+    else:
+        for name in Album.objects.all().order_by('?'):
+            author = str(name.author.user)
+            if user == author:
+                urls = list(name.images.all().order_by('?'))
+                images = []
+                for x in urls:
+                    images.append(x.url)
+                album_url_list['user_albums'].append({'urls':images,'name':name.name,'author':author})
+            if user in name.users:
+                urls2 = list(name.images.all())
+                images2 = []
+                for x in urls2:
+                    images2.append(x.url)
+                album_url_list['contr_albums'].append({'urls':images2,'name':name.name,'author':author})
     return (album_url_list)
 
 def delete_album(request):

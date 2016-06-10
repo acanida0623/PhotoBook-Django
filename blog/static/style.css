@@ -92,6 +92,18 @@ table {
   cursor: pointer;
 }
 
+#main {
+  width:100vw;
+  top: 0;
+  position: absolute;
+
+}
+#album_holder {
+  height: 100vh;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
 
 #main_img_container:-webkit-full-screen {
   position: absolute;
@@ -185,14 +197,18 @@ background-repeat: no-repeat;
 }
 
 body {
-  background-color: #FFFFFF;
+  background: #151515; /* Old browsers */
 
-
+  border: 0;
   margin: 0;
   width: 98vw;
 	/*cursor: url('http://i.imgur.com/55WMSWY.png'), default;*/
 
 }
+.background {
+
+}
+
 
 .table_holder {
   position: absolute;
@@ -353,22 +369,8 @@ z-index: 1;
 
 }
 
-.page-header {
-  visibility: hidden;
-    background-image: url("http://i.imgur.com/pnvKxMq.jpg");
-    background-size: 100% 100%;
-    background-repeat: no-repeat;
-    top: 0;
 
-    padding: 2em 0 2em 0;
-    width:100vw;
-    height: 11.98em;
-    position: fixed;
-    z-index: 4;
-    border: none;
-}
-
-#list img {
+#list img
   max-height: 10vh;
   max-width: 14vh;
 }
@@ -434,14 +436,7 @@ h1, h2, h3, h4 {
     width: 100%;
 }
 
-.top-menu, .top-menu:hover, .top-menu:visited {
-    color: #ffffff;
-    float: right;
-    font-size: 26pt;
-    margin-right: 20px;
-    z-index: 2;
 
-}
 
 .post {
     margin-bottom: 70px;
@@ -468,36 +463,4 @@ h1, h2, h3, h4 {
   background-size: 100% 100%;
   background-repeat: no-repeat;
   cursor: pointer;
-}
-
-.album_title {
-  color: black;
-  background-color: #DEE6FF;
-  letter-spacing:1pt;
-  word-spacing:2pt;
-  font-size:1.2em;
-  text-align:center;
-  font-family:Chela One,palatino linotype, palatino, serif;line-height:1;
-  margin:0px;
-  padding:3px;
-  height: 1.6em;
-  width: 6.7em;
-
-}
-.album_title2 {
-  white-space: pre-wrap;      /* CSS3 */
-  white-space: -moz-pre-wrap; /* Firefox */
-  white-space: -pre-wrap;     /* Opera <7 */
-  white-space: -o-pre-wrap;   /* Opera 7 */
-  word-wrap: break-word;
-  color: black;
-  background-color: #DEE6FF;
-  letter-spacing:1pt;
-  word-spacing:2pt;
-  font-size:1.2em;
-  text-align:center;
-  font-family:Chela One,palatino linotype, palatino, serif;line-height:1;
-  padding:3px;
-  height: 2.2em;
-  width: 6.7em;
 }

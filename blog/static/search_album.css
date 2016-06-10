@@ -1,0 +1,52 @@
+#search_album {
+  position: absolute;
+  top: .3em;
+  right: 2em;
+  color: #FFFFFF
+  -webkit-appearance: textfield;
+	-webkit-box-sizing: content-box;
+	font-family: inherit;
+	font-size: 16pt;
+  font-weight: bold;
+	background:  url(http://static.tumblr.com/ftv85bp/MIXmud4tx/search-icon.png) no-repeat 9px center;
+	border: none;
+	padding: 9px 10px 9px 32px;
+	width: 4em;
+  outline: none;
+	-webkit-transition: all .5s;
+	-moz-transition: all .5s;
+	transition: all .5s;
+}
+
+
+
+#search_album:focus {
+  -webkit-border-radius: 10em;
+	-moz-border-radius: 10em;
+	border-radius: 10em;
+  margin-left: -3em;
+	width: 130px;
+  color: #FFFFFF;
+	border-color: #FFFFFF;
+	-webkit-box-shadow: 0 0 5px rgba(109,207,246,.5);
+	-moz-box-shadow: 0 0 5px rgba(109,207,246,.5);
+	box-shadow: 0 0 5px rgba(109,207,246,.5);
+}
+
+#search_album:-moz-placeholder {
+	color: #FFFFFF;
+}
+#search_album::-webkit-input-placeholder {
+	color: #FFFFFF;
+}
+#search_album:focus::-webkit-input-placeholder {
+	color: #777575;
+}
+
+#search_album:focus:-moz-placeholder {
+	color: #777575;
+}
+
+#search_album:hover {
+  cursor: pointer;
+}
