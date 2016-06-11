@@ -271,7 +271,7 @@
 	    img_lst.length = 0;
 	    load = null;
 	    ReactDOM.unmountComponentAtNode(document.getElementById('main'));
-	    ReactDOM.render(React.createElement(Album_Container, { current_user: this.state.current_user, user_albums: this.state.user_albums, contr_albums: this.state.contr_albums }), document.getElementById('main'));
+	    ReactDOM.render(React.createElement(Album_Container, { current_user: this.state.current_user, user_albums: this.props.user_albums, contr_albums: this.props.contr_albums }), document.getElementById('main'));
 	  },
 
 	  createAlbum: function createAlbum() {
@@ -286,7 +286,6 @@
 	      return React.createElement(
 	        'div',
 	        { className: 'page-header', id: 'page-header' },
-	        React.createElement('input', { id: 'search_album', placeholder: 'Search' }),
 	        React.createElement(
 	          'div',
 	          { className: 'top-menu' },
@@ -337,7 +336,6 @@
 	        React.createElement(
 	          'div',
 	          { className: 'top-menu' },
-	          React.createElement('input', { id: 'search_album', placeholder: 'Search' }),
 	          React.createElement(
 	            'div',
 	            { onMouseDown: this.viewFriends, id: 'friends' },
@@ -446,7 +444,7 @@
 	      user_albums: [],
 	      contr_albums: []
 	    });
-	    var search = document.getElementById("my_text").value;
+	    var search = document.getElementById("search_album").value;
 	    var matches = this.state.user_album_holder.filter(function (s) {
 	      return s.name.indexOf(search) !== -1;
 	    });
@@ -505,7 +503,7 @@
 	    document.body.style.cursor = "default";
 	    document.getElementById("trash").style.visibility = 'visible';
 	  },
-	  //<input type="text_field" id="my_text" onChange={this.onChangeHandler} />
+	  //<input type="text_field" id="search_album" onChange={this.onChangeHandler} />
 	  render: function render() {
 	    var _this2 = this;
 
@@ -571,10 +569,11 @@
 	        'div',
 	        { id: 'album_holder' },
 	        React.createElement(Header, { current_user: this.state.current_user, contr_albums: this.state.contr_albums, user_albums: this.state.user_albums }),
+	        React.createElement(Sort_User_Albums_Container, { updateAlbumOrder: this.updateAlbumOrder }),
 	        React.createElement(
 	          'div',
 	          { id: 'user_albums_title' },
-	          React.createElement(User_Album_Settings, { updateAlbumOrder: this.updateAlbumOrder }),
+	          React.createElement('input', { id: 'search_album', onChange: this.onChangeHandler }),
 	          React.createElement(
 	            'span',
 	            { className: 'album_title' },
@@ -724,7 +723,7 @@
 	      load.updateImages(this.state.urls);
 	      load.updateSelected(this.state.album_name, this.state.album_author);
 	    }
-	    remount_left(this.state.album_name, this.state.album_author, this.state.urls, this.props.user_albums, this.props.contr_albums, this.props.current_user);
+	    remount_left(this.props.album_name, this.props.album_author, this.props.urls, this.props.user_albums, this.props.contr_albums, this.props.current_user);
 	  },
 
 	  render: function render() {
@@ -772,93 +771,10 @@
 	    return React.createElement(
 	      'div',
 	      { id: 'user_albums_settings_container' },
-	      React.createElement('div', { onMouseDown: this.onMouseDownHandler, id: 'user_albums_settings' }),
-	      React.createElement(Sort_User_Albums, { visible: this.state.album_settings_visible, updateAlbumOrder: this.props.updateAlbumOrder })
+	      React.createElement('div', { onMouseDown: this.onMouseDownHandler, id: 'user_albums_settings' })
 	    );
 	  }
 
-	});
-
-	var Sort_User_Albums = React.createClass({
-	  displayName: 'Sort_User_Albums',
-
-	  getInitialState: function getInitialState() {
-	    return {
-	      background: "#000000",
-	      selected: false
-	    };
-	  },
-
-	  onMouseOverHandler: function onMouseOverHandler() {
-	    if (this.state.selected) {} else {
-	      this.setState({
-	        background: "#1B1B1B"
-	      });
-	    }
-	  },
-
-	  onMouseLeaveHandler: function onMouseLeaveHandler() {
-	    if (this.state.selected) {} else {
-	      this.setState({
-	        background: "#000000"
-	      });
-	    }
-	  },
-
-	  onMouseDownHandler: function onMouseDownHandler() {
-	    if (this.state.selected) {
-	      this.setState({
-	        background: "#000000",
-	        selected: false
-	      });
-	    } else {
-	      this.setState({
-	        background: "#1B1B1B",
-	        selected: true
-	      });
-	    }
-	  },
-
-	  render: function render() {
-
-	    var divStyle = {
-	      background: this.state.background
-	    };
-	    if (this.props.visible) {
-	      if (this.state.selected) {
-	        return React.createElement(
-	          'div',
-	          null,
-	          React.createElement(
-	            'div',
-	            { onMouseLeave: this.onMouseLeaveHandler, onMouseOver: this.onMouseOverHandler, onMouseDown: this.onMouseDownHandler, id: 'sort_user_albums', style: divStyle },
-	            React.createElement(
-	              'span',
-	              null,
-	              'Sort Albums  >'
-	            )
-	          ),
-	          React.createElement(Sort_User_Albums_Container, { updateAlbumOrder: this.props.updateAlbumOrder })
-	        );
-	      } else {
-	        return React.createElement(
-	          'div',
-	          null,
-	          React.createElement(
-	            'div',
-	            { onMouseLeave: this.onMouseLeaveHandler, onMouseOver: this.onMouseOverHandler, onMouseDown: this.onMouseDownHandler, id: 'sort_user_albums', style: divStyle },
-	            React.createElement(
-	              'span',
-	              null,
-	              'Sort Albums  >'
-	            )
-	          )
-	        );
-	      }
-	    } else {
-	      return React.createElement('div', null);
-	    }
-	  }
 	});
 
 	var Sort_User_Albums_Container = React.createClass({
@@ -869,9 +785,18 @@
 	    return React.createElement(
 	      'div',
 	      { id: 'sort_user_albums_container' },
+	      React.createElement(
+	        'div',
+	        { id: 'sort_user_albums' },
+	        React.createElement(
+	          'span',
+	          null,
+	          'Sort Albums '
+	        )
+	      ),
 	      React.createElement(Sort_User_Albums_A_Z, { updateAlbumOrder: this.props.updateAlbumOrder }),
-	      React.createElement(Sort_User_Albums_Date_Created, null),
-	      React.createElement(Sort_User_Albums_Image_Count, null)
+	      React.createElement(Sort_User_Albums_Date_Created, { updateAlbumOrder: this.props.updateAlbumOrder }),
+	      React.createElement(Sort_User_Albums_Image_Count, { updateAlbumOrder: this.props.updateAlbumOrder })
 	    );
 	  }
 	});
@@ -881,7 +806,9 @@
 
 	  getInitialState: function getInitialState() {
 	    return {
-	      background: "#000000",
+	      background: "#3498DB",
+	      cursor: "default",
+	      borderBottom: "5px solid #2980B9",
 	      updateAlbumOrder: this.props.updateAlbumOrder,
 	      direction: ""
 	    };
@@ -889,13 +816,13 @@
 
 	  onMouseOverHandler: function onMouseOverHandler() {
 	    this.setState({
-	      background: "#1B1B1B"
+	      cursor: "pointer"
 	    });
 	  },
 
 	  onMouseLeaveHandler: function onMouseLeaveHandler() {
 	    this.setState({
-	      background: "#000000"
+	      cursor: "default"
 	    });
 	  },
 
@@ -903,13 +830,21 @@
 	    this.updateOrder();
 	    if (this.state.direction === "") {
 	      this.setState({
+	        borderBottom: "3px solid #2980B9",
 	        direction: "-"
 	      });
 	    } else {
 	      this.setState({
+	        borderBottom: "3px solid #2980B9",
 	        direction: ""
 	      });
 	    }
+	  },
+
+	  onMouseUpHandler: function onMouseUpHandler() {
+	    this.setState({
+	      borderBottom: "5px solid #2980B9"
+	    });
 	  },
 
 	  updateOrder: function updateOrder() {
@@ -933,11 +868,13 @@
 
 	  render: function render() {
 	    var divStyle = {
-	      background: this.state.background
+	      background: this.state.background,
+	      borderBottom: this.state.borderBottom,
+	      cursor: this.state.cursor
 	    };
 	    return React.createElement(
 	      'div',
-	      { onMouseDown: this.onMouseDownHandler, onMouseLeave: this.onMouseLeaveHandler, onMouseOver: this.onMouseOverHandler, id: 'sort_user_albums_A_Z', style: divStyle },
+	      { onMouseUp: this.onMouseUpHandler, onMouseDown: this.onMouseDownHandler, onMouseLeave: this.onMouseLeaveHandler, onMouseOver: this.onMouseOverHandler, className: 'animate action_button', id: 'sort_user_albums_A_Z', style: divStyle },
 	      React.createElement(
 	        'span',
 	        null,
@@ -952,29 +889,75 @@
 
 	  getInitialState: function getInitialState() {
 	    return {
-	      background: "#000000"
+	      background: "#3498DB",
+	      borderBottom: "5px solid #2980B9",
+	      updateAlbumOrder: this.props.updateAlbumOrder,
+	      direction: "",
+	      cursor: "default"
 	    };
 	  },
 
 	  onMouseOverHandler: function onMouseOverHandler() {
 	    this.setState({
-	      background: "#1B1B1B"
+	      cursor: "pointer"
 	    });
 	  },
 
 	  onMouseLeaveHandler: function onMouseLeaveHandler() {
 	    this.setState({
-	      background: "#000000"
+	      cursor: "default"
+	    });
+	  },
+
+	  onMouseDownHandler: function onMouseDownHandler() {
+	    this.updateOrder();
+	    if (this.state.direction === "") {
+	      this.setState({
+	        borderBottom: "3px solid #2980B9",
+	        direction: "-"
+	      });
+	    } else {
+	      this.setState({
+	        borderBottom: "3px solid #2980B9",
+	        direction: ""
+	      });
+	    }
+	  },
+
+	  onMouseUpHandler: function onMouseUpHandler() {
+	    this.setState({
+	      borderBottom: "5px solid #2980B9"
+	    });
+	  },
+
+	  updateOrder: function updateOrder() {
+	    var _this4 = this;
+
+	    $.ajax({
+	      url: "/get/",
+	      method: "GET",
+	      data: { sorting_method: "date",
+	        direction: this.state.direction
+	      }
+	    }).done(function (data) {
+	      albums = JSON.parse(data);
+	      var user_albums = albums.album_url_list['user_albums'];
+	      var contr_albums = albums.album_url_list['contr_albums'];
+	      _this4.state.updateAlbumOrder(user_albums, contr_albums);
+	    }).error(function (err) {
+	      console.log(err);
 	    });
 	  },
 
 	  render: function render() {
 	    var divStyle = {
-	      background: this.state.background
+	      background: this.state.background,
+	      borderBottom: this.state.borderBottom,
+	      cursor: this.state.cursor
 	    };
 	    return React.createElement(
 	      'div',
-	      { onMouseLeave: this.onMouseLeaveHandler, onMouseOver: this.onMouseOverHandler, id: 'sort_user_albums_date_created', style: divStyle },
+	      { onMouseUp: this.onMouseUpHandler, onMouseDown: this.onMouseDownHandler, onMouseLeave: this.onMouseLeaveHandler, onMouseOver: this.onMouseOverHandler, className: 'animate action_button', id: 'sort_user_albums_date_created', style: divStyle },
 	      React.createElement(
 	        'span',
 	        null,
@@ -989,29 +972,75 @@
 
 	  getInitialState: function getInitialState() {
 	    return {
-	      background: "#000000"
+	      background: "#3498DB",
+	      borderBottom: "5px solid #2980B9",
+	      updateAlbumOrder: this.props.updateAlbumOrder,
+	      direction: "",
+	      cursor: "default"
 	    };
 	  },
 
 	  onMouseOverHandler: function onMouseOverHandler() {
 	    this.setState({
-	      background: "#1B1B1B"
+	      cursor: "pointer"
 	    });
 	  },
 
 	  onMouseLeaveHandler: function onMouseLeaveHandler() {
 	    this.setState({
-	      background: "#000000"
+	      cursor: "default"
+	    });
+	  },
+
+	  onMouseDownHandler: function onMouseDownHandler() {
+	    this.updateOrder();
+	    if (this.state.direction === "") {
+	      this.setState({
+	        borderBottom: "3px solid #2980B9",
+	        direction: "-"
+	      });
+	    } else {
+	      this.setState({
+	        borderBottom: "3px solid #2980B9",
+	        direction: ""
+	      });
+	    }
+	  },
+
+	  onMouseUpHandler: function onMouseUpHandler() {
+	    this.setState({
+	      borderBottom: "5px solid #2980B9"
+	    });
+	  },
+
+	  updateOrder: function updateOrder() {
+	    var _this5 = this;
+
+	    $.ajax({
+	      url: "/get/",
+	      method: "GET",
+	      data: { sorting_method: "image_count",
+	        direction: this.state.direction
+	      }
+	    }).done(function (data) {
+	      albums = JSON.parse(data);
+	      var user_albums = albums.album_url_list['user_albums'];
+	      var contr_albums = albums.album_url_list['contr_albums'];
+	      _this5.state.updateAlbumOrder(user_albums, contr_albums);
+	    }).error(function (err) {
+	      console.log(err);
 	    });
 	  },
 
 	  render: function render() {
 	    var divStyle = {
-	      background: this.state.background
+	      background: this.state.background,
+	      borderBottom: this.state.borderBottom,
+	      cursor: this.state.cursor
 	    };
 	    return React.createElement(
 	      'div',
-	      { onMouseLeave: this.onMouseLeaveHandler, onMouseOver: this.onMouseOverHandler, id: 'sort_user_albums_image_count', style: divStyle },
+	      { onMouseUp: this.onMouseUpHandler, onMouseDown: this.onMouseDownHandler, onMouseLeave: this.onMouseLeaveHandler, onMouseOver: this.onMouseOverHandler, className: 'animate action_button', id: 'sort_user_albums_image_count', style: divStyle },
 	      React.createElement(
 	        'span',
 	        null,
@@ -1109,7 +1138,7 @@
 	  },
 
 	  render: function render() {
-	    var _this4 = this;
+	    var _this6 = this;
 
 	    if (this.state.loading) {
 	      var last_image = false;
@@ -1126,10 +1155,10 @@
 	            , disableImagesLoaded: false // default false
 	          },
 	          this.props.images.map(function (src, i) {
-	            if (_this4.props.images.indexOf(src) === _this4.props.images.length - 1) {
+	            if (_this6.props.images.indexOf(src) === _this6.props.images.length - 1) {
 	              last_image = true;
 	            }
-	            return React.createElement(View_IMG, { last_image: last_image, updateLoad: _this4.updateLoad, img_source: src, key_code: _this4.state.key_code, current_user: _this4.state.current_user, album_author: _this4.props.album_author, album_selected: _this4.props.album_selected, select_source: _this4.state.select_source, select_source_method: _this4.updateSelectedImg, row: i, key: i });
+	            return React.createElement(View_IMG, { last_image: last_image, updateLoad: _this6.updateLoad, img_source: src, key_code: _this6.state.key_code, current_user: _this6.state.current_user, album_author: _this6.props.album_author, album_selected: _this6.props.album_selected, select_source: _this6.state.select_source, select_source_method: _this6.updateSelectedImg, row: i, key: i });
 	          })
 	        )
 	      );
@@ -1159,7 +1188,7 @@
 	            , disableImagesLoaded: false // default false
 	          },
 	          this.props.images.map(function (src, i) {
-	            return React.createElement(View_IMG, { updateLoad: _this4.updateLoad, img_source: src, key_code: _this4.state.key_code, current_user: _this4.state.current_user, album_author: _this4.props.album_author, album_selected: _this4.props.album_selected, select_source: _this4.state.select_source, select_source_method: _this4.updateSelectedImg, row: i, key: i });
+	            return React.createElement(View_IMG, { updateLoad: _this6.updateLoad, img_source: src, key_code: _this6.state.key_code, current_user: _this6.state.current_user, album_author: _this6.props.album_author, album_selected: _this6.props.album_selected, select_source: _this6.state.select_source, select_source_method: _this6.updateSelectedImg, row: i, key: i });
 	          })
 	        )
 	      );
@@ -1167,7 +1196,7 @@
 	  },
 
 	  getUserInfo: function getUserInfo() {
-	    var _this5 = this;
+	    var _this7 = this;
 
 	    $.ajax({
 	      url: "/get/user",
@@ -1175,7 +1204,7 @@
 	      data: {}
 	    }).done(function (data) {
 	      var user_info = JSON.parse(data);
-	      _this5.setState({
+	      _this7.setState({
 	        current_user: user_info
 	      });
 	    }).error(function (err) {
@@ -1223,10 +1252,10 @@
 	  },
 
 	  updateLoad: function updateLoad() {
-	    var _this6 = this;
+	    var _this8 = this;
 
 	    setTimeout(function () {
-	      _this6.state.updateLoad(false);
+	      _this8.state.updateLoad(false);
 	    }, 400);
 	  },
 
@@ -1251,11 +1280,11 @@
 	  },
 
 	  onMouseDownHandler: function onMouseDownHandler() {
-	    var _this7 = this;
+	    var _this9 = this;
 
 	    if (this.state.key_code === 16) {
 	      var exists = img_lst.filter(function (x) {
-	        return x === _this7.state.img_source;
+	        return x === _this9.state.img_source;
 	      });
 	      if (exists.length === 0) {
 	        img_lst.push(this.state.img_source);

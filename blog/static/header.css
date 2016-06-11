@@ -39,12 +39,14 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#191919', end
   position: absolute;
   height: 100%;
   margin-left: 1em;
+  width: 4.5em;
 }
 
 #create_new_album {
   position: absolute;
   height: 100%;
   margin-left: 6em;
+  width: 6.3em;
 }
 
 #upload_new {
@@ -57,15 +59,17 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#191919', end
   position: absolute;
   height: 100%;
   margin-left: 18em;
+  width: 4.2em;
 }
 
 #friends:hover {
   cursor: pointer;
-  background: #1B1B1B;
+  background: #5B97EF;
 }
 
 #friends p {
   margin-top: .8em;
+  margin-left: .4em;
 }
 
 #hello_user {
@@ -76,28 +80,30 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#191919', end
 
 #back_albums:hover {
   cursor: pointer;
-  background: #1B1B1B;
+  background: #5B97EF;
 
 }
 
 #create_new_album:hover {
   cursor: pointer;
-  background: #1B1B1B;
+  background: #5B97EF;
 
 }
 
 #upload_new:hover {
   cursor: pointer;
-  background: #1B1B1B;
+  background: #5B97EF;
 
 }
 
 #back_albums p {
 margin-top: .8em;
+margin-left: .4em;
 }
 
 #create_new_album p{
 margin-top: .8em;
+margin-left: .4em;
 
 }
 

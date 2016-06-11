@@ -361,7 +361,7 @@
 	#user_albums_title {
 		width: 49.5em;
 		margin: 0 auto;
-		margin-top: 8em;
+		margin-top: 4em;
 		height: 3.5em;
 		background-color: #000000;
 		border-top-left-radius: 25px;
@@ -450,93 +450,7 @@
 		z-index: 3;
 	}
 
-	#sort_user_albums {
-		width: 8.5em;
-		height: 2em;
-		background: #000000;
-		position: absolute;
-		margin-top: 1.5em;
-		color: #ffffff;
-		font-size: 12pt;
-		font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
-	}
 
-	#sort_user_albums span {
-		position: absolute;
-		margin-top: .3em;
-		margin-left: .7em;
-	}
-	#sort_user_albums:hover {
-		cursor: pointer;
-	}
-
-	#sort_user_albums_container {
-		background: #000000;
-		width: 8.4em;
-
-		position: absolute;
-		margin-top: 1.5em;
-		margin-left:  8.5em;
-		z-index: 3;
-	}
-
-	#sort_user_albums_A_Z {
-		width: 8.5em;
-		height: 2em;
-		position: absolute;
-
-		color: #ffffff;
-		font-size: 12pt;
-		font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
-	}
-
-	#sort_user_albums_A_Z span {
-		position: absolute;
-		margin-top: .3em;
-		margin-left: .7em;
-	}
-
-	#sort_user_albums_A_Z:hover {
-		cursor: pointer;
-	}
-	#sort_user_albums_date_created:hover {
-		cursor: pointer;
-	}
-	#sort_user_albums_image_count:hover {
-		cursor: pointer;
-	}
-
-	#sort_user_albums_date_created {
-		width: 8.5em;
-		height: 2em;
-		background: #1B1B1B;
-		position: absolute;
-		margin-top: 2em;
-		color: #ffffff;
-		font-size: 12pt;
-		font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
-	}
-
-	#sort_user_albums_date_created span {
-		position: absolute;
-		margin-top: .3em;
-		margin-left: .7em;
-	}
-	#sort_user_albums_image_count {
-		width: 8.5em;
-		height: 2em;
-		background: #1B1B1B;
-		position: absolute;
-		margin-top: 4em;
-		color: #ffffff;
-		font-size: 12pt;
-		font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
-	}
-	#sort_user_albums_image_count span {
-		position: absolute;
-		margin-top: .3em;
-		margin-left: .7em;
-	}
 
 
 }

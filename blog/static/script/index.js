@@ -224,7 +224,7 @@ var Header = React.createClass({
     img_lst.length = 0;
     load = null;
     ReactDOM.unmountComponentAtNode(document.getElementById('main'));
-    ReactDOM.render(React.createElement(Album_Container,{current_user:this.state.current_user, user_albums:this.state.user_albums,contr_albums:this.state.contr_albums}), document.getElementById('main'));
+    ReactDOM.render(React.createElement(Album_Container,{current_user:this.state.current_user, user_albums:this.props.user_albums,contr_albums:this.props.contr_albums}), document.getElementById('main'));
   },
 
   createAlbum: function () {
@@ -239,7 +239,6 @@ var Header = React.createClass({
   render: function() {
     if (this.props.authenticated) {
       return <div className="page-header" id="page-header" >
-      <input id="search_album" placeholder="Search" />
       <div className="top-menu">
 
         <div onMouseDown={this.backAlbums} id="back_albums">
@@ -267,9 +266,6 @@ var Header = React.createClass({
       <div id="logo">
       </div>
       <div className="top-menu">
-
-        <input id="search_album" placeholder="Search" />
-
         <div onMouseDown={this.viewFriends} id="friends">
           <p>
             Friends
@@ -369,7 +365,7 @@ var Album_Container = React.createClass({
       user_albums: [],
       contr_albums: [],
     })
-    var search = document.getElementById("my_text").value;
+    var search = document.getElementById("search_album").value;
     var matches =
       this.state.user_album_holder.filter((s) => {
         return s.name.indexOf( search ) !== -1;
@@ -434,7 +430,7 @@ var Album_Container = React.createClass({
     document.body.style.cursor = "default";
     document.getElementById("trash").style.visibility ='visible';
   },
-//<input type="text_field" id="my_text" onChange={this.onChangeHandler} />
+//<input type="text_field" id="search_album" onChange={this.onChangeHandler} />
   render: function() {
     window.scrollTo(0, 0);
     var friends_albums = "Friends' Albums";
@@ -489,8 +485,9 @@ var Album_Container = React.createClass({
       return <div id="album_holder">
 
               <Header current_user={this.state.current_user} contr_albums = {this.state.contr_albums}  user_albums = {this.state.user_albums} />
+              <Sort_User_Albums_Container updateAlbumOrder = {this.updateAlbumOrder} />
               <div id="user_albums_title">
-                <User_Album_Settings updateAlbumOrder = {this.updateAlbumOrder} />
+                <input id="search_album" onChange = {this.onChangeHandler} />
                 <span className="album_title">{this.state.user_name} Albums</span>
               </div>
               <Masonry
@@ -636,9 +633,7 @@ var Album_Cover = React.createClass({
           load.updateImages(this.state.urls)
           load.updateSelected(this.state.album_name,this.state.album_author)
         }
-        remount_left(this.state.album_name,this.state.album_author,this.state.urls,this.props.user_albums,this.props.contr_albums,this.props.current_user);
-
-
+        remount_left(this.props.album_name,this.props.album_author,this.props.urls,this.props.user_albums,this.props.contr_albums,this.props.current_user);
   },
 
   render: function() {
@@ -653,7 +648,6 @@ var Album_Cover = React.createClass({
 
   }
 })
-
 
 var User_Album_Settings = React.createClass({
   getInitialState: function () {
@@ -678,94 +672,23 @@ var User_Album_Settings = React.createClass({
     return <div id="user_albums_settings_container">
              <div onMouseDown = {this.onMouseDownHandler} id="user_albums_settings">
              </div>
-             <Sort_User_Albums visible={this.state.album_settings_visible} updateAlbumOrder = {this.props.updateAlbumOrder} />
+
            </div>
   }
 
 })
 
-var Sort_User_Albums = React.createClass({
-  getInitialState: function () {
-    return {
-      background:"#000000",
-      selected: false
-    }
-
-  },
-
-  onMouseOverHandler:function () {
-    if(this.state.selected) {
-    }else {
-      this.setState({
-        background:"#1B1B1B"
-      })
-    }
-
-  },
-
-  onMouseLeaveHandler: function() {
-    if(this.state.selected) {
-    }else {
-      this.setState({
-        background:"#000000"
-      })
-    }
-
-  },
-
-  onMouseDownHandler: function () {
-    if(this.state.selected) {
-      this.setState({
-        background:"#000000",
-        selected: false
-      })
-    }else {
-      this.setState({
-        background:"#1B1B1B",
-        selected: true
-      })
-    }
-
-  },
-
-  render: function () {
-
-    var divStyle = {
-      background:this.state.background
-    }
-    if(this.props.visible) {
-      if(this.state.selected) {
-        return  <div>
-                  <div onMouseLeave = {this.onMouseLeaveHandler} onMouseOver = {this.onMouseOverHandler} onMouseDown = {this.onMouseDownHandler} id="sort_user_albums" style={divStyle}>
-                    <span>Sort Albums  ></span>
-                  </div>
-                  <Sort_User_Albums_Container updateAlbumOrder = {this.props.updateAlbumOrder} />
-                </div>
-      }else{
-        return  <div>
-                  <div onMouseLeave = {this.onMouseLeaveHandler} onMouseOver = {this.onMouseOverHandler} onMouseDown = {this.onMouseDownHandler} id="sort_user_albums" style={divStyle}>
-                    <span>Sort Albums  ></span>
-                  </div>
-                </div>
-      }
-    }else {
-      return <div>
-            </div>
-    }
-
-
-
-
-  }
-})
 
 var Sort_User_Albums_Container = React.createClass({
   render: function () {
 
       return <div id="sort_user_albums_container">
+              <div id="sort_user_albums">
+                <span>Sort Albums </span>
+              </div>
               <Sort_User_Albums_A_Z updateAlbumOrder = {this.props.updateAlbumOrder} />
-              <Sort_User_Albums_Date_Created />
-              <Sort_User_Albums_Image_Count />
+              <Sort_User_Albums_Date_Created updateAlbumOrder = {this.props.updateAlbumOrder} />
+              <Sort_User_Albums_Image_Count updateAlbumOrder = {this.props.updateAlbumOrder} />
             </div>
   }
 })
@@ -773,7 +696,9 @@ var Sort_User_Albums_Container = React.createClass({
 var Sort_User_Albums_A_Z = React.createClass({
   getInitialState: function () {
     return {
-      background:"#000000",
+      background:"#3498DB",
+      cursor:"default",
+      borderBottom: "5px solid #2980B9",
       updateAlbumOrder: this.props.updateAlbumOrder,
       direction: ""
     }
@@ -782,13 +707,13 @@ var Sort_User_Albums_A_Z = React.createClass({
 
   onMouseOverHandler:function () {
       this.setState({
-        background:"#1B1B1B"
+        cursor:"pointer"
       })
   },
 
   onMouseLeaveHandler:function () {
       this.setState({
-        background:"#000000"
+        cursor:"default"
       })
   },
 
@@ -796,13 +721,21 @@ var Sort_User_Albums_A_Z = React.createClass({
     this.updateOrder()
     if(this.state.direction === "") {
       this.setState({
+        borderBottom: "3px solid #2980B9",
         direction: "-"
       })
     }else {
       this.setState({
+        borderBottom: "3px solid #2980B9",
         direction: ""
       })
     }
+  },
+
+  onMouseUpHandler: function () {
+    this.setState({
+      borderBottom: "5px solid #2980B9"
+    })
   },
 
   updateOrder: function () {
@@ -825,9 +758,11 @@ var Sort_User_Albums_A_Z = React.createClass({
 
   render: function () {
     var divStyle = {
-      background:this.state.background
+      background:this.state.background,
+      borderBottom:this.state.borderBottom,
+      cursor:this.state.cursor
     }
-    return <div onMouseDown = {this.onMouseDownHandler} onMouseLeave = {this.onMouseLeaveHandler} onMouseOver = {this.onMouseOverHandler} id="sort_user_albums_A_Z" style={divStyle}>
+    return <div onMouseUp = {this.onMouseUpHandler} onMouseDown = {this.onMouseDownHandler} onMouseLeave = {this.onMouseLeaveHandler} onMouseOver = {this.onMouseOverHandler} className = "animate action_button" id="sort_user_albums_A_Z" style={divStyle}>
             <span>A - Z </span>
            </div>
   }
@@ -836,29 +771,73 @@ var Sort_User_Albums_A_Z = React.createClass({
 var Sort_User_Albums_Date_Created = React.createClass({
   getInitialState: function () {
     return {
-      background:"#000000",
+      background:"#3498DB",
+      borderBottom: "5px solid #2980B9",
+      updateAlbumOrder: this.props.updateAlbumOrder,
+      direction: "",
+      cursor:"default"
     }
 
   },
 
   onMouseOverHandler:function () {
       this.setState({
-        background:"#1B1B1B"
+        cursor: "pointer"
       })
   },
 
   onMouseLeaveHandler:function () {
       this.setState({
-        background:"#000000"
+        cursor: "default"
       })
+  },
+
+  onMouseDownHandler: function() {
+    this.updateOrder()
+    if(this.state.direction === "") {
+      this.setState({
+        borderBottom: "3px solid #2980B9",
+        direction: "-"
+      })
+    }else {
+      this.setState({
+        borderBottom: "3px solid #2980B9",
+        direction: ""
+      })
+    }
+  },
+
+  onMouseUpHandler: function () {
+    this.setState({
+      borderBottom: "5px solid #2980B9"
+    })
+  },
+
+  updateOrder: function () {
+    $.ajax({
+        url: "/get/",
+        method: "GET",
+        data: {sorting_method:"date",
+               direction: this.state.direction
+              }
+    }).done((data) => {
+        albums = JSON.parse(data);
+        var user_albums = albums.album_url_list['user_albums'];
+        var contr_albums = albums.album_url_list['contr_albums'];
+        this.state.updateAlbumOrder(user_albums,contr_albums);
+    }).error(function (err) {
+        console.log(err);
+    });
   },
 
 
   render: function () {
     var divStyle = {
-      background:this.state.background
+      background:this.state.background,
+      borderBottom:this.state.borderBottom,
+      cursor:this.state.cursor
     }
-    return <div onMouseLeave = {this.onMouseLeaveHandler} onMouseOver = {this.onMouseOverHandler} id="sort_user_albums_date_created" style={divStyle}>
+    return <div onMouseUp = {this.onMouseUpHandler} onMouseDown = {this.onMouseDownHandler} onMouseLeave = {this.onMouseLeaveHandler} onMouseOver = {this.onMouseOverHandler} className = "animate action_button" id="sort_user_albums_date_created" style={divStyle}>
             <span>Date Created</span>
            </div>
   }
@@ -867,29 +846,72 @@ var Sort_User_Albums_Date_Created = React.createClass({
 var Sort_User_Albums_Image_Count = React.createClass({
   getInitialState: function () {
     return {
-      background:"#000000",
+      background:"#3498DB",
+      borderBottom: "5px solid #2980B9",
+      updateAlbumOrder: this.props.updateAlbumOrder,
+      direction: "",
+      cursor: "default"
     }
-
   },
 
   onMouseOverHandler:function () {
       this.setState({
-        background:"#1B1B1B"
+        cursor:"pointer"
       })
   },
 
   onMouseLeaveHandler:function () {
       this.setState({
-        background:"#000000"
+        cursor:"default"
       })
+  },
+
+  onMouseDownHandler: function() {
+    this.updateOrder()
+    if(this.state.direction === "") {
+      this.setState({
+        borderBottom: "3px solid #2980B9",
+        direction: "-"
+      })
+    }else {
+      this.setState({
+        borderBottom: "3px solid #2980B9",
+        direction: ""
+      })
+    }
+  },
+
+  onMouseUpHandler: function () {
+    this.setState({
+      borderBottom: "5px solid #2980B9"
+    })
+  },
+
+  updateOrder: function () {
+    $.ajax({
+        url: "/get/",
+        method: "GET",
+        data: {sorting_method:"image_count",
+               direction: this.state.direction
+              }
+    }).done((data) => {
+        albums = JSON.parse(data);
+        var user_albums = albums.album_url_list['user_albums'];
+        var contr_albums = albums.album_url_list['contr_albums'];
+        this.state.updateAlbumOrder(user_albums,contr_albums);
+    }).error(function (err) {
+        console.log(err);
+    });
   },
 
 
   render: function () {
     var divStyle = {
-      background:this.state.background
+      background:this.state.background,
+      borderBottom:this.state.borderBottom,
+      cursor:this.state.cursor
     }
-    return <div onMouseLeave = {this.onMouseLeaveHandler} onMouseOver = {this.onMouseOverHandler} id="sort_user_albums_image_count" style={divStyle}>
+    return <div onMouseUp = {this.onMouseUpHandler} onMouseDown = {this.onMouseDownHandler} onMouseLeave = {this.onMouseLeaveHandler} onMouseOver = {this.onMouseOverHandler} className = "animate action_button" id="sort_user_albums_image_count" style={divStyle}>
             <span>Image Count</span>
            </div>
   }
