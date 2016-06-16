@@ -46,11 +46,12 @@
 
 	'use strict';
 
+	var _radium = __webpack_require__(1);
+
 	var Radium = __webpack_require__(1);
 	var React = __webpack_require__(4);
 	var ReactDOM = __webpack_require__(98);
-	var ReactCSSTransitionGroup = __webpack_require__(228);
-	var Masonry = __webpack_require__(235);
+	var Masonry = __webpack_require__(228);
 	var masonryOptions = {
 	  transitionDuration: 0
 	};
@@ -62,7 +63,6 @@
 	var temp_count = 0;
 	var img_count = 0;
 	var load = null;
-
 	var loadimage = new Image();
 	loadimage.src = "http://i.imgur.com/Gljcgpk.gif";
 
@@ -183,11 +183,6 @@
 	var New_Album = React.createClass({
 	  displayName: 'New_Album',
 
-	  componentDidMount: function componentDidMount() {
-	    var submit = document.getElementById('submit');
-	    addEventHandler(submit, 'click', this.submitNewAlbum);
-	  },
-
 	  submitNewAlbum: function submitNewAlbum() {
 	    var album_name = document.getElementById('name').value;
 	    var users = document.getElementById('users').value;
@@ -201,7 +196,10 @@
 	        url: "/new/album",
 	        method: "POST",
 	        data: result
-	      }).done(function (data) {}).error(function (err) {
+	      }).done(function (data) {
+	        alert(data);
+	        window.location.href = "/";
+	      }).error(function (err) {
 	        console.log(err);
 	      });
 	    }
@@ -210,44 +208,32 @@
 	  render: function render() {
 	    return React.createElement(
 	      'div',
-	      null,
+	      { className: 'new_album' },
 	      React.createElement(Header, { current_user: this.props.current_user, user_albums: this.props.user_albums, contr_albums: this.props.contr_albums }),
 	      React.createElement(
-	        'div',
-	        { className: 'new_album', key: 1 },
-	        React.createElement('img', { className: 'create_album', src: 'http://i.imgur.com/YCWwQmm.png' }),
-	        React.createElement('br', null),
+	        'form',
+	        { className: 'new_album_form' },
 	        React.createElement(
-	          'form',
-	          { className: 'new_album_form' },
-	          React.createElement(
-	            'p',
-	            { className: 'name' },
-	            React.createElement(
-	              'label',
-	              { 'for': 'name' },
-	              'Name'
-	            ),
-	            React.createElement('br', null),
-	            React.createElement('input', { type: 'text', name: 'name', id: 'name', maxLength: '20' })
-	          ),
-	          React.createElement(
-	            'p',
-	            { className: 'users' },
-	            React.createElement(
-	              'label',
-	              { 'for': 'users' },
-	              'Other Users'
-	            ),
-	            React.createElement('br', null),
-	            React.createElement('input', { type: 'text', name: 'users', id: 'users' })
-	          ),
-	          React.createElement('br', null),
-	          React.createElement(
-	            'p',
-	            { className: 'submit', id: 'submit' },
-	            React.createElement('input', { type: 'submit', value: 'Save' })
-	          )
+	          'span',
+	          { id: 'create_album_text' },
+	          'Create New Album'
+	        ),
+	        React.createElement(
+	          'span',
+	          { id: 'create_album_name_text' },
+	          'Name'
+	        ),
+	        React.createElement('input', { type: 'text', name: 'name', className: 'name', id: 'name', maxLength: '20' }),
+	        React.createElement(
+	          'span',
+	          { id: 'create_album_users_text' },
+	          'Users'
+	        ),
+	        React.createElement('input', { className: 'users', type: 'text', name: 'users', id: 'users' }),
+	        React.createElement(
+	          'button',
+	          { onMouseDown: this.submitNewAlbum, type: 'submit' },
+	          'Save'
 	        )
 	      )
 	    );
@@ -364,6 +350,16 @@
 	            )
 	          ),
 	          React.createElement(
+	            'div',
+	            { onMouseDown: this.createAlbum, id: 'create_new_album' },
+	            React.createElement(
+	              'p',
+	              null,
+	              'New Album'
+	            )
+	          ),
+	          React.createElement(User_Commands, { user_name: this.props.current_user }),
+	          React.createElement(
 	            'label',
 	            { className: 'switch' },
 	            React.createElement('input', { id: 'imgur_check', type: 'checkbox' }),
@@ -372,6 +368,75 @@
 	        )
 	      );
 	    }
+	  }
+	});
+
+	var User_Commands = React.createClass({
+	  displayName: 'User_Commands',
+
+	  getInitialState: function getInitialState() {
+	    return {
+	      selected: false,
+	      logout_style: { cursor: "pointer", background: "#000000" },
+	      main_style: {}
+	    };
+	  },
+
+	  mainOver: function mainOver() {
+	    this.setState({
+	      selected: true,
+	      main_style: { cursor: "pointer", background: "#5B97EF" }
+	    });
+	  },
+
+	  mainLeave: function mainLeave() {
+	    this.setState({
+	      selected: false,
+	      main_style: {},
+	      logout_style: { background: "#000000" }
+	    });
+	  },
+
+	  logout: function logout() {
+	    window.location.href = "/accounts/logout";
+	  },
+
+	  logoutOver: function logoutOver() {
+	    this.setState({
+	      logout_style: { cursor: "pointer", background: "#5B97EF" }
+	    });
+	  },
+
+	  logoutLeave: function logoutLeave() {
+	    this.setState({
+	      logout_style: { background: "#000000" }
+	    });
+	  },
+
+	  render: function render() {
+	    return React.createElement(
+	      'div',
+	      { style: this.state.main_style, id: 'user_commands', onMouseEnter: this.mainOver, onMouseLeave: this.mainLeave },
+	      React.createElement(
+	        'p',
+	        null,
+	        this.props.user_name,
+	        ' ▾'
+	      ),
+	      this.state.selected && React.createElement(
+	        'div',
+	        { id: 'user_commands_container' },
+	        React.createElement(
+	          'div',
+	          { style: this.state.logout_style, id: 'user_commands_logout', onMouseLeave: this.logoutLeave, onMouseOver: this.logoutOver, onMouseDown: this.logout },
+	          React.createElement(
+	            'p',
+	            null,
+	            ' Logout '
+	          )
+	        )
+	      )
+	    );
 	  }
 	});
 
@@ -528,14 +593,14 @@
 	            , disableImagesLoaded: false // default false
 	            , onImagesLoaded: this.handleImagesLoaded
 	          },
-	          this.state.user_albums.map(function (x) {
+	          this.state.user_albums.map(function (x, y) {
 	            var img_urls = x.urls;
 
 	            var album_cover = img_urls[0];
 
 	            var album_name = x.name;
 	            var album_author = x.author;
-	            return React.createElement(Album_IMG, { contr_albums: _this2.state.contr_albums, user_albums: _this2.state.user_albums, delete_album: _this2.delete_album, select_source_method: _this2.select_source_method, current_user: _this2.props.current_user, key_code: _this2.state.key_code, album_author: album_author, album_name: album_name, class_name: "col-sm album_img selected", urls: img_urls, img_source: album_cover });
+	            return React.createElement(Album_IMG, { key: y, contr_albums: _this2.state.contr_albums, user_albums: _this2.state.user_albums, delete_album: _this2.delete_album, select_source_method: _this2.select_source_method, current_user: _this2.props.current_user, key_code: _this2.state.key_code, album_author: album_author, album_name: album_name, class_name: "col-sm album_img selected", urls: img_urls, img_source: album_cover });
 	          })
 	        ),
 	        React.createElement(
@@ -551,7 +616,7 @@
 	            , options: masonryOptions // default {}
 	            , disableImagesLoaded: false // default false
 	          },
-	          this.state.contr_albums.map(function (x) {
+	          this.state.contr_albums.map(function (x, y) {
 	            var last_album = null;
 	            if (_this2.state.contr_albums.indexOf(x) === _this2.state.contr_albums.length - 1) {
 	              last_album = true;
@@ -560,7 +625,7 @@
 	            var album_cover = img_urls[0];
 	            var album_name = x.name;
 	            var album_author = x.author;
-	            return React.createElement(Album_IMG, { contr_albums: _this2.state.contr_albums, updateLoad: _this2.updateLoad, last_album: last_album, user_albums: _this2.state.user_albums, delete_album: _this2.delete_album, select_source_method: _this2.select_source_method, current_user: _this2.props.current_user, key_code: _this2.state.key_code, album_author: album_author, album_name: album_name, class_name: "col-sm album_img selected", urls: img_urls, img_source: album_cover });
+	            return React.createElement(Album_IMG, { key: y, contr_albums: _this2.state.contr_albums, updateLoad: _this2.updateLoad, last_album: last_album, user_albums: _this2.state.user_albums, delete_album: _this2.delete_album, select_source_method: _this2.select_source_method, current_user: _this2.props.current_user, key_code: _this2.state.key_code, album_author: album_author, album_name: album_name, class_name: "col-sm album_img selected", urls: img_urls, img_source: album_cover });
 	          })
 	        )
 	      );
@@ -573,7 +638,7 @@
 	        React.createElement(
 	          'div',
 	          { id: 'user_albums_title' },
-	          React.createElement('input', { id: 'search_album', onChange: this.onChangeHandler }),
+	          React.createElement(Search_Albums, { onChangeHandler: this.onChangeHandler }),
 	          React.createElement(
 	            'span',
 	            { className: 'album_title' },
@@ -590,7 +655,7 @@
 	            , disableImagesLoaded: false // default false
 	            , onImagesLoaded: this.handleImagesLoaded
 	          },
-	          this.state.user_albums.map(function (x) {
+	          this.state.user_albums.map(function (x, y) {
 	            var img_urls = x.urls;
 	            try {
 	              var album_cover = img_urls[0];
@@ -599,7 +664,7 @@
 	            }
 	            var album_name = x.name;
 	            var album_author = x.author;
-	            return React.createElement(Album_IMG, { contr_albums: _this2.state.contr_albums, user_albums: _this2.state.user_albums, delete_album: _this2.delete_album, select_source_method: _this2.select_source_method, current_user: _this2.props.current_user, key_code: _this2.state.key_code, album_author: album_author, album_name: album_name, class_name: "col-sm album_img selected", urls: img_urls, img_source: album_cover });
+	            return React.createElement(Album_IMG, { key: y, contr_albums: _this2.state.contr_albums, user_albums: _this2.state.user_albums, delete_album: _this2.delete_album, select_source_method: _this2.select_source_method, current_user: _this2.props.current_user, key_code: _this2.state.key_code, album_author: album_author, album_name: album_name, class_name: "col-sm album_img selected", urls: img_urls, img_source: album_cover });
 	          })
 	        ),
 	        React.createElement(
@@ -619,7 +684,7 @@
 	            , options: masonryOptions // default {}
 	            , disableImagesLoaded: false // default false
 	          },
-	          this.state.contr_albums.map(function (x) {
+	          this.state.contr_albums.map(function (x, y) {
 	            var last_album = null;
 	            if (_this2.state.contr_albums.indexOf(x) === _this2.state.contr_albums.length - 1) {
 	              last_album = true;
@@ -632,7 +697,7 @@
 	            }
 	            var album_name = x.name;
 	            var album_author = x.author;
-	            return React.createElement(Album_IMG, { contr_albums: _this2.state.contr_albums, updateLoad: _this2.updateLoad, last_album: last_album, user_albums: _this2.state.user_albums, delete_album: _this2.delete_album, select_source_method: _this2.select_source_method, current_user: _this2.props.current_user, key_code: _this2.state.key_code, album_author: album_author, album_name: album_name, class_name: "col-sm album_img selected", urls: img_urls, img_source: album_cover });
+	            return React.createElement(Album_IMG, { key: y, contr_albums: _this2.state.contr_albums, updateLoad: _this2.updateLoad, last_album: last_album, user_albums: _this2.state.user_albums, delete_album: _this2.delete_album, select_source_method: _this2.select_source_method, current_user: _this2.props.current_user, key_code: _this2.state.key_code, album_author: album_author, album_name: album_name, class_name: "col-sm album_img selected", urls: img_urls, img_source: album_cover });
 	          })
 	        )
 	      );
@@ -745,6 +810,35 @@
 	        )
 	      )
 	    );
+	  }
+	});
+
+	var Search_Albums = React.createClass({
+	  displayName: 'Search_Albums',
+
+	  getInitialState: function getInitialState() {
+	    return {
+	      onChangeHandler: this.props.onChangeHandler,
+	      placeholder: ""
+	    };
+	  },
+
+	  onFocusHandler: function onFocusHandler() {
+	    // var search = document.getElementById("search_album").value;
+	    // search !== "" && this.state.onChangeHandler()
+	    this.setState({
+	      placeholder: "Search"
+	    });
+	  },
+
+	  onBlurHandler: function onBlurHandler() {
+	    this.setState({
+	      placeholder: ""
+	    });
+	  },
+
+	  render: function render() {
+	    return React.createElement('input', { placeholder: this.state.placeholder, id: 'search_album', onBlur: this.onBlurHandler, onChange: this.state.onChangeHandler, onFocus: this.onFocusHandler });
 	  }
 	});
 
@@ -975,7 +1069,7 @@
 	      background: "#3498DB",
 	      borderBottom: "5px solid #2980B9",
 	      updateAlbumOrder: this.props.updateAlbumOrder,
-	      direction: "",
+	      direction: "-",
 	      cursor: "default"
 	    };
 	  },
@@ -1140,59 +1234,40 @@
 	  render: function render() {
 	    var _this6 = this;
 
-	    if (this.state.loading) {
-	      var last_image = false;
-	      return React.createElement(
-	        'div',
-	        null,
-	        React.createElement(Loading_Cover, null),
-	        React.createElement(
-	          Masonry,
-	          {
-	            className: 'view_images' // default ''
-	            , elementType: 'div' // default 'div'
-	            , options: masonryOptions // default {}
-	            , disableImagesLoaded: false // default false
-	          },
-	          this.props.images.map(function (src, i) {
-	            if (_this6.props.images.indexOf(src) === _this6.props.images.length - 1) {
-	              last_image = true;
-	            }
-	            return React.createElement(View_IMG, { last_image: last_image, updateLoad: _this6.updateLoad, img_source: src, key_code: _this6.state.key_code, current_user: _this6.state.current_user, album_author: _this6.props.album_author, album_selected: _this6.props.album_selected, select_source: _this6.state.select_source, select_source_method: _this6.updateSelectedImg, row: i, key: i });
-	          })
-	        )
-	      );
-	    } else {
+	    var last_image = false;
 
-	      return React.createElement(
+	    return React.createElement(
+	      'div',
+	      { id: 'album_holder' },
+	      this.state.loading && React.createElement(Loading_Cover, null),
+	      React.createElement(Header, { current_user: this.state.current_user, contr_albums: this.state.contr_albums, user_albums: this.state.user_albums }),
+	      React.createElement(
 	        'div',
-	        { id: 'album_holder' },
-	        React.createElement(Header, { current_user: this.state.current_user, contr_albums: this.state.contr_albums, user_albums: this.state.user_albums }),
+	        { id: 'album_title' },
+	        React.createElement('div', { id: 'upload_image' }),
+	        React.createElement('div', { id: 'album_settings' }),
 	        React.createElement(
-	          'div',
-	          { id: 'album_title' },
-	          React.createElement('div', { id: 'upload_image' }),
-	          React.createElement('div', { id: 'album_settings' }),
-	          React.createElement(
-	            'span',
-	            { className: 'album_title' },
-	            this.props.album_selected
-	          )
-	        ),
-	        React.createElement(
-	          Masonry,
-	          {
-	            className: 'view_images' // default ''
-	            , elementType: 'div' // default 'div'
-	            , options: masonryOptions // default {}
-	            , disableImagesLoaded: false // default false
-	          },
-	          this.props.images.map(function (src, i) {
-	            return React.createElement(View_IMG, { updateLoad: _this6.updateLoad, img_source: src, key_code: _this6.state.key_code, current_user: _this6.state.current_user, album_author: _this6.props.album_author, album_selected: _this6.props.album_selected, select_source: _this6.state.select_source, select_source_method: _this6.updateSelectedImg, row: i, key: i });
-	          })
+	          'span',
+	          { className: 'album_title' },
+	          this.props.album_selected
 	        )
-	      );
-	    }
+	      ),
+	      React.createElement(
+	        Masonry,
+	        {
+	          className: 'view_images' // default ''
+	          , elementType: 'div' // default 'div'
+	          , options: masonryOptions // default {}
+	          , disableImagesLoaded: false // default false
+	        },
+	        this.props.images.map(function (src, i) {
+	          if (_this6.props.images.indexOf(src) === _this6.props.images.length - 1) {
+	            last_image = true;
+	          }
+	          return React.createElement(View_IMG, { user_albums: _this6.state.user_albums, contr_albums: _this6.state.contr_albums, album_images: _this6.state.images, last_image: last_image, updateLoad: _this6.updateLoad, img_source: src, key_code: _this6.state.key_code, current_user: _this6.state.current_user, album_author: _this6.props.album_author, album_selected: _this6.props.album_selected, select_source: _this6.state.select_source, select_source_method: _this6.updateSelectedImg, key: i });
+	        })
+	      )
+	    );
 	  },
 
 	  getUserInfo: function getUserInfo() {
@@ -1237,6 +1312,7 @@
 
 	  getInitialState: function getInitialState() {
 	    return {
+	      album_images: this.props.album_images,
 	      updateLoad: this.props.updateLoad,
 	      current_user: this.props.current_user,
 	      album_selected: this.props.album_selected,
@@ -1247,7 +1323,6 @@
 	      img_number: this.props.img_number,
 	      class_name: this.props.class_name,
 	      key_code: this.props.key_code
-
 	    };
 	  },
 
@@ -1259,20 +1334,6 @@
 	    }, 400);
 	  },
 
-	  onMouseEnterHandler: function onMouseEnterHandler() {
-	    if (this.state.album_author === this.state.current_user) {
-	      this.setState({
-	        hidden: 'show'
-	      });
-	    }
-	  },
-
-	  onMouseLeaveHandler: function onMouseLeaveHandler() {
-	    this.setState({
-	      hidden: 'hidden'
-	    });
-	  },
-
 	  deleteImg: function deleteImg() {
 	    var lst = [];
 	    lst.push(this.state.img_source);
@@ -1280,25 +1341,12 @@
 	  },
 
 	  onMouseDownHandler: function onMouseDownHandler() {
-	    var _this9 = this;
-
-	    if (this.state.key_code === 16) {
-	      var exists = img_lst.filter(function (x) {
-	        return x === _this9.state.img_source;
-	      });
-	      if (exists.length === 0) {
-	        img_lst.push(this.state.img_source);
-	      }
-	    } else {
-	      img_lst.length = 0;
-	      img_lst.push(this.state.img_source);
-	    }
-	    this.state.select_source_method(img_lst);
+	    ReactDOM.unmountComponentAtNode(document.getElementById('main'));
+	    ReactDOM.render(React.createElement(Slideshow, { current_user: this.state.current_user, user_albums: this.props.user_albums, contr_albums: this.props.contr_albums, album_images: this.state.album_images, img_source: this.state.img_source }), document.getElementById('main'));
 	  },
 
 	  render: function render() {
 	    if (this.props.last_image) {
-
 	      return React.createElement(
 	        'div',
 	        { onMouseDown: this.onMouseDownHandler, className: 'view_image' },
@@ -1313,51 +1361,186 @@
 	    }
 	  }
 	});
+	var keyframesMidToLeft = Radium.keyframes({
+	  '0%': { left: 0 },
+	  '100%': { left: '-200em' }
+	});
 
-	var Rotate_IMG = React.createClass({
-	  displayName: 'Rotate_IMG',
+	var keyframesMidToRight = Radium.keyframes({
+	  '0%': { left: 0 },
+
+	  '100%': { left: '200em' }
+	});
+
+	var keyframesRightToMid = Radium.keyframes({
+	  '0%': { left: '100em' },
+	  '100%': { left: 0 }
+	});
+
+	var keyframesLeftToMid = Radium.keyframes({
+	  '0%': { left: '-150em' },
+	  '100%': { left: 0 }
+	});
+
+	var styles = {
+	  mid_left: {
+	    animation: 'x .2s linear 0s ',
+	    animationName: keyframesMidToLeft,
+	    left: "-200em"
+	  },
+
+	  mid_right: {
+	    animation: 'x .2s linear 0s ',
+	    animationName: keyframesMidToRight,
+	    left: "200em"
+	  },
+
+	  right_mid: {
+	    animation: 'x .2s linear 0s ',
+	    animationName: keyframesRightToMid,
+	    left: 0
+	  },
+
+	  left_mid: {
+	    animation: 'x .2s linear 0s ',
+	    animationName: keyframesLeftToMid,
+	    left: 0
+	  },
+
+	  center: {
+	    left: 0
+	  },
+
+	  right: {
+	    left: '150em'
+	  },
+
+	  left: {
+	    left: '-150em'
+	  }
+
+	};
+	var center = true;
+
+	var Slideshow = React.createClass({
+	  displayName: 'Slideshow',
 
 	  getInitialState: function getInitialState() {
 	    return {
-	      source: this.props.img_source,
-	      nextImg: this.props.nextImg,
+	      img_source: this.props.img_source,
 	      previousImg: this.props.previousImg,
-	      full_screen: false
+	      next_img: this.props.nextImg,
+	      center_style: styles.center,
+	      next_img_style: styles.right,
+	      selected_img: this.props.img_source
 	    };
 	  },
 
-	  nextImg: function nextImg() {
-	    if (window.innerHeight == screen.height) {
-	      var current_index = album_lst.indexOf(this.state.source);
-	      var new_img = "";
-	      if (current_index !== album_lst.length - 1) {
-	        new_img = album_lst[current_index + 1];
-	      } else {
-	        new_img = album_lst[0];
-	      }
+	  updateSelectedImg: function updateSelectedImg(new_img) {
+	    if (center) {
 	      this.setState({
-	        source: new_img
-	      });
-	    } else {
 
-	      this.state.nextImg();
+	        next_img: new_img,
+	        selected_img: new_img,
+	        next_img_style: styles.right_mid,
+	        center_style: styles.mid_left
+
+	      });
+	      center = false;
+	    } else {
+	      this.setState({
+	        img_source: new_img,
+	        selected_img: new_img,
+	        center_style: styles.right_mid,
+	        next_img_style: styles.mid_left
+
+	      });
+	      center = true;
+	    }
+	  },
+
+	  componentWillMount: function componentWillMount() {},
+
+	  nextImg: function nextImg() {
+	    if (center) {
+	      var current_index = this.props.album_images.indexOf(this.state.img_source);
+	      var new_img;
+	      if (current_index !== this.props.album_images.length - 1) {
+	        new_img = this.props.album_images[current_index + 1];
+	      } else {
+
+	        new_img = this.props.album_images[0];
+	        var myImage = new Image();
+	        myImage.src = new_img;
+	      }
+
+	      this.setState({
+	        next_img: new_img,
+	        next_img_style: styles.right_mid,
+	        center_style: styles.mid_left,
+	        selected_img: new_img
+	      });
+
+	      center = false;
+	    } else {
+	      var current_index = this.props.album_images.indexOf(this.state.next_img);
+	      var new_img;
+	      if (current_index !== this.props.album_images.length - 1) {
+	        new_img = this.props.album_images[current_index + 1];
+	      } else {
+	        new_img = this.props.album_images[0];
+	        var myImage = new Image();
+	        myImage.src = new_img;
+	      }
+
+	      this.setState({
+	        img_source: new_img,
+	        center_style: styles.right_mid,
+	        next_img_style: styles.mid_left,
+	        selected_img: new_img
+	      });
+
+	      center = true;
 	    }
 	  },
 
 	  previousImg: function previousImg() {
-	    if (window.innerHeight == screen.height) {
-	      var current_index = album_lst.indexOf(this.state.source);
-	      var new_img = "";
+	    if (center) {
+	      var current_index = this.props.album_images.indexOf(this.state.img_source);
+	      var new_img;
 	      if (current_index > 0) {
-	        new_img = album_lst[current_index - 1];
-	      } else if (current_index === 0 && album_lst.length === 1) {} else {
-	        new_img = album_lst[album_lst.length - 1];
+	        new_img = this.props.album_images[current_index - 1];
+	      } else if (current_index === 0 && this.props.album_images.length === 1) {} else {
+	        new_img = this.props.album_images[this.props.album_images.length - 1];
+	        var myImage = new Image();
+	        myImage.src = new_img;
+	      }
+
+	      this.setState({
+	        next_img: new_img,
+	        next_img_style: styles.left_mid,
+	        center_style: styles.mid_right,
+	        selected_img: new_img
+	      });
+
+	      center = false;
+	    } else {
+	      var current_index = this.props.album_images.indexOf(this.state.next_img);
+	      var new_img;
+	      if (current_index > 0) {
+	        new_img = this.props.album_images[current_index - 1];
+	      } else if (current_index === 0 && this.props.album_images.length === 1) {} else {
+	        new_img = this.props.album_images[this.props.album_images.length - 1];
+	        var myImage = new Image();
+	        myImage.src = new_img;
 	      }
 	      this.setState({
-	        source: new_img
+	        img_source: new_img,
+	        center_style: styles.left_mid,
+	        next_img_style: styles.mid_right,
+	        selected_img: new_img
 	      });
-	    } else {
-	      this.state.previousImg();
+	      center = true;
 	    }
 	  },
 
@@ -1377,15 +1560,94 @@
 
 	  render: function render() {
 
-	    var divStyle = {
-	      backgroundImage: 'url(' + this.state.source + ')'
+	    var main_back_image = {
+	      backgroundImage: 'url(' + this.state.img_source + ')'
 	    };
+	    var next_back_image = {
+	      backgroundImage: 'url(' + this.state.next_img + ')'
+	    };
+	    var main_div_style = $.extend(true, {}, main_back_image, this.state.center_style);
+	    var next_img_style = $.extend(true, {}, next_back_image, this.state.next_img_style);
+
 	    return React.createElement(
 	      'div',
-	      { style: divStyle, id: 'main_img_container', onMouseDown: this.onMouseDownHandler, className: "main_img_container" },
+	      { className: 'slideshow_container' },
+	      React.createElement(Header, { current_user: this.props.current_user, user_albums: this.props.user_albums, contr_albums: this.props.contr_albums }),
+	      React.createElement(
+	        _radium.StyleRoot,
+	        null,
+	        React.createElement('div', { style: main_div_style, id: 'main_img_container', onMouseDown: this.onMouseDownHandler, className: "main_img_container" }),
+	        React.createElement('div', { style: next_img_style, id: 'next_img_container', onMouseDown: this.onMouseDownHandler, className: "next_img_container" })
+	      ),
+	      React.createElement(Thumbnail_Slider, { updateSelectedImg: this.updateSelectedImg, album_images: this.props.album_images, selected_img: this.state.selected_img }),
 	      React.createElement(Next_IMG_Button, { nextImg: this.nextImg }),
 	      React.createElement(Previous_IMG_Button, { previousImg: this.previousImg })
 	    );
+	  }
+	});
+	module.exports = Radium(Slideshow);
+
+	var Thumbnail_Slider = React.createClass({
+	  displayName: 'Thumbnail_Slider',
+
+
+	  render: function render() {
+	    var _this9 = this;
+
+	    var width = this.props.album_images.length * 9 + 2;
+	    var thumb_style = {
+	      width: width + "em",
+	      margin: "0 auto"
+	    };
+	    return React.createElement(
+	      'div',
+	      { className: 'slider_container' },
+	      React.createElement(
+	        _radium.StyleRoot,
+	        null,
+	        React.createElement(
+	          'div',
+	          { className: 'thumbnail_container', style: thumb_style },
+	          this.props.album_images.map(function (x, y) {
+	            return React.createElement(Thumbnail_Image, { updateSelectedImg: _this9.props.updateSelectedImg, key: y, img_source: x, selected_img: _this9.props.selected_img });
+	          })
+	        )
+	      )
+	    );
+	  }
+
+	});
+
+	module.exports = Radium(Slideshow);
+	module.exports = Radium(Thumbnail_Slider);
+	var Thumbnail_Image = React.createClass({
+	  displayName: 'Thumbnail_Image',
+
+	  getInitialState: function getInitialState() {
+	    return {
+	      updateSelectedImg: this.props.updateSelectedImg
+	    };
+	  },
+
+	  onMouseDownHandler: function onMouseDownHandler() {
+	    this.state.updateSelectedImg(this.props.img_source);
+	  },
+
+	  render: function render() {
+	    if (this.props.selected_img === this.props.img_source) {
+	      var background = {
+	        backgroundImage: 'url(' + this.props.img_source + ')',
+	        outline: 'none',
+	        boxshadow: '0px 1rem 1rem .5rem #333',
+	        border: '1pt blue solid'
+	      };
+	    } else {
+	      var background = {
+	        backgroundImage: 'url(' + this.props.img_source + ')'
+	      };
+	    }
+
+	    return React.createElement('div', { onMouseDown: this.onMouseDownHandler, className: 'thumbnail_img', style: background });
 	  }
 	});
 
@@ -1667,6 +1929,7 @@
 	  }
 	}
 	function main() {
+
 	  try {
 	    get_albums("a-z", "");
 	  } catch (x) {}
@@ -25816,799 +26079,13 @@
 /* 228 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(229);
-
-/***/ },
-/* 229 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-present, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule ReactCSSTransitionGroup
-	 */
-
-	'use strict';
-
-	var _assign = __webpack_require__(6);
-
-	var React = __webpack_require__(5);
-
-	var ReactTransitionGroup = __webpack_require__(230);
-	var ReactCSSTransitionGroupChild = __webpack_require__(232);
-
-	function createTransitionTimeoutPropValidator(transitionType) {
-	  var timeoutPropName = 'transition' + transitionType + 'Timeout';
-	  var enabledPropName = 'transition' + transitionType;
-
-	  return function (props) {
-	    // If the transition is enabled
-	    if (props[enabledPropName]) {
-	      // If no timeout duration is provided
-	      if (props[timeoutPropName] == null) {
-	        return new Error(timeoutPropName + ' wasn\'t supplied to ReactCSSTransitionGroup: ' + 'this can cause unreliable animations and won\'t be supported in ' + 'a future version of React. See ' + 'https://fb.me/react-animation-transition-group-timeout for more ' + 'information.');
-
-	        // If the duration isn't a number
-	      } else if (typeof props[timeoutPropName] !== 'number') {
-	          return new Error(timeoutPropName + ' must be a number (in milliseconds)');
-	        }
-	    }
-	  };
-	}
-
-	/**
-	 * An easy way to perform CSS transitions and animations when a React component
-	 * enters or leaves the DOM.
-	 * See https://facebook.github.io/react/docs/animation.html#high-level-api-reactcsstransitiongroup
-	 */
-	var ReactCSSTransitionGroup = React.createClass({
-	  displayName: 'ReactCSSTransitionGroup',
-
-	  propTypes: {
-	    transitionName: ReactCSSTransitionGroupChild.propTypes.name,
-
-	    transitionAppear: React.PropTypes.bool,
-	    transitionEnter: React.PropTypes.bool,
-	    transitionLeave: React.PropTypes.bool,
-	    transitionAppearTimeout: createTransitionTimeoutPropValidator('Appear'),
-	    transitionEnterTimeout: createTransitionTimeoutPropValidator('Enter'),
-	    transitionLeaveTimeout: createTransitionTimeoutPropValidator('Leave')
-	  },
-
-	  getDefaultProps: function () {
-	    return {
-	      transitionAppear: false,
-	      transitionEnter: true,
-	      transitionLeave: true
-	    };
-	  },
-
-	  _wrapChild: function (child) {
-	    // We need to provide this childFactory so that
-	    // ReactCSSTransitionGroupChild can receive updates to name, enter, and
-	    // leave while it is leaving.
-	    return React.createElement(ReactCSSTransitionGroupChild, {
-	      name: this.props.transitionName,
-	      appear: this.props.transitionAppear,
-	      enter: this.props.transitionEnter,
-	      leave: this.props.transitionLeave,
-	      appearTimeout: this.props.transitionAppearTimeout,
-	      enterTimeout: this.props.transitionEnterTimeout,
-	      leaveTimeout: this.props.transitionLeaveTimeout
-	    }, child);
-	  },
-
-	  render: function () {
-	    return React.createElement(ReactTransitionGroup, _assign({}, this.props, { childFactory: this._wrapChild }));
-	  }
-	});
-
-	module.exports = ReactCSSTransitionGroup;
-
-/***/ },
-/* 230 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-present, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule ReactTransitionGroup
-	 */
-
-	'use strict';
-
-	var _assign = __webpack_require__(6);
-
-	var React = __webpack_require__(5);
-	var ReactTransitionChildMapping = __webpack_require__(231);
-
-	var emptyFunction = __webpack_require__(13);
-
-	/**
-	 * A basis for animatins. When children are declaratively added or removed,
-	 * special lifecycle hooks are called.
-	 * See https://facebook.github.io/react/docs/animation.html#low-level-api-reacttransitiongroup
-	 */
-	var ReactTransitionGroup = React.createClass({
-	  displayName: 'ReactTransitionGroup',
-
-	  propTypes: {
-	    component: React.PropTypes.any,
-	    childFactory: React.PropTypes.func
-	  },
-
-	  getDefaultProps: function () {
-	    return {
-	      component: 'span',
-	      childFactory: emptyFunction.thatReturnsArgument
-	    };
-	  },
-
-	  getInitialState: function () {
-	    return {
-	      children: ReactTransitionChildMapping.getChildMapping(this.props.children)
-	    };
-	  },
-
-	  componentWillMount: function () {
-	    this.currentlyTransitioningKeys = {};
-	    this.keysToEnter = [];
-	    this.keysToLeave = [];
-	  },
-
-	  componentDidMount: function () {
-	    var initialChildMapping = this.state.children;
-	    for (var key in initialChildMapping) {
-	      if (initialChildMapping[key]) {
-	        this.performAppear(key);
-	      }
-	    }
-	  },
-
-	  componentWillReceiveProps: function (nextProps) {
-	    var nextChildMapping = ReactTransitionChildMapping.getChildMapping(nextProps.children);
-	    var prevChildMapping = this.state.children;
-
-	    this.setState({
-	      children: ReactTransitionChildMapping.mergeChildMappings(prevChildMapping, nextChildMapping)
-	    });
-
-	    var key;
-
-	    for (key in nextChildMapping) {
-	      var hasPrev = prevChildMapping && prevChildMapping.hasOwnProperty(key);
-	      if (nextChildMapping[key] && !hasPrev && !this.currentlyTransitioningKeys[key]) {
-	        this.keysToEnter.push(key);
-	      }
-	    }
-
-	    for (key in prevChildMapping) {
-	      var hasNext = nextChildMapping && nextChildMapping.hasOwnProperty(key);
-	      if (prevChildMapping[key] && !hasNext && !this.currentlyTransitioningKeys[key]) {
-	        this.keysToLeave.push(key);
-	      }
-	    }
-
-	    // If we want to someday check for reordering, we could do it here.
-	  },
-
-	  componentDidUpdate: function () {
-	    var keysToEnter = this.keysToEnter;
-	    this.keysToEnter = [];
-	    keysToEnter.forEach(this.performEnter);
-
-	    var keysToLeave = this.keysToLeave;
-	    this.keysToLeave = [];
-	    keysToLeave.forEach(this.performLeave);
-	  },
-
-	  performAppear: function (key) {
-	    this.currentlyTransitioningKeys[key] = true;
-
-	    var component = this.refs[key];
-
-	    if (component.componentWillAppear) {
-	      component.componentWillAppear(this._handleDoneAppearing.bind(this, key));
-	    } else {
-	      this._handleDoneAppearing(key);
-	    }
-	  },
-
-	  _handleDoneAppearing: function (key) {
-	    var component = this.refs[key];
-	    if (component.componentDidAppear) {
-	      component.componentDidAppear();
-	    }
-
-	    delete this.currentlyTransitioningKeys[key];
-
-	    var currentChildMapping = ReactTransitionChildMapping.getChildMapping(this.props.children);
-
-	    if (!currentChildMapping || !currentChildMapping.hasOwnProperty(key)) {
-	      // This was removed before it had fully appeared. Remove it.
-	      this.performLeave(key);
-	    }
-	  },
-
-	  performEnter: function (key) {
-	    this.currentlyTransitioningKeys[key] = true;
-
-	    var component = this.refs[key];
-
-	    if (component.componentWillEnter) {
-	      component.componentWillEnter(this._handleDoneEntering.bind(this, key));
-	    } else {
-	      this._handleDoneEntering(key);
-	    }
-	  },
-
-	  _handleDoneEntering: function (key) {
-	    var component = this.refs[key];
-	    if (component.componentDidEnter) {
-	      component.componentDidEnter();
-	    }
-
-	    delete this.currentlyTransitioningKeys[key];
-
-	    var currentChildMapping = ReactTransitionChildMapping.getChildMapping(this.props.children);
-
-	    if (!currentChildMapping || !currentChildMapping.hasOwnProperty(key)) {
-	      // This was removed before it had fully entered. Remove it.
-	      this.performLeave(key);
-	    }
-	  },
-
-	  performLeave: function (key) {
-	    this.currentlyTransitioningKeys[key] = true;
-
-	    var component = this.refs[key];
-	    if (component.componentWillLeave) {
-	      component.componentWillLeave(this._handleDoneLeaving.bind(this, key));
-	    } else {
-	      // Note that this is somewhat dangerous b/c it calls setState()
-	      // again, effectively mutating the component before all the work
-	      // is done.
-	      this._handleDoneLeaving(key);
-	    }
-	  },
-
-	  _handleDoneLeaving: function (key) {
-	    var component = this.refs[key];
-
-	    if (component.componentDidLeave) {
-	      component.componentDidLeave();
-	    }
-
-	    delete this.currentlyTransitioningKeys[key];
-
-	    var currentChildMapping = ReactTransitionChildMapping.getChildMapping(this.props.children);
-
-	    if (currentChildMapping && currentChildMapping.hasOwnProperty(key)) {
-	      // This entered again before it fully left. Add it again.
-	      this.performEnter(key);
-	    } else {
-	      this.setState(function (state) {
-	        var newChildren = _assign({}, state.children);
-	        delete newChildren[key];
-	        return { children: newChildren };
-	      });
-	    }
-	  },
-
-	  render: function () {
-	    // TODO: we could get rid of the need for the wrapper node
-	    // by cloning a single child
-	    var childrenToRender = [];
-	    for (var key in this.state.children) {
-	      var child = this.state.children[key];
-	      if (child) {
-	        // You may need to apply reactive updates to a child as it is leaving.
-	        // The normal React way to do it won't work since the child will have
-	        // already been removed. In case you need this behavior you can provide
-	        // a childFactory function to wrap every child, even the ones that are
-	        // leaving.
-	        childrenToRender.push(React.cloneElement(this.props.childFactory(child), { ref: key, key: key }));
-	      }
-	    }
-	    return React.createElement(this.props.component, this.props, childrenToRender);
-	  }
-	});
-
-	module.exports = ReactTransitionGroup;
-
-/***/ },
-/* 231 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-present, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule ReactTransitionChildMapping
-	 */
-
-	'use strict';
-
-	var flattenChildren = __webpack_require__(187);
-
-	var ReactTransitionChildMapping = {
-	  /**
-	   * Given `this.props.children`, return an object mapping key to child. Just
-	   * simple syntactic sugar around flattenChildren().
-	   *
-	   * @param {*} children `this.props.children`
-	   * @return {object} Mapping of key to child
-	   */
-	  getChildMapping: function (children) {
-	    if (!children) {
-	      return children;
-	    }
-	    return flattenChildren(children);
-	  },
-
-	  /**
-	   * When you're adding or removing children some may be added or removed in the
-	   * same render pass. We want to show *both* since we want to simultaneously
-	   * animate elements in and out. This function takes a previous set of keys
-	   * and a new set of keys and merges them with its best guess of the correct
-	   * ordering. In the future we may expose some of the utilities in
-	   * ReactMultiChild to make this easy, but for now React itself does not
-	   * directly have this concept of the union of prevChildren and nextChildren
-	   * so we implement it here.
-	   *
-	   * @param {object} prev prev children as returned from
-	   * `ReactTransitionChildMapping.getChildMapping()`.
-	   * @param {object} next next children as returned from
-	   * `ReactTransitionChildMapping.getChildMapping()`.
-	   * @return {object} a key set that contains all keys in `prev` and all keys
-	   * in `next` in a reasonable order.
-	   */
-	  mergeChildMappings: function (prev, next) {
-	    prev = prev || {};
-	    next = next || {};
-
-	    function getValueForKey(key) {
-	      if (next.hasOwnProperty(key)) {
-	        return next[key];
-	      } else {
-	        return prev[key];
-	      }
-	    }
-
-	    // For each key of `next`, the list of keys to insert before that key in
-	    // the combined list
-	    var nextKeysPending = {};
-
-	    var pendingKeys = [];
-	    for (var prevKey in prev) {
-	      if (next.hasOwnProperty(prevKey)) {
-	        if (pendingKeys.length) {
-	          nextKeysPending[prevKey] = pendingKeys;
-	          pendingKeys = [];
-	        }
-	      } else {
-	        pendingKeys.push(prevKey);
-	      }
-	    }
-
-	    var i;
-	    var childMapping = {};
-	    for (var nextKey in next) {
-	      if (nextKeysPending.hasOwnProperty(nextKey)) {
-	        for (i = 0; i < nextKeysPending[nextKey].length; i++) {
-	          var pendingNextKey = nextKeysPending[nextKey][i];
-	          childMapping[nextKeysPending[nextKey][i]] = getValueForKey(pendingNextKey);
-	        }
-	      }
-	      childMapping[nextKey] = getValueForKey(nextKey);
-	    }
-
-	    // Finally, add the keys which didn't appear before any key in `next`
-	    for (i = 0; i < pendingKeys.length; i++) {
-	      childMapping[pendingKeys[i]] = getValueForKey(pendingKeys[i]);
-	    }
-
-	    return childMapping;
-	  }
-	};
-
-	module.exports = ReactTransitionChildMapping;
-
-/***/ },
-/* 232 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-present, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule ReactCSSTransitionGroupChild
-	 */
-
-	'use strict';
-
-	var React = __webpack_require__(5);
-	var ReactDOM = __webpack_require__(99);
-
-	var CSSCore = __webpack_require__(233);
-	var ReactTransitionEvents = __webpack_require__(234);
-
-	var onlyChild = __webpack_require__(39);
-
-	var TICK = 17;
-
-	var ReactCSSTransitionGroupChild = React.createClass({
-	  displayName: 'ReactCSSTransitionGroupChild',
-
-	  propTypes: {
-	    name: React.PropTypes.oneOfType([React.PropTypes.string, React.PropTypes.shape({
-	      enter: React.PropTypes.string,
-	      leave: React.PropTypes.string,
-	      active: React.PropTypes.string
-	    }), React.PropTypes.shape({
-	      enter: React.PropTypes.string,
-	      enterActive: React.PropTypes.string,
-	      leave: React.PropTypes.string,
-	      leaveActive: React.PropTypes.string,
-	      appear: React.PropTypes.string,
-	      appearActive: React.PropTypes.string
-	    })]).isRequired,
-
-	    // Once we require timeouts to be specified, we can remove the
-	    // boolean flags (appear etc.) and just accept a number
-	    // or a bool for the timeout flags (appearTimeout etc.)
-	    appear: React.PropTypes.bool,
-	    enter: React.PropTypes.bool,
-	    leave: React.PropTypes.bool,
-	    appearTimeout: React.PropTypes.number,
-	    enterTimeout: React.PropTypes.number,
-	    leaveTimeout: React.PropTypes.number
-	  },
-
-	  transition: function (animationType, finishCallback, userSpecifiedDelay) {
-	    var node = ReactDOM.findDOMNode(this);
-
-	    if (!node) {
-	      if (finishCallback) {
-	        finishCallback();
-	      }
-	      return;
-	    }
-
-	    var className = this.props.name[animationType] || this.props.name + '-' + animationType;
-	    var activeClassName = this.props.name[animationType + 'Active'] || className + '-active';
-	    var timeout = null;
-
-	    var endListener = function (e) {
-	      if (e && e.target !== node) {
-	        return;
-	      }
-
-	      clearTimeout(timeout);
-
-	      CSSCore.removeClass(node, className);
-	      CSSCore.removeClass(node, activeClassName);
-
-	      ReactTransitionEvents.removeEndEventListener(node, endListener);
-
-	      // Usually this optional callback is used for informing an owner of
-	      // a leave animation and telling it to remove the child.
-	      if (finishCallback) {
-	        finishCallback();
-	      }
-	    };
-
-	    CSSCore.addClass(node, className);
-
-	    // Need to do this to actually trigger a transition.
-	    this.queueClass(activeClassName);
-
-	    // If the user specified a timeout delay.
-	    if (userSpecifiedDelay) {
-	      // Clean-up the animation after the specified delay
-	      timeout = setTimeout(endListener, userSpecifiedDelay);
-	      this.transitionTimeouts.push(timeout);
-	    } else {
-	      // DEPRECATED: this listener will be removed in a future version of react
-	      ReactTransitionEvents.addEndEventListener(node, endListener);
-	    }
-	  },
-
-	  queueClass: function (className) {
-	    this.classNameQueue.push(className);
-
-	    if (!this.timeout) {
-	      this.timeout = setTimeout(this.flushClassNameQueue, TICK);
-	    }
-	  },
-
-	  flushClassNameQueue: function () {
-	    if (this.isMounted()) {
-	      this.classNameQueue.forEach(CSSCore.addClass.bind(CSSCore, ReactDOM.findDOMNode(this)));
-	    }
-	    this.classNameQueue.length = 0;
-	    this.timeout = null;
-	  },
-
-	  componentWillMount: function () {
-	    this.classNameQueue = [];
-	    this.transitionTimeouts = [];
-	  },
-
-	  componentWillUnmount: function () {
-	    if (this.timeout) {
-	      clearTimeout(this.timeout);
-	    }
-	    this.transitionTimeouts.forEach(function (timeout) {
-	      clearTimeout(timeout);
-	    });
-	  },
-
-	  componentWillAppear: function (done) {
-	    if (this.props.appear) {
-	      this.transition('appear', done, this.props.appearTimeout);
-	    } else {
-	      done();
-	    }
-	  },
-
-	  componentWillEnter: function (done) {
-	    if (this.props.enter) {
-	      this.transition('enter', done, this.props.enterTimeout);
-	    } else {
-	      done();
-	    }
-	  },
-
-	  componentWillLeave: function (done) {
-	    if (this.props.leave) {
-	      this.transition('leave', done, this.props.leaveTimeout);
-	    } else {
-	      done();
-	    }
-	  },
-
-	  render: function () {
-	    return onlyChild(this.props.children);
-	  }
-	});
-
-	module.exports = ReactCSSTransitionGroupChild;
-
-/***/ },
-/* 233 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
-
-	/**
-	 * Copyright (c) 2013-present, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @typechecks
-	 */
-
-	var invariant = __webpack_require__(9);
-
-	/**
-	 * The CSSCore module specifies the API (and implements most of the methods)
-	 * that should be used when dealing with the display of elements (via their
-	 * CSS classes and visibility on screen. It is an API focused on mutating the
-	 * display and not reading it as no logical state should be encoded in the
-	 * display of elements.
-	 */
-
-	/* Slow implementation for browsers that don't natively support .matches() */
-	function matchesSelector_SLOW(element, selector) {
-	  var root = element;
-	  while (root.parentNode) {
-	    root = root.parentNode;
-	  }
-
-	  var all = root.querySelectorAll(selector);
-	  return Array.prototype.indexOf.call(all, element) !== -1;
-	}
-
-	var CSSCore = {
-
-	  /**
-	   * Adds the class passed in to the element if it doesn't already have it.
-	   *
-	   * @param {DOMElement} element the element to set the class on
-	   * @param {string} className the CSS className
-	   * @return {DOMElement} the element passed in
-	   */
-	  addClass: function addClass(element, className) {
-	    !!/\s/.test(className) ? process.env.NODE_ENV !== 'production' ? invariant(false, 'CSSCore.addClass takes only a single class name. "%s" contains ' + 'multiple classes.', className) : invariant(false) : void 0;
-
-	    if (className) {
-	      if (element.classList) {
-	        element.classList.add(className);
-	      } else if (!CSSCore.hasClass(element, className)) {
-	        element.className = element.className + ' ' + className;
-	      }
-	    }
-	    return element;
-	  },
-
-	  /**
-	   * Removes the class passed in from the element
-	   *
-	   * @param {DOMElement} element the element to set the class on
-	   * @param {string} className the CSS className
-	   * @return {DOMElement} the element passed in
-	   */
-	  removeClass: function removeClass(element, className) {
-	    !!/\s/.test(className) ? process.env.NODE_ENV !== 'production' ? invariant(false, 'CSSCore.removeClass takes only a single class name. "%s" contains ' + 'multiple classes.', className) : invariant(false) : void 0;
-
-	    if (className) {
-	      if (element.classList) {
-	        element.classList.remove(className);
-	      } else if (CSSCore.hasClass(element, className)) {
-	        element.className = element.className.replace(new RegExp('(^|\\s)' + className + '(?:\\s|$)', 'g'), '$1').replace(/\s+/g, ' ') // multiple spaces to one
-	        .replace(/^\s*|\s*$/g, ''); // trim the ends
-	      }
-	    }
-	    return element;
-	  },
-
-	  /**
-	   * Helper to add or remove a class from an element based on a condition.
-	   *
-	   * @param {DOMElement} element the element to set the class on
-	   * @param {string} className the CSS className
-	   * @param {*} bool condition to whether to add or remove the class
-	   * @return {DOMElement} the element passed in
-	   */
-	  conditionClass: function conditionClass(element, className, bool) {
-	    return (bool ? CSSCore.addClass : CSSCore.removeClass)(element, className);
-	  },
-
-	  /**
-	   * Tests whether the element has the class specified.
-	   *
-	   * @param {DOMNode|DOMWindow} element the element to check the class on
-	   * @param {string} className the CSS className
-	   * @return {boolean} true if the element has the class, false if not
-	   */
-	  hasClass: function hasClass(element, className) {
-	    !!/\s/.test(className) ? process.env.NODE_ENV !== 'production' ? invariant(false, 'CSS.hasClass takes only a single class name.') : invariant(false) : void 0;
-	    if (element.classList) {
-	      return !!className && element.classList.contains(className);
-	    }
-	    return (' ' + element.className + ' ').indexOf(' ' + className + ' ') > -1;
-	  },
-
-	  /**
-	   * Tests whether the element matches the selector specified
-	   *
-	   * @param {DOMNode|DOMWindow} element the element that we are querying
-	   * @param {string} selector the CSS selector
-	   * @return {boolean} true if the element matches the selector, false if not
-	   */
-	  matchesSelector: function matchesSelector(element, selector) {
-	    var matchesImpl = element.matches || element.webkitMatchesSelector || element.mozMatchesSelector || element.msMatchesSelector || function (s) {
-	      return matchesSelector_SLOW(element, s);
-	    };
-	    return matchesImpl.call(element, selector);
-	  }
-
-	};
-
-	module.exports = CSSCore;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
-
-/***/ },
-/* 234 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-present, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule ReactTransitionEvents
-	 */
-
-	'use strict';
-
-	var ExecutionEnvironment = __webpack_require__(22);
-
-	var getVendorPrefixedEventName = __webpack_require__(168);
-
-	var endEvents = [];
-
-	function detectEvents() {
-	  var animEnd = getVendorPrefixedEventName('animationend');
-	  var transEnd = getVendorPrefixedEventName('transitionend');
-
-	  if (animEnd) {
-	    endEvents.push(animEnd);
-	  }
-
-	  if (transEnd) {
-	    endEvents.push(transEnd);
-	  }
-	}
-
-	if (ExecutionEnvironment.canUseDOM) {
-	  detectEvents();
-	}
-
-	// We use the raw {add|remove}EventListener() call because EventListener
-	// does not know how to remove event listeners and we really should
-	// clean up. Also, these events are not triggered in older browsers
-	// so we should be A-OK here.
-
-	function addEventListener(node, eventName, eventListener) {
-	  node.addEventListener(eventName, eventListener, false);
-	}
-
-	function removeEventListener(node, eventName, eventListener) {
-	  node.removeEventListener(eventName, eventListener, false);
-	}
-
-	var ReactTransitionEvents = {
-	  addEndEventListener: function (node, eventListener) {
-	    if (endEvents.length === 0) {
-	      // If CSS transitions are not supported, trigger an "end animation"
-	      // event immediately.
-	      window.setTimeout(eventListener, 0);
-	      return;
-	    }
-	    endEvents.forEach(function (endEvent) {
-	      addEventListener(node, endEvent, eventListener);
-	    });
-	  },
-
-	  removeEndEventListener: function (node, eventListener) {
-	    if (endEvents.length === 0) {
-	      return;
-	    }
-	    endEvents.forEach(function (endEvent) {
-	      removeEventListener(node, endEvent, eventListener);
-	    });
-	  }
-	};
-
-	module.exports = ReactTransitionEvents;
-
-/***/ },
-/* 235 */
-/***/ function(module, exports, __webpack_require__) {
-
 	/*** IMPORTS FROM imports-loader ***/
 	var define = false;
 	(function() {
 
 	var isBrowser = typeof window !== 'undefined';
-	var Masonry = isBrowser ? window.Masonry || __webpack_require__(236) : null;
-	var imagesloaded = isBrowser ? __webpack_require__(243) : null;
+	var Masonry = isBrowser ? window.Masonry || __webpack_require__(229) : null;
+	var imagesloaded = isBrowser ? __webpack_require__(236) : null;
 	var React = __webpack_require__(4);
 	var refName = 'masonryContainer';
 
@@ -26808,7 +26285,7 @@
 	}.call(window));
 
 /***/ },
-/* 236 */
+/* 229 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*** IMPORTS FROM imports-loader ***/
@@ -26836,8 +26313,8 @@
 	  } else if ( typeof module == 'object' && module.exports ) {
 	    // CommonJS
 	    module.exports = factory(
-	      __webpack_require__(237),
-	      __webpack_require__(239)
+	      __webpack_require__(230),
+	      __webpack_require__(232)
 	    );
 	  } else {
 	    // browser global
@@ -27024,7 +26501,7 @@
 	}.call(window));
 
 /***/ },
-/* 237 */
+/* 230 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*** IMPORTS FROM imports-loader ***/
@@ -27057,10 +26534,10 @@
 	    // CommonJS - Browserify, Webpack
 	    module.exports = factory(
 	      window,
-	      __webpack_require__(238),
-	      __webpack_require__(239),
-	      __webpack_require__(240),
-	      __webpack_require__(242)
+	      __webpack_require__(231),
+	      __webpack_require__(232),
+	      __webpack_require__(233),
+	      __webpack_require__(235)
 	    );
 	  } else {
 	    // browser global
@@ -27974,7 +27451,7 @@
 	}.call(window));
 
 /***/ },
-/* 238 */
+/* 231 */
 /***/ function(module, exports) {
 
 	/*** IMPORTS FROM imports-loader ***/
@@ -28094,7 +27571,7 @@
 	}.call(window));
 
 /***/ },
-/* 239 */
+/* 232 */
 /***/ function(module, exports) {
 
 	/*** IMPORTS FROM imports-loader ***/
@@ -28314,7 +27791,7 @@
 	}.call(window));
 
 /***/ },
-/* 240 */
+/* 233 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*** IMPORTS FROM imports-loader ***/
@@ -28343,7 +27820,7 @@
 	    // CommonJS
 	    module.exports = factory(
 	      window,
-	      __webpack_require__(241)
+	      __webpack_require__(234)
 	    );
 	  } else {
 	    // browser global
@@ -28561,7 +28038,7 @@
 	}.call(window));
 
 /***/ },
-/* 241 */
+/* 234 */
 /***/ function(module, exports) {
 
 	/*** IMPORTS FROM imports-loader ***/
@@ -28625,7 +28102,7 @@
 	}.call(window));
 
 /***/ },
-/* 242 */
+/* 235 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*** IMPORTS FROM imports-loader ***/
@@ -28650,8 +28127,8 @@
 	  } else if ( typeof module == 'object' && module.exports ) {
 	    // CommonJS - Browserify, Webpack
 	    module.exports = factory(
-	      __webpack_require__(238),
-	      __webpack_require__(239)
+	      __webpack_require__(231),
+	      __webpack_require__(232)
 	    );
 	  } else {
 	    // browser global
@@ -29189,7 +28666,7 @@
 	}.call(window));
 
 /***/ },
-/* 243 */
+/* 236 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*** IMPORTS FROM imports-loader ***/
@@ -29218,7 +28695,7 @@
 	    // CommonJS
 	    module.exports = factory(
 	      window,
-	      __webpack_require__(244)
+	      __webpack_require__(237)
 	    );
 	  } else {
 	    // browser global
@@ -29570,7 +29047,7 @@
 	}.call(window));
 
 /***/ },
-/* 244 */
+/* 237 */
 /***/ function(module, exports) {
 
 	/*** IMPORTS FROM imports-loader ***/

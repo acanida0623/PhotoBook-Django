@@ -47,6 +47,7 @@
   -moz-border-radius: 10px;
   width: 5em;
   height: 2em;
+	text-align: center;
   position: absolute;
   margin-left: 8em;
   margin-top: .8em;
@@ -57,9 +58,8 @@
 }
 
 #sort_user_albums_A_Z span {
-  position: absolute;
-  margin-top: .2em;
-  margin-left: 1.2em;
+	display: inline-block;
+	margin-top: .1em;
 }
 
 
@@ -70,6 +70,8 @@
   -webkit-border-radius: 10px;
   -moz-border-radius: 10px;  width: 7.6em;
   height: 2em;
+	width: 7.6em;
+	text-align: center;
   position: absolute;
   margin-left: 13.2em;
   margin-top: .8em;
@@ -80,10 +82,10 @@
 }
 
 #sort_user_albums_date_created span {
-  position: absolute;
-  margin-top: .2em;
-  margin-left: .7em;
+display: inline-block;
+margin-top: .1em;
 }
+
 #sort_user_albums_image_count {
   width: 7.6em;
   height: 2em;
@@ -93,13 +95,12 @@
   -moz-border-radius: 10px;  position: absolute;
   margin-left:21em;
   margin-top: .8em;
+	text-align: center;
   color: #ffffff;
   font-size: 15pt;
   font-weight: bold;
   font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
 }
 #sort_user_albums_image_count span {
-  position: absolute;
-  margin-top: .2em;
-  margin-left: .7em;
-}
+	display: inline-block;
+	margin-top: .1em;}

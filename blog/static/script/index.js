@@ -1,7 +1,6 @@
 var Radium = require('radium');
 var React = require('react')
 var ReactDOM = require('react-dom')
-var ReactCSSTransitionGroup = require('react-addons-css-transition-group');
 var Masonry = require('react-masonry-component');
 var masonryOptions = {
     transitionDuration: 0
@@ -14,10 +13,9 @@ var album_author = null;
 var temp_count = 0;
 var img_count = 0 ;
 var load = null;
-
 var loadimage = new Image();
 loadimage.src="http://i.imgur.com/Gljcgpk.gif"
-
+import {StyleRoot} from 'radium';
 $().ready(function(){
 
   $(document).mousemove( function(e) {
@@ -149,11 +147,6 @@ function Load (selected,author,images,user_albums,contr_albums) {
 }
 
 var New_Album = React.createClass({
-    componentDidMount: function() {
-      var submit = document.getElementById('submit')
-      addEventHandler(submit, 'click', this.submitNewAlbum);
-    },
-
     submitNewAlbum: function () {
         var album_name = document.getElementById('name').value;
         var users = document.getElementById('users').value;
@@ -168,7 +161,8 @@ var New_Album = React.createClass({
                 method: "POST",
                 data: result
             }).done(function (data) {
-
+              alert(data);
+              window.location.href = "/";
             }).error(function (err) {
                 console.log(err);
 
@@ -177,35 +171,28 @@ var New_Album = React.createClass({
     },
 
     render: function() {
-    return <div>
+    return <div className="new_album" >
             <Header current_user = {this.props.current_user} user_albums = {this.props.user_albums} contr_albums = {this.props.contr_albums} />
-            <div className="new_album" key={1} >
-            <img className='create_album' src="http://i.imgur.com/YCWwQmm.png"/>
-            <br />
             <form className="new_album_form">
-
-            <p className="name">
-              <label for="name">Name</label>
-              <br />
-              <input type="text" name="name" id="name" maxLength="20" />
-            </p>
-
-            <p className="users">
-              <label for="users">Other Users</label>
-              <br />
-              <input type="text" name="users" id="users" />
-            </p>
-            <br />
-            <p className="submit" id="submit">
-              <input type="submit" value="Save" />
-            </p>
-
+              <span id="create_album_text">
+              Create New Album
+              </span>
+              <span id="create_album_name_text">
+                Name
+              </span>
+              <input type="text" name="name" className="name" id="name" maxLength="20" />
+              <span id="create_album_users_text">
+                Users
+              </span>
+              <input className="users" type="text" name="users" id="users" />
+              <button  onMouseDown = {this.submitNewAlbum} type="submit">Save</button>
             </form>
-            </div>
           </div>
 
   }
 })
+
+
 
 
 var Header = React.createClass({
@@ -224,7 +211,7 @@ var Header = React.createClass({
     img_lst.length = 0;
     load = null;
     ReactDOM.unmountComponentAtNode(document.getElementById('main'));
-    ReactDOM.render(React.createElement(Album_Container,{current_user:this.state.current_user, user_albums:this.props.user_albums,contr_albums:this.props.contr_albums}), document.getElementById('main'));
+    ReactDOM.render(React.createElement(Album_Container,{current_user:this.state.current_user, user_albums:this.props.user_albums, contr_albums:this.props.contr_albums}), document.getElementById('main'));
   },
 
   createAlbum: function () {
@@ -284,6 +271,13 @@ var Header = React.createClass({
         </p>
         </div>
 
+        <div onMouseDown={this.createAlbum} id="create_new_album">
+          <p>
+            New Album
+          </p>
+        </div>
+
+        <User_Commands user_name={this.props.current_user}/>
 
         <label className="switch">
           <input id="imgur_check" type="checkbox" />
@@ -297,6 +291,67 @@ var Header = React.createClass({
 
   }
 })
+
+var User_Commands = React.createClass({
+  getInitialState: function () {
+    return {
+          selected:false,
+          logout_style: {cursor: "pointer", background: "#000000"},
+          main_style: {}
+    }
+  },
+
+  mainOver: function () {
+      this.setState({
+        selected:true,
+        main_style:{cursor: "pointer", background: "#5B97EF"}
+      })
+
+
+  },
+
+  mainLeave:function () {
+    this.setState({
+      selected:false,
+      main_style:{},
+      logout_style:{background:"#000000"}
+    })
+  },
+
+
+
+  logout:function () {
+    window.location.href = "/accounts/logout";
+  },
+
+  logoutOver:function () {
+    this.setState({
+      logout_style: {cursor: "pointer", background: "#5B97EF"}
+    })
+  },
+
+  logoutLeave:function () {
+    this.setState({
+      logout_style:{background: "#000000"}
+    })
+  },
+
+  render: function () {
+    return <div style = {this.state.main_style} id="user_commands" onMouseEnter = {this.mainOver} onMouseLeave = {this.mainLeave}>
+              <p>{this.props.user_name} ▾
+              </p>
+              {
+                this.state.selected && <div id="user_commands_container">
+                                          <div style = {this.state.logout_style} id="user_commands_logout" onMouseLeave = {this.logoutLeave} onMouseOver = {this.logoutOver} onMouseDown = {this.logout}>
+                                            <p> Logout </p>
+                                          </div>
+                                        </div>
+              }
+            </div>
+  }
+})
+
+
 
 var Album_Container = React.createClass({
   updateSelectedImg: function(source,author) {
@@ -447,14 +502,14 @@ var Album_Container = React.createClass({
                   onImagesLoaded={this.handleImagesLoaded}
               >
               {
-                this.state.user_albums.map((x) => {
+                this.state.user_albums.map((x,y) => {
                   var img_urls = x.urls
 
                   var album_cover = img_urls[0];
 
                   var album_name = x.name;
                   var album_author = x.author;
-                  return <Album_IMG contr_albums = {this.state.contr_albums} user_albums = {this.state.user_albums}  delete_album={this.delete_album} select_source_method={this.select_source_method} current_user = {this.props.current_user} key_code = {this.state.key_code}  album_author = {album_author} album_name = {album_name} class_name = {"col-sm album_img selected"} urls = {img_urls} img_source = {album_cover} />
+                  return <Album_IMG key={y} contr_albums = {this.state.contr_albums} user_albums = {this.state.user_albums}  delete_album={this.delete_album} select_source_method={this.select_source_method} current_user = {this.props.current_user} key_code = {this.state.key_code}  album_author = {album_author} album_name = {album_name} class_name = {"col-sm album_img selected"} urls = {img_urls} img_source = {album_cover} />
                 })
 
               }
@@ -467,7 +522,7 @@ var Album_Container = React.createClass({
               disableImagesLoaded={false} // default false
               >
               {
-              this.state.contr_albums.map((x) => {
+              this.state.contr_albums.map((x,y) => {
                 var last_album = null;
                 if(this.state.contr_albums.indexOf(x) === this.state.contr_albums.length-1) {
                   last_album = true;
@@ -476,18 +531,17 @@ var Album_Container = React.createClass({
                 var album_cover = img_urls[0];
                 var album_name = x.name;
                 var album_author = x.author;
-                return <Album_IMG contr_albums = {this.state.contr_albums} updateLoad = {this.updateLoad} last_album = {last_album} user_albums = {this.state.user_albums}  delete_album={this.delete_album} select_source_method={this.select_source_method} current_user = {this.props.current_user} key_code = {this.state.key_code}  album_author = {album_author} album_name = {album_name} class_name = {"col-sm album_img selected"} urls = {img_urls} img_source = {album_cover} />
+                return <Album_IMG key={y} contr_albums = {this.state.contr_albums} updateLoad = {this.updateLoad} last_album = {last_album} user_albums = {this.state.user_albums}  delete_album={this.delete_album} select_source_method={this.select_source_method} current_user = {this.props.current_user} key_code = {this.state.key_code}  album_author = {album_author} album_name = {album_name} class_name = {"col-sm album_img selected"} urls = {img_urls} img_source = {album_cover} />
               })
             }
             </Masonry>
             </div>
     }else {
       return <div id="album_holder">
-
               <Header current_user={this.state.current_user} contr_albums = {this.state.contr_albums}  user_albums = {this.state.user_albums} />
               <Sort_User_Albums_Container updateAlbumOrder = {this.updateAlbumOrder} />
               <div id="user_albums_title">
-                <input id="search_album" onChange = {this.onChangeHandler} />
+                <Search_Albums onChangeHandler = {this.onChangeHandler} />
                 <span className="album_title">{this.state.user_name} Albums</span>
               </div>
               <Masonry
@@ -498,7 +552,7 @@ var Album_Container = React.createClass({
                   onImagesLoaded={this.handleImagesLoaded}
               >
               {
-                this.state.user_albums.map((x) => {
+                this.state.user_albums.map((x,y) => {
                   var img_urls = x.urls
                   try {
                   var album_cover = img_urls[0];
@@ -507,7 +561,7 @@ var Album_Container = React.createClass({
                   }
                   var album_name = x.name;
                   var album_author = x.author;
-                  return <Album_IMG contr_albums = {this.state.contr_albums}  user_albums = {this.state.user_albums}  delete_album={this.delete_album} select_source_method={this.select_source_method} current_user = {this.props.current_user} key_code = {this.state.key_code}  album_author = {album_author} album_name = {album_name} class_name = {"col-sm album_img selected"} urls = {img_urls} img_source = {album_cover} />
+                  return <Album_IMG key={y} contr_albums = {this.state.contr_albums}  user_albums = {this.state.user_albums}  delete_album={this.delete_album} select_source_method={this.select_source_method} current_user = {this.props.current_user} key_code = {this.state.key_code}  album_author = {album_author} album_name = {album_name} class_name = {"col-sm album_img selected"} urls = {img_urls} img_source = {album_cover} />
                 })
 
               }
@@ -522,7 +576,7 @@ var Album_Container = React.createClass({
               disableImagesLoaded={false} // default false
               >
               {
-              this.state.contr_albums.map((x) => {
+              this.state.contr_albums.map((x,y) => {
                 var last_album = null;
                 if(this.state.contr_albums.indexOf(x) === this.state.contr_albums.length-1) {
                   last_album = true;
@@ -535,7 +589,7 @@ var Album_Container = React.createClass({
                 }
                 var album_name = x.name;
                 var album_author = x.author;
-                return <Album_IMG contr_albums  = {this.state.contr_albums} updateLoad = {this.updateLoad} last_album = {last_album} user_albums = {this.state.user_albums}  delete_album={this.delete_album} select_source_method={this.select_source_method} current_user = {this.props.current_user} key_code = {this.state.key_code}  album_author = {album_author} album_name = {album_name} class_name = {"col-sm album_img selected"} urls = {img_urls} img_source = {album_cover} />
+                return <Album_IMG key={y} contr_albums  = {this.state.contr_albums} updateLoad = {this.updateLoad} last_album = {last_album} user_albums = {this.state.user_albums}  delete_album={this.delete_album} select_source_method={this.select_source_method} current_user = {this.props.current_user} key_code = {this.state.key_code}  album_author = {album_author} album_name = {album_name} class_name = {"col-sm album_img selected"} urls = {img_urls} img_source = {album_cover} />
               })
             }
             </Masonry>
@@ -608,6 +662,8 @@ return      <div id="loading"></div>
 })
 
 
+
+
 var Album_Cover = React.createClass({
   getInitialState: function() {
     return {
@@ -646,6 +702,33 @@ var Album_Cover = React.createClass({
     <div className="title_cont"><p>{this.props.album_name}</p></div>
     </div>
 
+  }
+})
+
+var Search_Albums = React.createClass({
+  getInitialState: function () {
+    return {
+      onChangeHandler : this.props.onChangeHandler,
+      placeholder : "",
+    }
+  },
+
+  onFocusHandler: function () {
+    // var search = document.getElementById("search_album").value;
+    // search !== "" && this.state.onChangeHandler()
+    this.setState({
+      placeholder: "Search"
+    })
+  },
+
+  onBlurHandler: function () {
+    this.setState({
+      placeholder: ""
+    })
+  },
+
+  render: function () {
+    return <input placeholder = {this.state.placeholder} id="search_album" onBlur = {this.onBlurHandler} onChange = {this.state.onChangeHandler} onFocus = {this.onFocusHandler} />
   }
 })
 
@@ -849,7 +932,7 @@ var Sort_User_Albums_Image_Count = React.createClass({
       background:"#3498DB",
       borderBottom: "5px solid #2980B9",
       updateAlbumOrder: this.props.updateAlbumOrder,
-      direction: "",
+      direction: "-",
       cursor: "default"
     }
   },
@@ -1005,29 +1088,13 @@ var Min_Container = React.createClass({
   },
 
   render: function() {
-    if(this.state.loading) {
       var last_image = false
-      return <div>
-              <Loading_Cover />
-              <Masonry
-                className={'view_images'} // default ''
-                elementType={'div'} // default 'div'
-                options={masonryOptions} // default {}
-                disableImagesLoaded={false} // default false
-              >
-              {
-                this.props.images.map((src, i) => {
-                  if(this.props.images.indexOf(src) === this.props.images.length - 1){
-                    last_image = true;
-                  }
-                  return <View_IMG last_image = {last_image} updateLoad = {this.updateLoad} img_source = {src} key_code = {this.state.key_code} current_user = {this.state.current_user} album_author = {this.props.album_author} album_selected = {this.props.album_selected} select_source={this.state.select_source} select_source_method={this.updateSelectedImg} row={i} key={i} />
-                })
-              }
-              </Masonry>
-            </div>
-    } else {
+
 
       return <div id="album_holder">
+              {
+                (this.state.loading) && <Loading_Cover />
+              }
               <Header current_user={this.state.current_user} contr_albums = {this.state.contr_albums}  user_albums = {this.state.user_albums} />
               <div id="album_title">
                 <div id="upload_image">
@@ -1044,12 +1111,15 @@ var Min_Container = React.createClass({
               >
               {
                 this.props.images.map((src, i) => {
-                  return <View_IMG updateLoad = {this.updateLoad} img_source = {src} key_code = {this.state.key_code} current_user = {this.state.current_user} album_author = {this.props.album_author} album_selected = {this.props.album_selected} select_source={this.state.select_source} select_source_method={this.updateSelectedImg} row={i} key={i} />
+                  if(this.props.images.indexOf(src) === this.props.images.length - 1){
+                    last_image = true;
+                  }
+                  return <View_IMG user_albums = {this.state.user_albums} contr_albums = {this.state.contr_albums} album_images = {this.state.images} last_image = {last_image} updateLoad = {this.updateLoad} img_source = {src} key_code = {this.state.key_code} current_user = {this.state.current_user} album_author = {this.props.album_author} album_selected = {this.props.album_selected} select_source={this.state.select_source} select_source_method={this.updateSelectedImg} key={i} />
                 })
               }
               </Masonry>
             </div>
-    }
+
 
 
   },
@@ -1093,6 +1163,7 @@ var Min_Container = React.createClass({
 var View_IMG = React.createClass({
     getInitialState: function() {
         return {
+            album_images: this.props.album_images,
             updateLoad: this.props.updateLoad,
             current_user: this.props.current_user,
             album_selected: this.props.album_selected,
@@ -1103,7 +1174,6 @@ var View_IMG = React.createClass({
             img_number: this.props.img_number,
             class_name: this.props.class_name,
             key_code: this.props.key_code
-
         }
     },
 
@@ -1114,20 +1184,6 @@ var View_IMG = React.createClass({
 
   },
 
-    onMouseEnterHandler: function() {
-        if (this.state.album_author === this.state.current_user) {
-            this.setState({
-            hidden:'show'
-            })
-        }
-    },
-
-
-    onMouseLeaveHandler: function() {
-        this.setState({
-          hidden:'hidden'
-        })
-    },
 
     deleteImg: function() {
       var lst = [];
@@ -1136,25 +1192,14 @@ var View_IMG = React.createClass({
     },
 
     onMouseDownHandler: function() {
+      ReactDOM.unmountComponentAtNode(document.getElementById('main'));
+      ReactDOM.render(React.createElement(Slideshow, {current_user: this.state.current_user, user_albums: this.props.user_albums, contr_albums: this.props.contr_albums, album_images: this.state.album_images, img_source:this.state.img_source }), document.getElementById('main'));
 
-        if(this.state.key_code === 16) {
-            var exists = img_lst.filter((x) => {
-                return(x === this.state.img_source)
-            })
-            if (exists.length === 0) {
-                img_lst.push(this.state.img_source);
-            }
-        }else {
-            img_lst.length = 0;
-            img_lst.push(this.state.img_source)
-        }
-          this.state.select_source_method(img_lst);
     },
 
     render: function() {
       if (this.props.last_image) {
-
-        return  <div   onMouseDown={this.onMouseDownHandler} className={'view_image'}>
+        return  <div onMouseDown={this.onMouseDownHandler} className={'view_image'}>
                 <img onLoad={this.updateLoad} src={this.props.img_source} />
                 </div>
       }else {
@@ -1165,55 +1210,197 @@ var View_IMG = React.createClass({
 
     }
 });
+var keyframesMidToLeft = Radium.keyframes({
+  '0%': {left: 0},
+  '100%': {left: '-200em'},
+});
 
-var Rotate_IMG = React.createClass({
+var keyframesMidToRight = Radium.keyframes({
+  '0%': {left: 0},
+
+  '100%':{left: '200em'},
+});
+
+var keyframesRightToMid = Radium.keyframes({
+  '0%': {left: '100em'},
+  '100%': {left: 0},
+});
+
+var keyframesLeftToMid = Radium.keyframes({
+  '0%': {left: '-150em'},
+  '100%': {left: 0},
+});
+
+var styles = {
+  mid_left: {
+  animation: 'x .2s linear 0s ',
+  animationName: keyframesMidToLeft,
+  left: "-200em"
+  },
+
+  mid_right: {
+  animation: 'x .2s linear 0s ',
+  animationName: keyframesMidToRight,
+  left:"200em"
+  },
+
+  right_mid: {
+  animation: 'x .2s linear 0s ',
+  animationName: keyframesRightToMid,
+  left: 0
+  },
+
+  left_mid:{
+  animation: 'x .2s linear 0s ',
+  animationName: keyframesLeftToMid,
+  left: 0
+  },
+
+  center: {
+  left:0
+  },
+
+  right: {
+  left:'150em',
+  },
+
+  left: {
+  left:'-150em',
+  }
+
+}
+var center = true;
+
+var Slideshow = React.createClass({
     getInitialState: function() {
         return {
-            source: this.props.img_source,
-            nextImg: this.props.nextImg,
+            img_source: this.props.img_source,
             previousImg: this.props.previousImg,
-            full_screen: false
+            next_img: this.props.nextImg,
+            center_style: styles.center,
+            next_img_style: styles.right,
+            selected_img: this.props.img_source
         }
     },
 
-    nextImg: function() {
-      if ( window.innerHeight == screen.height) {
-        var current_index = album_lst.indexOf(this.state.source);
-        var new_img = "";
-        if (current_index !== album_lst.length - 1) {
-          new_img = album_lst[current_index+1];
-        } else {
-          new_img = album_lst[0];
-        }
+    updateSelectedImg: function (new_img) {
+      if(center){
         this.setState({
-          source: new_img
-        })
-      } else {
 
-        this.state.nextImg();
+          next_img: new_img,
+          selected_img: new_img,
+          next_img_style:styles.right_mid,
+          center_style:styles.mid_left
+
+        })
+        center = false;
+      }else {
+        this.setState({
+          img_source: new_img,
+          selected_img: new_img,
+          center_style:styles.right_mid,
+          next_img_style:styles.mid_left,
+
+        })
+        center = true;
       }
     },
 
-    previousImg: function() {
-      if ( window.innerHeight == screen.height) {
-        var current_index = album_lst.indexOf(this.state.source);
-        var new_img = "";
-        if (current_index > 0) {
-          new_img = album_lst[current_index-1];
-        } else if (current_index === 0 && album_lst.length === 1) {
+    componentWillMount: function () {
+
+
+    },
+
+    nextImg: function() {
+      if(center){
+        var current_index = this.props.album_images.indexOf(this.state.img_source);
+        var new_img;
+        if (current_index !== this.props.album_images.length - 1) {
+          new_img = this.props.album_images[current_index+1];
         } else {
-          new_img = album_lst[album_lst.length - 1];
+
+          new_img = this.props.album_images[0];
+          var myImage = new Image();
+          myImage.src = new_img;
+        }
+
+          this.setState({
+            next_img: new_img,
+            next_img_style:styles.right_mid,
+            center_style:styles.mid_left,
+            selected_img: new_img
+          })
+
+
+        center = false;
+      }else {
+        var current_index = this.props.album_images.indexOf(this.state.next_img);
+        var new_img;
+        if (current_index !== this.props.album_images.length - 1) {
+          new_img = this.props.album_images[current_index+1];
+        } else {
+          new_img = this.props.album_images[0];
+          var myImage = new Image();
+          myImage.src = new_img;
+        }
+
+          this.setState({
+            img_source: new_img,
+            center_style:styles.right_mid,
+            next_img_style:styles.mid_left,
+            selected_img: new_img
+          })
+
+        center = true;
+      }
+
+    },
+
+    previousImg: function() {
+      if(center){
+        var current_index = this.props.album_images.indexOf(this.state.img_source);
+        var new_img;
+        if (current_index > 0) {
+          new_img = this.props.album_images[current_index-1];
+        } else if (current_index === 0 && this.props.album_images.length === 1) {
+        } else {
+          new_img = this.props.album_images[this.props.album_images.length - 1];
+          var myImage = new Image();
+          myImage.src = new_img;
+        }
+
+        this.setState({
+          next_img: new_img,
+          next_img_style:styles.left_mid,
+          center_style:styles.mid_right,
+          selected_img: new_img
+        })
+
+        center = false;
+      }else {
+        var current_index = this.props.album_images.indexOf(this.state.next_img);
+        var new_img;
+        if (current_index > 0) {
+          new_img = this.props.album_images[current_index-1];
+        } else if (current_index === 0 && this.props.album_images.length === 1) {
+        } else {
+          new_img = this.props.album_images[this.props.album_images.length - 1];
+          var myImage = new Image();
+          myImage.src = new_img;
         }
         this.setState({
-          source: new_img
+          img_source: new_img,
+          center_style:styles.left_mid,
+          next_img_style:styles.mid_right,
+          selected_img: new_img
         })
-      } else {
-        this.state.previousImg();
+        center = true;
       }
 
     },
 
     componentDidMount: function() {
+
     },
 
     onMouseDownHandler: function() {
@@ -1230,18 +1417,89 @@ var Rotate_IMG = React.createClass({
         }
     },
 
+
     render:  function() {
 
-        var divStyle = {
-            backgroundImage: 'url(' + this.state.source + ')'
-        };
-        return <div style={divStyle} id="main_img_container" onMouseDown = {this.onMouseDownHandler} className={"main_img_container"}>
-                <Next_IMG_Button nextImg = {this.nextImg}  />
-                <Previous_IMG_Button previousImg = {this.previousImg} />
+      var main_back_image = {
+        backgroundImage: 'url(' + this.state.img_source + ')'
+      }
+      var next_back_image = {
+        backgroundImage: 'url(' + this.state.next_img + ')'
+      }
+      var main_div_style = $.extend(true, {}, main_back_image, this.state.center_style);
+      var next_img_style = $.extend(true, {}, next_back_image, this.state.next_img_style);
 
-              </div>
+        return    <div className="slideshow_container">
+                    <Header current_user = {this.props.current_user} user_albums = {this.props.user_albums} contr_albums = {this.props.contr_albums} />
+                    <StyleRoot>
+                      <div style={main_div_style} id="main_img_container" onMouseDown = {this.onMouseDownHandler} className={"main_img_container"}>
+                      </div>
+                      <div style={next_img_style} id="next_img_container" onMouseDown = {this.onMouseDownHandler} className={"next_img_container"}>
+                      </div>
+                    </StyleRoot>
+                    <Thumbnail_Slider updateSelectedImg = {this.updateSelectedImg} album_images = {this.props.album_images} selected_img = {this.state.selected_img} />
+                    <Next_IMG_Button nextImg = {this.nextImg}  />
+                    <Previous_IMG_Button previousImg = {this.previousImg} />
+                  </div>
+
     }
-});
+})
+module.exports = Radium(Slideshow);
+
+var Thumbnail_Slider = React.createClass({
+
+render:function() {
+  var width = ( this.props.album_images.length  * 9 + 2 )
+  var thumb_style = {
+    width : width+"em",
+    margin: "0 auto"
+  }
+  return <div className="slider_container">
+          <StyleRoot>
+          <div className="thumbnail_container" style={thumb_style}>
+            {
+              this.props.album_images.map((x,y)=>{
+                return <Thumbnail_Image updateSelectedImg = {this.props.updateSelectedImg} key={y} img_source = {x} selected_img = {this.props.selected_img} />
+              })
+            }
+          </div>
+          </StyleRoot>
+        </div>
+},
+
+})
+
+module.exports = Radium(Slideshow);
+module.exports = Radium(Thumbnail_Slider);
+var Thumbnail_Image = React.createClass({
+  getInitialState:function () {
+    return {
+      updateSelectedImg:this.props.updateSelectedImg
+    }
+  },
+
+  onMouseDownHandler: function () {
+    this.state.updateSelectedImg(this.props.img_source)
+  },
+
+  render:function () {
+    if(this.props.selected_img === this.props.img_source) {
+        var background = {
+        backgroundImage: 'url(' + this.props.img_source + ')',
+        outline: 'none',
+        boxshadow:'0px 1rem 1rem .5rem #333',
+        border: '1pt blue solid'
+      }
+    }else {
+      var background = {
+        backgroundImage: 'url(' + this.props.img_source + ')'
+      }
+    }
+
+    return <div onMouseDown = {this.onMouseDownHandler} className="thumbnail_img" style={background}>
+          </div>
+  }
+})
 
 // var Full_Screen_Button = React.createClass ({
 //
@@ -1277,6 +1535,8 @@ var Previous_IMG_Button = React.createClass ({
     return <div onMouseDown = {this.onMouseDownHandler} id="main_img_left_arrow" className="main_img_left_arrow"></div>
   }
 })
+
+
 
 function update_album_list(res) {
   var user_album_images = [{albums: []}];
@@ -1524,6 +1784,7 @@ function addEventHandler(obj, evt, handler) {
     }
 }
 function main() {
+
   try {
     get_albums("a-z","")
   }catch(x) {
