@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render_to_response
 from django.utils import timezone
-from .models import Image, Album, UserProfile
+from .models import Image, Album, UserProfile, Friends
 from .forms import UserCreationForm
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -79,17 +79,20 @@ def main_view(request):
     return render(request, 'main_view.html', {
     })
 
-
 def new_account(request):
-    form = UserCreationForm(request.POST)
+    form = UserCreationForm()
     return render(request, 'new_user.html',{'form': form})
 
-
+@csrf_exempt
 def submit_new_account(request):
     if request.method == "POST":
         form = UserCreationForm(request.POST)
         if form.is_valid():
             UserProfile.objects.create(user = form.save(commit = True))
+            user = UserProfile.objects.get(user__username=form.cleaned_data.get("username"))
+            print(user)
+            print("testing^")
+            Friends.objects.create(owner=user)
             return redirect('/')
     else:
         form = UserCreationForm()
@@ -118,8 +121,6 @@ def new_album(request):
         except:
             new_album = Album(author=user,name=album_name,users=users)
             new_album.save()
-            print("TEST")
-            print(new_album.author)
             new_image = Image(url="http://i.imgur.com/wFpjb8w.jpg",author=user,album_name=new_album.name)
             new_image.save()
             new_album.images.add(new_image)
@@ -149,7 +150,7 @@ def save_urls(request):
                     for y in img:
                         images.append(y.url)
             user = str(request.user)
-            album_url_list = fill_albums(user)
+            album_url_list = fill_albums(user,"a-z","")
             done = {'album':req['album'], 'images':images, 'author':user, 'albums':album_url_list}
             return HttpResponse( json.dumps(done) )
 
@@ -170,7 +171,6 @@ def delete_url(request):
             return HttpResponse( request )
 
 def get_urls(request):
-
     if request.is_ajax():
         if request.method == 'GET':
             url_list = []
@@ -180,18 +180,40 @@ def get_urls(request):
             json.dumps(url_list)
             )
 
+def get_friends(request):
+    if request.is_ajax():
+        if request.method == 'GET':
+            friends_list = []
+            user = UserProfile.objects.get(user__username = request.user)
+            try:
+                user_friends = Friends.objects.get(owner = user)
+                print(user_friends)
+                for f in user_friends.friends.all():
+                    print("friendslisttesting")
+                    print(f)
+                    friends_list.append(f.user.username)
+                return HttpResponse(
+                json.dumps(friends_list)
+                )
+            except:
+                no_friends = False
+                return HttpResponse(
+                json.dumps(no_friends)
+                )
+
 def get_user(request):
     if request.is_ajax():
         if request.method == 'GET':
-
             if request.user.is_authenticated():
                 print("authenticated")
             else:
                 print("not_authenticated")
             user = str(request.user)
+            friends = Friends.objects.get()
             return HttpResponse(
             json.dumps(user)
             )
+
 
 def get_albums(request):
     uuid_key = uuid.uuid4()
@@ -200,8 +222,11 @@ def get_albums(request):
             sorting_method = request.GET.get("sorting_method")
             direction = request.GET.get("direction")
             user = str(request.user)
+            print("!@#$@#!$@#!$!@")
+            print(user)
             album_url_list = fill_albums(user,sorting_method,direction)
             result = {'album_url_list':album_url_list,'user':user}
+            print(result)
             return HttpResponse(
             json.dumps(result)
             )
@@ -217,12 +242,14 @@ def fill_albums(user,sorting_method,direction):
                 for x in urls:
                     images.append(x.url)
                 album_url_list['user_albums'].append({'urls':images,'name':name.name,'author':author})
-            if user in name.users:
-                urls2 = list(name.images.all())
-                images2 = []
-                for x in urls2:
-                    images2.append(x.url)
-                album_url_list['contr_albums'].append({'urls':images2,'name':name.name,'author':author})
+            for tagged in name.users.all():
+                if user == tagged.user:
+                    urls2 = list(name.images.all())
+                    images2 = []
+                    for x in urls2:
+                        images2.append(x.url)
+                    album_url_list['contr_albums'].append({'urls':images2,'name':name.name,'author':author})
+
     elif sorting_method == "a-z":
         for name in Album.objects.all().order_by(direction+'name'):
             author = str(name.author.user)
@@ -232,12 +259,13 @@ def fill_albums(user,sorting_method,direction):
                 for x in urls:
                     images.append(x.url)
                 album_url_list['user_albums'].append({'urls':images,'name':name.name,'author':author})
-            if user in name.users:
-                urls2 = list(name.images.all())
-                images2 = []
-                for x in urls2:
-                    images2.append(x.url)
-                album_url_list['contr_albums'].append({'urls':images2,'name':name.name,'author':author})
+            for tagged in name.users.all():
+                if user == tagged.user:
+                    urls2 = list(name.images.all())
+                    images2 = []
+                    for x in urls2:
+                        images2.append(x.url)
+                    album_url_list['contr_albums'].append({'urls':images2,'name':name.name,'author':author})
     elif sorting_method == "date":
         for name in Album.objects.all().order_by(direction+"created_date"):
             author = str(name.author.user)
@@ -247,12 +275,13 @@ def fill_albums(user,sorting_method,direction):
                 for x in urls:
                     images.append(x.url)
                 album_url_list['user_albums'].append({'urls':images,'name':name.name,'author':author})
-            if user in name.users:
-                urls2 = list(name.images.all())
-                images2 = []
-                for x in urls2:
-                    images2.append(x.url)
-                album_url_list['contr_albums'].append({'urls':images2,'name':name.name,'author':author})
+            for tagged in name.users.all():
+                if user == tagged.user:
+                    urls2 = list(name.images.all())
+                    images2 = []
+                    for x in urls2:
+                        images2.append(x.url)
+                    album_url_list['contr_albums'].append({'urls':images2,'name':name.name,'author':author})
     else:
         for name in Album.objects.all().order_by('?'):
             author = str(name.author.user)
@@ -262,12 +291,13 @@ def fill_albums(user,sorting_method,direction):
                 for x in urls:
                     images.append(x.url)
                 album_url_list['user_albums'].append({'urls':images,'name':name.name,'author':author})
-            if user in name.users:
-                urls2 = list(name.images.all())
-                images2 = []
-                for x in urls2:
-                    images2.append(x.url)
-                album_url_list['contr_albums'].append({'urls':images2,'name':name.name,'author':author})
+            for tagged in name.users.all():
+                if user == tagged.user:
+                    urls2 = list(name.images.all())
+                    images2 = []
+                    for x in urls2:
+                        images2.append(x.url)
+                    album_url_list['contr_albums'].append({'urls':images2,'name':name.name,'author':author})
     return (album_url_list)
 
 def delete_album(request):
@@ -281,7 +311,7 @@ def delete_album(request):
                 x.delete()
             album_to_delete.delete()
             user = str(request.user)
-            album_url_list = fill_albums(user)
+            album_url_list = fill_albums(user,"a-z",)
             return HttpResponse(
             json.dumps(album_url_list)
             )

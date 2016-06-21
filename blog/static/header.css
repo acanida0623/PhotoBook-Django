@@ -10,7 +10,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#191919', end
   width:101vw;
   height: 4em;
   position: fixed;
-  z-index: 4;
+  z-index: 5;
   border: none;
 
 }
@@ -26,12 +26,12 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#191919', end
   position: absolute;
 }
 
-.top-menu, .top-menu:hover, .top-menu:visited {
+.top-menu{
     color: #ffffff;
     font-size: 15pt;
     font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
     margin: 0 auto;
-    z-index: 2;
+
     width: 18em;
 
 }

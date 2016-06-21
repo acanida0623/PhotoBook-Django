@@ -35,11 +35,13 @@ class Comment(models.Model):
     def approved_comments(self):
         return self.comments.filter(approved_comment=True)
 
-
 class UserProfile(models.Model):
     user =  models.OneToOneField(User, unique=True)
     picture = models.URLField(null = True)
 
+class Friends(models.Model):
+    owner = models.ForeignKey(UserProfile, null = True, related_name="friends_owner")
+    friends = models.ManyToManyField(UserProfile,related_name="friends_list",blank=True)
 
 class Image(models.Model):
     author = models.ForeignKey(UserProfile, null = True)
@@ -50,7 +52,7 @@ class Image(models.Model):
 
 class Album(models.Model):
     author = models.ForeignKey(UserProfile, null = True)
-    users = models.CharField(max_length=2000, null = True)
+    users = models.ManyToManyField(UserProfile,related_name="tagged_users",blank=True)
     images = models.ManyToManyField(Image)
     name = models.CharField(max_length=200, unique=True)
     created_date = models.DateTimeField(default=timezone.now)

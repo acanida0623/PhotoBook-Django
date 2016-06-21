@@ -1,10 +1,11 @@
 from django import forms
-
 from .models import Post, Comment, UserProfile
 from django import forms as baseForms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.contrib.admin.widgets import AdminDateWidget
+from django.core.validators import URLValidator
+from django.core.exceptions import ValidationError
 
 class PostForm(forms.ModelForm):
 
@@ -25,20 +26,25 @@ class UserCreationForm(forms.ModelForm):
         'password_mismatch': ("The two password fields didn't match."),
         'invalid_email': ('Email addresses do not match.'),
     }
+    profile_picture_url = forms.CharField(label=("Profile Picture"),widget=forms.TextInput(attrs={'id':'new_user_profile_picture_url'}))
     username = forms.RegexField(label=("Username"), max_length=30,
         regex=r'^[\w.@+-]+$',
         help_text=("Required. 30 characters or fewer. Letters, digits and "
                       "@/./+/-/_ only."),
         error_messages={
             'invalid': ("This value may contain only letters, numbers and "
-                         "@/./+/-/_ characters.")})
-    email = forms.EmailField(label=("Email"))
-    confirm = forms.EmailField(label=("Confirm Email"))
+                         "@/./+/-/_ characters.")},
+        widget=forms.TextInput(attrs={'class':'new_user_inputs'}))
+    email = forms.EmailField(label=("Email"),
+    widget=forms.TextInput(attrs={'class':'new_user_inputs'}))
+    confirm = forms.EmailField(label=("Confirm Email"),
+    widget=forms.TextInput(attrs={'class':'new_user_inputs'}))
     password1 = forms.CharField(label=("Password"),
-        widget=forms.PasswordInput)
+        widget=forms.PasswordInput(attrs={'class':'new_user_inputs'}))
     password2 = forms.CharField(label=("Password confirmation"),
-        widget=forms.PasswordInput,
-        help_text=("Enter the same password as above, for verification."))
+        widget=forms.PasswordInput(attrs={'class':'new_user_inputs'}),
+        help_text=("Enter the same password as above, for verification."),
+        )
 
     class Meta:
         model = User
@@ -46,7 +52,6 @@ class UserCreationForm(forms.ModelForm):
 
     def clean(self):
         username = self.cleaned_data.get("username")
-        print("x {x}".format(x=username))
         dupe = True
         try:
             User._default_manager.get(username=username)
@@ -55,12 +60,15 @@ class UserCreationForm(forms.ModelForm):
         if dupe:
             raise forms.ValidationError(self.error_messages['duplicate_username'])
         cleaned_data = super(UserCreationForm, self).clean()
+        profile_picture = cleaned_data.get("profile_picture_url")
+        val = URLValidator()
+        try:
+            val(profile_picture)
+        except:
+            raise forms.ValidationError("Enter a valid Profile Picture URL.")
         email = cleaned_data.get("email")
         confirm_email = cleaned_data.get("confirm")
-        print(email)
-        print(confirm_email)
         if email and confirm_email:
-        # Only do something if both fields are valid so far.
             if email != confirm_email:
                 raise forms.ValidationError("Emails do not match.")
             if email != confirm_email:
@@ -71,16 +79,11 @@ class UserCreationForm(forms.ModelForm):
         if password1 and password2 and password1 != password2:
             raise forms.ValidationError(
                 self.error_messages['password_mismatch'])
-
-
-
         return cleaned_data
-
 
     def save(self, commit=True):
         user = super(UserCreationForm, self).save(commit=False)
         user.set_password(self.cleaned_data["password1"])
         if commit:
             user.save()
-
         return user

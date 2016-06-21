@@ -10,20 +10,32 @@
 .user_albums {
 	width: 56em;
 	margin: 0 auto;
-	margin-top: 12em;
-}
-
-.user_albums {
-	width: 56em;
-	margin: 0 auto;
-	margin-top: 12em;
+	margin-bottom: 10em;
+	z-index: 2;
+	background: #000000;
 }
 
 .contr_albums {
 	width: 56em;
 	margin: 0 auto;
-	margin-top: 12em;
+	z-index: 2;
+	background: #000000;
 }
+
+#friends_albums_title {
+	width: 56em;
+	margin: 0 auto;
+	margin-top: 8em;
+	height: 3.5em;
+	background-color: #000000;
+	border-top-left-radius: 25px;
+	-webkit-border-top-left-radius: 25px;
+	-moz-border-top-left-radius: 25px;
+	border-top-right-radius: 25px;
+	-webkit-border-top-right-radius: 25px;
+	-moz-border-top-right-radius: 25px;
+}
+
 @-webkit-keyframes photo_animation {
     0%   {opacity: 0;}
 
@@ -289,7 +301,19 @@
 
 }
 
-
+#user_albums_title {
+	width: 56em;
+	margin: 0 auto;
+	margin-top: 4em;
+	height: 3.5em;
+	background-color: #000000;
+	border-top-left-radius: 25px;
+	-webkit-border-top-left-radius: 25px;
+	-moz-border-top-left-radius: 25px;
+	border-top-right-radius: 25px;
+	-webkit-border-top-right-radius: 25px;
+	-moz-border-top-right-radius: 25px;
+}
 
 @media (max-width: 1441px){
 	.user_albums {

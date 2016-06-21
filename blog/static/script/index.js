@@ -1,9 +1,10 @@
+
 var Radium = require('radium');
 var React = require('react')
 var ReactDOM = require('react-dom')
 var Masonry = require('react-masonry-component');
 var masonryOptions = {
-    transitionDuration: 0
+    transitionDuration: 1000
 };
 var img_lst = [];
 var album_lst = [];
@@ -16,11 +17,29 @@ var load = null;
 var loadimage = new Image();
 loadimage.src="http://i.imgur.com/Gljcgpk.gif"
 import {StyleRoot} from 'radium';
-$().ready(function(){
+var Select = require('react-select');
 
+$().ready(function(){
+  $('#new_user_profile_picture_url').on('keyup',()=>{
+    var $url = $('#new_user_profile_picture_url').val();
+    $('#new_user_profile_picture').css("background-size", "cover");
+    $('#new_user_profile_picture').css("background-image", "url("+$url+")");
+  })
+  $('#new_user_get_profile_picture').on('change',(event)=>{
+    var current_url = $('#new_user_get_profile_picture').val()
+    if(current_url !== "") {
+      $('#new_user_profile_picture').css("background-size", "15% 15%");
+      $('#new_user_profile_picture').css("background-image", "url(http://i.imgur.com/Gljcgpk.gif)");
+    }
+    var file = event.target.files[0];
+    var reader = new FileReader();
+    reader.onload = function (event) {
+        uploadProfileImage(event.target.result);
+    };
+    reader.readAsDataURL(file);
+  })
   $(document).mousemove( function(e) {
      $('#trash_follow').css({'top':e.pageY+1.5,'main': e.pageX+1.5})
-
   });
 
 // Set up CSRF TOKEN for Ajax requests
@@ -71,10 +90,9 @@ function Load (selected,author,images,user_albums,contr_albums) {
   },
 
   this.listenForDrop = function() {
-
       if (window.FileReader) {
           var drop;
-              drop = document.getElementById('main');
+              drop = document.getElementById('upload_drop_zone');
               function cancel(e) {
                   if (e.preventDefault) {
                       e.preventDefault();
@@ -82,9 +100,9 @@ function Load (selected,author,images,user_albums,contr_albums) {
                   return false;
               }
               try {
-                  addEventHandler(window, 'dragover', cancel);
-                  addEventHandler(window, 'dragenter', cancel);
-                  addEventHandler(window, 'drop',(e) => {
+                  addEventHandler(drop, 'dragover', cancel);
+                  addEventHandler(drop, 'dragenter', cancel);
+                  addEventHandler(drop, 'drop',(e) => {
                   e = e || window.event;
                   if (e.preventDefault) {
                       e.preventDefault();
@@ -95,9 +113,8 @@ function Load (selected,author,images,user_albums,contr_albums) {
                   var temp_img_updated = update_temp_img(load.images,files.length);
                   load.images.length = 0;
                   temp_img_updated.map((x) => {
-                    x.images.map((y) => {
-                      load.images.push(y);
-                    })
+                      load.images.push(x);
+
                   })
 
                   for (var i = 0; i < files.length; i++) {
@@ -108,11 +125,11 @@ function Load (selected,author,images,user_albums,contr_albums) {
                       addEventHandler(reader, 'loadend', function (e, file) {
                           var bin = this.result;
 
-                          if(document.getElementById('imgur_check').checked) {
-                              uploadImg(bin,load.album_selected,load.album_author,mime_type);
-                          } else {
+                          // if(document.getElementById('imgur_check').checked) {
+                          //     uploadImg(bin,load.album_selected,load.album_author,mime_type);
+                          // } else {
                               uploadImgur(bin,load.album_selected,load.album_author,mime_type);
-                          }
+                          // }
 
                       }.bindToEventHandler(file));
 
@@ -146,33 +163,45 @@ function Load (selected,author,images,user_albums,contr_albums) {
 
 }
 
+var new_album_friends_selected = [];
+var new_album_height;
 var New_Album = React.createClass({
+    getInitialState: function () {
+      return {
+        selected_friends:[]
+      }
+
+    },
     submitNewAlbum: function () {
         var album_name = document.getElementById('name').value;
-        var users = document.getElementById('users').value;
+        var users = new_album_friends_selected;
         if (album_name !== "") {
-            if(users === "") {
-              users = "none"
-            }
-            var result = { 'album_name': album_name , 'users' :users };
+            var result = { 'album_name': album_name , 'users' : users };
             result = JSON.stringify(result);
             $.ajax({
                 url: "/new/album",
                 method: "POST",
-                data: result
+                data: {result,
+                       csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken').value
+                      }
             }).done(function (data) {
-              alert(data);
               window.location.href = "/";
             }).error(function (err) {
                 console.log(err);
-
             });
         }
     },
 
+    friendsChange:function(event){
+      new_album_friends_selected = event.split(",");
+      alert(new_album_friends_selected.length)
+      new_album_height =  20 + (new_album_friends_selected.length/1.1) +'em'
+      $('.new_album_form').css('height',new_album_height);
+    },
+
     render: function() {
     return <div className="new_album" >
-            <Header current_user = {this.props.current_user} user_albums = {this.props.user_albums} contr_albums = {this.props.contr_albums} />
+            <Header friends_options = {this.props.friends_options} current_user = {this.props.current_user} user_albums = {this.props.user_albums} contr_albums = {this.props.contr_albums} />
             <form className="new_album_form">
               <span id="create_album_text">
               Create New Album
@@ -184,7 +213,37 @@ var New_Album = React.createClass({
               <span id="create_album_users_text">
                 Users
               </span>
-              <input className="users" type="text" name="users" id="users" />
+              <div className="friends_select">
+              <Select
+                  joinValues={true}
+                  name="users"
+                  options={[{value:'Andrew', label:'Andrew'},
+                {value:'Andrew', label:'Andrew'},
+                {value:'Andrew2', label:'Andrew2'},
+                {value:'Andrew3', label:'Andrew3'},
+                {value:'Andrew4', label:'Andrew4'},
+                {value:'Andrew5', label:'Andrew5'},
+                {value:'Andrew6', label:'Andrew6'},
+                {value:'Andrew7', label:'Andrew7'},
+                {value:'Andrew8', label:'Andrew8'},
+                {value:'Andrew9', label:'Andrew9'},
+                {value:'Andrew10', label:'Andrew10'},
+                {value:'Andrew11', label:'Andrew11'},
+                {value:'Andrew12', label:'Andrew12'},
+                {value:'Andrew13', label:'Andrew13'},
+                {value:'Andrew14', label:'Andrew14'},
+                {value:'Andrew15', label:'Andrew15'},
+                {value:'Andrew16', label:'Andrew16'},
+                {value:'Andrew17', label:'Andrew17'},
+                {value:'Andrew18', label:'Andrew18'},
+                {value:'Andrew19', label:'Andrew19'},
+                {value:'Andrew20', label:'Andrew20'},
+                {value:'Andrew21', label:'Andrew21'},
+                {value:'Andrew22', label:'Andrew22'}]}
+                  multi={true}
+                  onChange={this.friendsChange}
+              />
+              </div>
               <button  onMouseDown = {this.submitNewAlbum} type="submit">Save</button>
             </form>
           </div>
@@ -192,16 +251,14 @@ var New_Album = React.createClass({
   }
 })
 
-
-
-
 var Header = React.createClass({
   getInitialState: function() {
     return {
       backAlbums:this.props.backAlbums,
       user_albums:this.props.user_albums,
       contr_albums:this.props.contr_albums,
-      current_user:this.props.current_user
+      current_user:this.props.current_user,
+      friends_options:this.props.friends_options
     }
 
   },
@@ -209,14 +266,13 @@ var Header = React.createClass({
   backAlbums: function () {
     album_lst.length = 0;
     img_lst.length = 0;
-    load = null;
     ReactDOM.unmountComponentAtNode(document.getElementById('main'));
     ReactDOM.render(React.createElement(Album_Container,{current_user:this.state.current_user, user_albums:this.props.user_albums, contr_albums:this.props.contr_albums}), document.getElementById('main'));
   },
 
   createAlbum: function () {
     ReactDOM.unmountComponentAtNode(document.getElementById('main'));
-    ReactDOM.render(React.createElement(New_Album,{current_user:this.state.current_user, user_albums:this.state.user_albums,contr_albums:this.state.contr_albums}), document.getElementById('main'));
+    ReactDOM.render(React.createElement(New_Album,{friends_options:this.props.friends_options,current_user:this.state.current_user, user_albums:this.state.user_albums,contr_albums:this.state.contr_albums}), document.getElementById('main'));
   },
 
   uploadNew: function () {
@@ -271,11 +327,6 @@ var Header = React.createClass({
         </p>
         </div>
 
-        <div onMouseDown={this.createAlbum} id="create_new_album">
-          <p>
-            New Album
-          </p>
-        </div>
 
         <User_Commands user_name={this.props.current_user}/>
 
@@ -351,6 +402,26 @@ var User_Commands = React.createClass({
   }
 })
 
+var Upload_Imgs = React.createClass({
+  getInitialState:function(){
+    return {
+      closeUpload: this.props.closeUpload
+    }
+  },
+  render: function() {
+    return <div className="upload_main">
+            <div onMouseDown = {this.state.closeUpload} className="close_upload">
+            X
+            </div>
+            <div onMouseDown = {this.state.closeUpload} className="upload_drop_zone" id="upload_drop_zone">
+              <p>Drag and Drop</p>
+            </div>
+            <File_Input album={this.props.current_album} author={this.props.author}/>
+            </div>
+  }
+
+})
+
 
 
 var Album_Container = React.createClass({
@@ -379,6 +450,7 @@ var Album_Container = React.createClass({
       return {
           user_album_holder: this.props.user_albums,
           contr_album_holder: this.props.contr_albums,
+          friends_options: [],
           delete_album: false,
           user_albums:this.props.user_albums,
           contr_albums:this.props.contr_albums,
@@ -387,7 +459,7 @@ var Album_Container = React.createClass({
           user_name: this.props.current_user+"'s",
           key_code: null,
           class_name: null,
-          loading: true
+          loading: false
       }
   },
 
@@ -469,26 +541,45 @@ var Album_Container = React.createClass({
 
   },
 
-  componentWillUnmount: function() {
+  componentWillMount: function() {
+    this.getFriends();
   },
 
-  componentWillMount: function() {
+  getFriends: function () {
+    $.ajax({
+        url: "/get/friends",
+        method: "GET",
+        data: {}
+    }).done((data) => {
+        var friends = JSON.parse(data);
 
+        if(friends !== false) {
+          var friends_options = [];
+          friends.map((x)=>{
+            friends_options.push({value:x, label:x})
+          })
+          this.setState({
+            friends_options: friends_options
+          })
+        }
+    }).error(function (err) {
+        console.log(err);
+    });
   },
 
   change:function() {
-    alert()
+
   },
 
-  mouseDownHandler: function () {
-    document.getElementById("trash_follow").style.visibility ='hidden';
-    document.body.style.cursor = "default";
-    document.getElementById("trash").style.visibility ='visible';
-  },
 //<input type="text_field" id="search_album" onChange={this.onChangeHandler} />
   render: function() {
     window.scrollTo(0, 0);
     var friends_albums = "Friends' Albums";
+    if(this.state.user_albums.length !== 0) {
+      this.setState({
+        loading: true
+      })
+    }
     if (this.state.loading) {
       return <div>
               <Loading_Cover/>
@@ -504,12 +595,16 @@ var Album_Container = React.createClass({
               {
                 this.state.user_albums.map((x,y) => {
                   var img_urls = x.urls
-
                   var album_cover = img_urls[0];
-
                   var album_name = x.name;
                   var album_author = x.author;
-                  return <Album_IMG key={y} contr_albums = {this.state.contr_albums} user_albums = {this.state.user_albums}  delete_album={this.delete_album} select_source_method={this.select_source_method} current_user = {this.props.current_user} key_code = {this.state.key_code}  album_author = {album_author} album_name = {album_name} class_name = {"col-sm album_img selected"} urls = {img_urls} img_source = {album_cover} />
+                  var last_album = null;
+                  if(this.state.contr_albums.length === 0) {
+                    if(this.state.contr_albums.indexOf(x) === this.state.contr_albums.length-1) {
+                      last_album = true;
+                    }
+                  }
+                  return <Album_IMG friends_options={this.state.friends_options} updateLoad = {this.updateLoad} last_album = {last_album} key={y} contr_albums = {this.state.contr_albums} user_albums = {this.state.user_albums}  delete_album={this.delete_album} select_source_method={this.select_source_method} current_user = {this.props.current_user} key_code = {this.state.key_code}  album_author = {album_author} album_name = {album_name} class_name = {"col-sm album_img selected"} urls = {img_urls} img_source = {album_cover} />
                 })
 
               }
@@ -531,14 +626,14 @@ var Album_Container = React.createClass({
                 var album_cover = img_urls[0];
                 var album_name = x.name;
                 var album_author = x.author;
-                return <Album_IMG key={y} contr_albums = {this.state.contr_albums} updateLoad = {this.updateLoad} last_album = {last_album} user_albums = {this.state.user_albums}  delete_album={this.delete_album} select_source_method={this.select_source_method} current_user = {this.props.current_user} key_code = {this.state.key_code}  album_author = {album_author} album_name = {album_name} class_name = {"col-sm album_img selected"} urls = {img_urls} img_source = {album_cover} />
+                return <Album_IMG friends_options={this.state.friends_options} key={y} contr_albums = {this.state.contr_albums} updateLoad = {this.updateLoad} last_album = {last_album} user_albums = {this.state.user_albums}  delete_album={this.delete_album} select_source_method={this.select_source_method} current_user = {this.props.current_user} key_code = {this.state.key_code}  album_author = {album_author} album_name = {album_name} class_name = {"col-sm album_img selected"} urls = {img_urls} img_source = {album_cover} />
               })
             }
             </Masonry>
             </div>
     }else {
       return <div id="album_holder">
-              <Header current_user={this.state.current_user} contr_albums = {this.state.contr_albums}  user_albums = {this.state.user_albums} />
+              <Header friends_options={this.state.friends_options} current_user={this.state.current_user} contr_albums = {this.state.contr_albums}  user_albums = {this.state.user_albums} />
               <Sort_User_Albums_Container updateAlbumOrder = {this.updateAlbumOrder} />
               <div id="user_albums_title">
                 <Search_Albums onChangeHandler = {this.onChangeHandler} />
@@ -561,7 +656,7 @@ var Album_Container = React.createClass({
                   }
                   var album_name = x.name;
                   var album_author = x.author;
-                  return <Album_IMG key={y} contr_albums = {this.state.contr_albums}  user_albums = {this.state.user_albums}  delete_album={this.delete_album} select_source_method={this.select_source_method} current_user = {this.props.current_user} key_code = {this.state.key_code}  album_author = {album_author} album_name = {album_name} class_name = {"col-sm album_img selected"} urls = {img_urls} img_source = {album_cover} />
+                  return <Album_IMG friends_options={this.state.friends_options} key={y} contr_albums = {this.state.contr_albums}  user_albums = {this.state.user_albums}  delete_album={this.delete_album} select_source_method={this.select_source_method} current_user = {this.props.current_user} key_code = {this.state.key_code}  album_author = {album_author} album_name = {album_name} class_name = {"col-sm album_img selected"} urls = {img_urls} img_source = {album_cover} />
                 })
 
               }
@@ -589,7 +684,7 @@ var Album_Container = React.createClass({
                 }
                 var album_name = x.name;
                 var album_author = x.author;
-                return <Album_IMG key={y} contr_albums  = {this.state.contr_albums} updateLoad = {this.updateLoad} last_album = {last_album} user_albums = {this.state.user_albums}  delete_album={this.delete_album} select_source_method={this.select_source_method} current_user = {this.props.current_user} key_code = {this.state.key_code}  album_author = {album_author} album_name = {album_name} class_name = {"col-sm album_img selected"} urls = {img_urls} img_source = {album_cover} />
+                return <Album_IMG friends_options={this.state.friends_options} key={y} contr_albums  = {this.state.contr_albums} updateLoad = {this.updateLoad} last_album = {last_album} user_albums = {this.state.user_albums}  delete_album={this.delete_album} select_source_method={this.select_source_method} current_user = {this.props.current_user} key_code = {this.state.key_code}  album_author = {album_author} album_name = {album_name} class_name = {"col-sm album_img selected"} urls = {img_urls} img_source = {album_cover} />
               })
             }
             </Masonry>
@@ -628,12 +723,12 @@ var Album_IMG = React.createClass({
 
       if(this.props.last_album) {
         return  <div className="album_image" onLoad = {this.updateLoad} style={divStyle}>
-          <Album_Cover contr_albums = {this.props.contr_albums} user_albums = {this.props.user_albums}  delete_album={this.props.delete_album} select_source_method={this.props.select_source_method} current_user = {this.props.current_user} album_author = {this.props.album_author} album_name = {this.props.album_name} urls = {this.props.urls} img_source = {this.props.img_source} />
+          <Album_Cover friends_options={this.props.friends_options} contr_albums = {this.props.contr_albums} user_albums = {this.props.user_albums}  delete_album={this.props.delete_album} select_source_method={this.props.select_source_method} current_user = {this.props.current_user} album_author = {this.props.album_author} album_name = {this.props.album_name} urls = {this.props.urls} img_source = {this.props.img_source} />
 
           </div>
       }else{
         return  <div className="album_image"  style={divStyle}>
-          <Album_Cover contr_albums = {this.props.contr_albums} user_albums = {this.props.user_albums}  delete_album={this.props.delete_album} select_source_method={this.props.select_source_method} current_user = {this.props.current_user} album_author = {this.props.album_author} album_name = {this.props.album_name} urls = {this.props.urls} img_source = {this.props.img_source} />
+          <Album_Cover friends_options={this.props.friends_options} contr_albums = {this.props.contr_albums} user_albums = {this.props.user_albums}  delete_album={this.props.delete_album} select_source_method={this.props.select_source_method} current_user = {this.props.current_user} album_author = {this.props.album_author} album_name = {this.props.album_name} urls = {this.props.urls} img_source = {this.props.img_source} />
 
           </div>
       }
@@ -682,14 +777,8 @@ var Album_Cover = React.createClass({
     $("#loading").fadeIn("fast")
         album_selected = this.state.album_name;
         album_author = this.state.album_author;
-        if (load === null) {
-          load = new Load(this.state.album_name,this.state.album_author,this.state.urls,this.props.user_albums,this.props.contr_albums)
-          load.listenForDrop();
-        }else {
-          load.updateImages(this.state.urls)
-          load.updateSelected(this.state.album_name,this.state.album_author)
-        }
-        remount_left(this.props.album_name,this.props.album_author,this.props.urls,this.props.user_albums,this.props.contr_albums,this.props.current_user);
+
+        remount_left(this.props.album_name,this.props.album_author,this.props.urls,this.props.user_albums,this.props.contr_albums,this.props.current_user,this.props.friends_options);
   },
 
   render: function() {
@@ -1025,13 +1114,17 @@ var Min_Container = React.createClass({
           album_author: this.props.album_author,
           current_user: this.props.current_user,
           key_code: null,
-          loading: true
+          loading: true,
+          upload:false
+
       }
   },
   updateLoad: function(loading_status) {
     this.setState({
       loading:loading_status
     })
+
+
   },
   keyDown: function(event){
     // this.setState({
@@ -1087,17 +1180,41 @@ var Min_Container = React.createClass({
     this.updateMainImg(new_img);
   },
 
+  uploadImg:function () {
+    this.setState({
+      upload:true
+    })
+    setTimeout(()=>{
+      if (load === null) {
+        load = new Load(this.props.album_selected,this.props.album_author,this.props.images,this.props.user_albums,this.props.contr_albums)
+        load.listenForDrop();
+      }else {
+        load.updateImages(this.state.urls)
+        load.updateSelected(this.props.album_selected,this.props.album_author)
+      }
+    },200)
+  },
+
+  closeUpload:function() {
+    this.setState({
+      upload:false
+    })
+    load = null;
+  },
   render: function() {
       var last_image = false
 
 
       return <div id="album_holder">
               {
+                (this.state.upload) && <Upload_Imgs current_album = {this.state.album_selected} author={this.state.current_user} closeUpload = {this.closeUpload} />
+              }
+              {
                 (this.state.loading) && <Loading_Cover />
               }
-              <Header current_user={this.state.current_user} contr_albums = {this.state.contr_albums}  user_albums = {this.state.user_albums} />
+              <Header friends_options={this.props.friends_options} current_user={this.state.current_user} contr_albums = {this.state.contr_albums}  user_albums = {this.state.user_albums} />
               <div id="album_title">
-                <div id="upload_image">
+                <div onMouseDown = {this.uploadImg} id="upload_image" >
                 </div>
                 <div id="album_settings">
                 </div>
@@ -1592,13 +1709,20 @@ var File_Input = React.createClass({
         var file = event.target.files[0];
         var reader = new FileReader();
         reader.onload = function (event) {
-            uploadImgur(event.target.result);
+            uploadImgur(event.target.result,this.props.album,this.props.author);
         };
         reader.readAsDataURL(file);
     },
 
     render: function() {
-        return  <input onChange={this.onChangeHandler} type={"file"} />
+        return  <div className="manual_upload">
+                  <label htmlFor="file-input">
+                  <img src="http://i.imgur.com/vhoHhIV.png"/>
+                  </label>
+
+                  <input id="file-input" onChange={this.onChangeHandler} type={"file"}/>
+                  </div>
+
 
     }
 });
@@ -1640,9 +1764,9 @@ function update_img_list(res) {
   return images
 }
 
-function remount_left(album_name, album_author, images,user_albums,contr_albums,current_user) {
+function remount_left(album_name, album_author, images,user_albums,contr_albums,current_user,friends) {
     ReactDOM.unmountComponentAtNode(document.getElementById('main'));
-    ReactDOM.render(React.createElement(Min_Container, {user_albums: user_albums, contr_albums: contr_albums, images: images, album_author: album_author, album_selected: album_name, current_user:current_user}), document.getElementById('main'));
+    ReactDOM.render(React.createElement(Min_Container, {user_albums: user_albums, contr_albums: contr_albums, images: images, album_author: album_author, album_selected: album_name, current_user:current_user, friends_options:friends}), document.getElementById('main'));
     window.scrollTo(0, 0);
 }
 
@@ -1700,6 +1824,28 @@ function uploadImgur(base64,album,author) {
     });
 }
 
+function uploadProfileImage(base64) {
+    var base64 = base64.replace(/^.*base64,/, '');
+    $.ajax({
+        method: 'POST',
+        url: 'https://api.imgur.com/3/image',
+        headers: {
+            Authorization: 'Client-ID 4d075e399079cdc'
+        },
+        data: {
+            image: base64
+        }
+    }).done((res) => {
+        var link = res.data.link;
+        $('#new_user_profile_picture_url').val(link);
+        var $url = $('#new_user_profile_picture_url').val();
+        $('#new_user_profile_picture').css("background-size", "cover");
+        $('#new_user_profile_picture').css("background-image", "url("+$url+")");
+    }).error(function (err) {
+        console.log(err);
+    });
+}
+
 function update_server_url(url,album,author) {
     var result = { 'url': url, 'album':album, 'author':author };
     result = JSON.stringify(result);
@@ -1715,25 +1861,21 @@ function update_server_url(url,album,author) {
       for(var x = 0; x < temp_count; x++ ) {
           img_result.push('http://i.imgur.com/JzVkr04.gif')
       }
-      var user_albums = update_album_list(result.albums);
-      var contr_albums = user_albums[1];
-      user_albums = user_albums[0];
+      var user_albums = result.albums.user_albums;
+      var contr_albums = result.albums.contr_albums;
 
       remount_left(result.album,result.author,img_result,user_albums,contr_albums,author)
 
       if(temp_count === 0) {
-
         load.updateImages(result.images)
         load.updateSelected(album_selected,album_author)
       }
     }).error(function (err) {
         console.log(err);
-
     });
 }
 
 function delete_url(res,album) {
-
     var result = { 'url': res, 'album': album };
     result = JSON.stringify(result);
     $.ajax({
@@ -1741,7 +1883,6 @@ function delete_url(res,album) {
         method: "POST",
         data: result
     }).done(function (data) {
-
         img_lst.length = 0;
         albums.length = 0;
         img_lst = [];
@@ -1789,11 +1930,6 @@ function main() {
     get_albums("a-z","")
   }catch(x) {
   }
-  addEventHandler(document.getElementById('page-header-color'),'change',function(){
-      var value = document.getElementById('page-header-color').value;
-      document.getElementById('page-header').style.backgroundColor = "#"+value;
-  })
-
 
 }
 

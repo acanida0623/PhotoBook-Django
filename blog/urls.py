@@ -26,7 +26,7 @@ urlpatterns = [
     url(r'^upload/s3/$', views.upload_img, name='upload_s3'),
     url(r'^get/$', views.get_albums, name='get_albums'),
     url(r'^get/user$', views.get_user, name='get_user'),
-
+    url(r'^get/friends$', views.get_friends, name='get_friends'),
     url(r'^new/album$', views.new_album, name='new_album'),
     url(r'^accounts/new/$', views.new_account, name='new_account'),
     url(r'^accounts/submit/$', views.submit_new_account, name='submit_new_user'),

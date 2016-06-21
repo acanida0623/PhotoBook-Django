@@ -11,6 +11,7 @@
   margin: 0 auto;
   margin-top: 12em;
   height: 20em;
+  position: relative;
   box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
 }
 
@@ -29,7 +30,6 @@
 
 .new_album_form button {
   margin-left: 8em;
-  margin-top: 18em;
   width: 12em;
   border-radius: 10px;
   font-family:  sans-serif;
@@ -43,6 +43,8 @@
   -webkit-transition: all 0.3 ease;
   transition: all 0.3 ease;
   cursor: pointer;
+  position: absolute;
+  bottom: 2em;
 }
 
 #create_album_text {
