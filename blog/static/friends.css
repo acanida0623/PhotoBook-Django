@@ -1,0 +1,62 @@
+.friends_main_container {
+  height: 100vh;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+
+.user_friends {
+  width: 49.5em;
+  margin: 0 auto;
+  margin-bottom: 10em;
+  z-index: 2;
+  background: #000000;
+}
+
+.user_friends_title {
+  width: 49.5em;
+  margin: 0 auto;
+  margin-top: 8em;
+  height: 3.5em;
+  background-color: #000000;
+  border-top-left-radius: 25px;
+  -webkit-border-top-left-radius: 25px;
+  -moz-border-top-left-radius: 25px;
+  border-top-right-radius: 25px;
+  -webkit-border-top-right-radius: 25px;
+  -moz-border-top-right-radius: 25px;
+}
+
+.search_friends {
+  width: 49.5em;
+  margin: 0 auto;
+  z-index: 2;
+  background: #000000;
+}
+
+.search_friends_title {
+  width: 49.5em;
+  margin: 0 auto;
+  margin-top: 8em;
+  height: 3.5em;
+  background-color: #000000;
+  border-top-left-radius: 25px;
+  -webkit-border-top-left-radius: 25px;
+  -moz-border-top-left-radius: 25px;
+  border-top-right-radius: 25px;
+  -webkit-border-top-right-radius: 25px;
+  -moz-border-top-right-radius: 25px;
+}
+
+.friend_image {
+  width: 16rem;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  height: 13rem;
+  margin: .25rem;
+  -webkit-animation-name: photo_animation;
+  -webkit-animation-duration: .3s;
+  animation-timing-function: ease-in;
+}

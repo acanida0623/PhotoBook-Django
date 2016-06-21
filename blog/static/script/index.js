@@ -14,10 +14,35 @@ var album_author = null;
 var temp_count = 0;
 var img_count = 0 ;
 var load = null;
+var user_friends = [];
 var loadimage = new Image();
 loadimage.src="http://i.imgur.com/Gljcgpk.gif"
 import {StyleRoot} from 'radium';
 var Select = require('react-select');
+
+var options_test = [{value:'Andrew', label:'Andrew'},
+{value:'Andrew', label:'Andrew'},
+{value:'Andrew2', label:'Andrew2'},
+{value:'Andrew3', label:'Andrew3'},
+{value:'Andrew4', label:'Andrew4'},
+{value:'Andrew5', label:'Andrew5'},
+{value:'Andrew6', label:'Andrew6'},
+{value:'Andrew7', label:'Andrew7'},
+{value:'Andrew8', label:'Andrew8'},
+{value:'Andrew9', label:'Andrew9'},
+{value:'Andrew10', label:'Andrew10'},
+{value:'Andrew11', label:'Andrew11'},
+{value:'Andrew12', label:'Andrew12'},
+{value:'Andrew13', label:'Andrew13'},
+{value:'Andrew14', label:'Andrew14'},
+{value:'Andrew15', label:'Andrew15'},
+{value:'Andrew16', label:'Andrew16'},
+{value:'Andrew17', label:'Andrew17'},
+{value:'Andrew18', label:'Andrew18'},
+{value:'Andrew19', label:'Andrew19'},
+{value:'Andrew20', label:'Andrew20'},
+{value:'Andrew21', label:'Andrew21'},
+{value:'Andrew22', label:'Andrew22'}]
 
 $().ready(function(){
   $('#new_user_profile_picture_url').on('keyup',()=>{
@@ -153,14 +178,7 @@ function Load (selected,author,images,user_albums,contr_albums) {
       } else {
           document.getElementById('status').innerHTML = 'Your browser does not support the HTML5 FileReader.';
       }
-  },
-
-  this.forgetDrop = function(){
-
   }
-
-
-
 }
 
 var new_album_friends_selected = [];
@@ -176,14 +194,12 @@ var New_Album = React.createClass({
         var album_name = document.getElementById('name').value;
         var users = new_album_friends_selected;
         if (album_name !== "") {
-            var result = { 'album_name': album_name , 'users' : users };
+            var result = {'album_name':album_name,'users':users};
             result = JSON.stringify(result);
             $.ajax({
                 url: "/new/album",
                 method: "POST",
-                data: {result,
-                       csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken').value
-                      }
+                data: result
             }).done(function (data) {
               window.location.href = "/";
             }).error(function (err) {
@@ -202,7 +218,7 @@ var New_Album = React.createClass({
     render: function() {
     return <div className="new_album" >
             <Header friends_options = {this.props.friends_options} current_user = {this.props.current_user} user_albums = {this.props.user_albums} contr_albums = {this.props.contr_albums} />
-            <form className="new_album_form">
+            <div className="new_album_form">
               <span id="create_album_text">
               Create New Album
               </span>
@@ -217,37 +233,61 @@ var New_Album = React.createClass({
               <Select
                   joinValues={true}
                   name="users"
-                  options={[{value:'Andrew', label:'Andrew'},
-                {value:'Andrew', label:'Andrew'},
-                {value:'Andrew2', label:'Andrew2'},
-                {value:'Andrew3', label:'Andrew3'},
-                {value:'Andrew4', label:'Andrew4'},
-                {value:'Andrew5', label:'Andrew5'},
-                {value:'Andrew6', label:'Andrew6'},
-                {value:'Andrew7', label:'Andrew7'},
-                {value:'Andrew8', label:'Andrew8'},
-                {value:'Andrew9', label:'Andrew9'},
-                {value:'Andrew10', label:'Andrew10'},
-                {value:'Andrew11', label:'Andrew11'},
-                {value:'Andrew12', label:'Andrew12'},
-                {value:'Andrew13', label:'Andrew13'},
-                {value:'Andrew14', label:'Andrew14'},
-                {value:'Andrew15', label:'Andrew15'},
-                {value:'Andrew16', label:'Andrew16'},
-                {value:'Andrew17', label:'Andrew17'},
-                {value:'Andrew18', label:'Andrew18'},
-                {value:'Andrew19', label:'Andrew19'},
-                {value:'Andrew20', label:'Andrew20'},
-                {value:'Andrew21', label:'Andrew21'},
-                {value:'Andrew22', label:'Andrew22'}]}
+                  options={this.props.friends_options}
                   multi={true}
                   onChange={this.friendsChange}
               />
               </div>
-              <button  onMouseDown = {this.submitNewAlbum} type="submit">Save</button>
-            </form>
+              <button  onMouseDown = {this.submitNewAlbum}>Save</button>
+            </div>
           </div>
 
+  }
+})
+
+var Friends = React.createClass({
+  var username = this.props.current_user+"'s"
+  render: function () {
+    return <div>
+            <Header friends_options={this.props.friends_options} current_user={this.props.current_user} contr_albums = {this.props.contr_albums}  user_albums = {this.props.user_albums} />
+              <div className="friends_main_container">
+                <div className="user_friends_title_container">
+                <span className="user_friends_title">username Friends</span>
+                </div>
+              </div>
+              <Masonry
+                  className={'user_friends'} // default ''
+                  elementType={'div'} // default 'div'
+                  options={masonryOptions} // default {}
+                  disableImagesLoaded={false} // default false
+                  onImagesLoaded={this.handleImagesLoaded}
+              >
+              {
+                user_friends.map((x,y) => {
+                  var friends = x.urls
+                  try {
+                  var album_cover = img_urls[0];
+                  }catch(x) {
+                  return <div></div>
+                  }
+                  var album_name = x.name;
+                  var album_author = x.author;
+                  return <Album_IMG friends_options={this.state.friends_options} key={y} contr_albums = {this.state.contr_albums}  user_albums = {this.state.user_albums}  delete_album={this.delete_album} select_source_method={this.select_source_method} current_user = {this.props.current_user} key_code = {this.state.key_code}  album_author = {album_author} album_name = {album_name} class_name = {"col-sm album_img selected"} urls = {img_urls} img_source = {album_cover} />
+                })
+
+              }
+              </Masonry>
+
+
+
+                <div className="user_friends">
+                </div>
+                <div className="search_friends_title">
+                </div>
+                <div className="search_friends">
+                </div>
+              </div>
+            </div>
   }
 })
 
@@ -275,7 +315,9 @@ var Header = React.createClass({
     ReactDOM.render(React.createElement(New_Album,{friends_options:this.props.friends_options,current_user:this.state.current_user, user_albums:this.state.user_albums,contr_albums:this.state.contr_albums}), document.getElementById('main'));
   },
 
-  uploadNew: function () {
+  viewFriends: function () {
+    ReactDOM.unmountComponentAtNode(document.getElementById('main'));
+    ReactDOM.render(React.createElement(Friends,{friends_options:this.props.friends_options,current_user:this.state.current_user, user_albums:this.state.user_albums,contr_albums:this.state.contr_albums}), document.getElementById('main'));
 
   },
 
@@ -423,7 +465,7 @@ var Upload_Imgs = React.createClass({
 })
 
 
-
+var loading = true;
 var Album_Container = React.createClass({
   updateSelectedImg: function(source,author) {
     this.setState({
@@ -551,7 +593,7 @@ var Album_Container = React.createClass({
         method: "GET",
         data: {}
     }).done((data) => {
-        var friends = JSON.parse(data);
+        user_friends = JSON.parse(data);
 
         if(friends !== false) {
           var friends_options = [];
@@ -576,9 +618,13 @@ var Album_Container = React.createClass({
     window.scrollTo(0, 0);
     var friends_albums = "Friends' Albums";
     if(this.state.user_albums.length !== 0) {
-      this.setState({
-        loading: true
-      })
+      if(loading) {
+        loading = false;
+        this.setState({
+          loading: true
+        })
+
+      }
     }
     if (this.state.loading) {
       return <div>
@@ -1231,7 +1277,7 @@ var Min_Container = React.createClass({
                   if(this.props.images.indexOf(src) === this.props.images.length - 1){
                     last_image = true;
                   }
-                  return <View_IMG user_albums = {this.state.user_albums} contr_albums = {this.state.contr_albums} album_images = {this.state.images} last_image = {last_image} updateLoad = {this.updateLoad} img_source = {src} key_code = {this.state.key_code} current_user = {this.state.current_user} album_author = {this.props.album_author} album_selected = {this.props.album_selected} select_source={this.state.select_source} select_source_method={this.updateSelectedImg} key={i} />
+                  return <View_IMG friends_options={this.props.friends_options} user_albums = {this.state.user_albums} contr_albums = {this.state.contr_albums} album_images = {this.state.images} last_image = {last_image} updateLoad = {this.updateLoad} img_source = {src} key_code = {this.state.key_code} current_user = {this.state.current_user} album_author = {this.props.album_author} album_selected = {this.props.album_selected} select_source={this.state.select_source} select_source_method={this.updateSelectedImg} key={i} />
                 })
               }
               </Masonry>
@@ -1310,7 +1356,7 @@ var View_IMG = React.createClass({
 
     onMouseDownHandler: function() {
       ReactDOM.unmountComponentAtNode(document.getElementById('main'));
-      ReactDOM.render(React.createElement(Slideshow, {current_user: this.state.current_user, user_albums: this.props.user_albums, contr_albums: this.props.contr_albums, album_images: this.state.album_images, img_source:this.state.img_source }), document.getElementById('main'));
+      ReactDOM.render(React.createElement(Slideshow, {friends_options: this.props.friends_options, current_user: this.state.current_user, user_albums: this.props.user_albums, contr_albums: this.props.contr_albums, album_images: this.state.album_images, img_source:this.state.img_source }), document.getElementById('main'));
 
     },
 
@@ -1547,7 +1593,7 @@ var Slideshow = React.createClass({
       var next_img_style = $.extend(true, {}, next_back_image, this.state.next_img_style);
 
         return    <div className="slideshow_container">
-                    <Header current_user = {this.props.current_user} user_albums = {this.props.user_albums} contr_albums = {this.props.contr_albums} />
+                    <Header friends_options = {this.props.friends_options} current_user = {this.props.current_user} user_albums = {this.props.user_albums} contr_albums = {this.props.contr_albums} />
                     <StyleRoot>
                       <div style={main_div_style} id="main_img_container" onMouseDown = {this.onMouseDownHandler} className={"main_img_container"}>
                       </div>

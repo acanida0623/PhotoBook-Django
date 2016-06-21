@@ -90,8 +90,6 @@ def submit_new_account(request):
         if form.is_valid():
             UserProfile.objects.create(user = form.save(commit = True))
             user = UserProfile.objects.get(user__username=form.cleaned_data.get("username"))
-            print(user)
-            print("testing^")
             Friends.objects.create(owner=user)
             return redirect('/')
     else:
@@ -107,9 +105,10 @@ def upload_images(request):
 @login_required
 def new_album(request):
     user = UserProfile.objects.get(user__username=request.user)
-    req = eval(request.body)
-    album_name = str(req['album_name'])
-    users = str(req['users'])
+    req = request.body.decode("utf-8")
+    req = eval(req)
+    album_name = req['album_name']
+    users = req['users']
     if request.method == "POST":
         same_name = Album.objects.filter(name=album_name, author=user)
         try:
@@ -119,8 +118,12 @@ def new_album(request):
                 json.dumps(error)
                 )
         except:
-            new_album = Album(author=user,name=album_name,users=users)
+            new_album = Album(author=user,name=album_name)
             new_album.save()
+            for name in users:
+                friend = UserProfile.objects.get(user__username=name)
+                new_album.users.add(friend)
+                new_album.save()
             new_image = Image(url="http://i.imgur.com/wFpjb8w.jpg",author=user,album_name=new_album.name)
             new_image.save()
             new_album.images.add(new_image)
@@ -134,7 +137,6 @@ def save_urls(request):
     if request.is_ajax():
         req = eval(request.body)
         if request.method == 'POST':
-
             album = Album.objects.filter(name=req['album'])
             user = str(request.user)
             user_profile = UserProfile.objects.get(user__username=request.user)
@@ -189,8 +191,6 @@ def get_friends(request):
                 user_friends = Friends.objects.get(owner = user)
                 print(user_friends)
                 for f in user_friends.friends.all():
-                    print("friendslisttesting")
-                    print(f)
                     friends_list.append(f.user.username)
                 return HttpResponse(
                 json.dumps(friends_list)
@@ -204,12 +204,7 @@ def get_friends(request):
 def get_user(request):
     if request.is_ajax():
         if request.method == 'GET':
-            if request.user.is_authenticated():
-                print("authenticated")
-            else:
-                print("not_authenticated")
             user = str(request.user)
-            friends = Friends.objects.get()
             return HttpResponse(
             json.dumps(user)
             )
@@ -222,11 +217,8 @@ def get_albums(request):
             sorting_method = request.GET.get("sorting_method")
             direction = request.GET.get("direction")
             user = str(request.user)
-            print("!@#$@#!$@#!$!@")
-            print(user)
             album_url_list = fill_albums(user,sorting_method,direction)
             result = {'album_url_list':album_url_list,'user':user}
-            print(result)
             return HttpResponse(
             json.dumps(result)
             )
@@ -243,13 +235,12 @@ def fill_albums(user,sorting_method,direction):
                     images.append(x.url)
                 album_url_list['user_albums'].append({'urls':images,'name':name.name,'author':author})
             for tagged in name.users.all():
-                if user == tagged.user:
+                if user == tagged.user.username:
                     urls2 = list(name.images.all())
                     images2 = []
                     for x in urls2:
                         images2.append(x.url)
                     album_url_list['contr_albums'].append({'urls':images2,'name':name.name,'author':author})
-
     elif sorting_method == "a-z":
         for name in Album.objects.all().order_by(direction+'name'):
             author = str(name.author.user)
@@ -260,7 +251,7 @@ def fill_albums(user,sorting_method,direction):
                     images.append(x.url)
                 album_url_list['user_albums'].append({'urls':images,'name':name.name,'author':author})
             for tagged in name.users.all():
-                if user == tagged.user:
+                if user == tagged.user.username:
                     urls2 = list(name.images.all())
                     images2 = []
                     for x in urls2:
@@ -276,7 +267,7 @@ def fill_albums(user,sorting_method,direction):
                     images.append(x.url)
                 album_url_list['user_albums'].append({'urls':images,'name':name.name,'author':author})
             for tagged in name.users.all():
-                if user == tagged.user:
+                if user == tagged.user.username:
                     urls2 = list(name.images.all())
                     images2 = []
                     for x in urls2:
@@ -292,7 +283,7 @@ def fill_albums(user,sorting_method,direction):
                     images.append(x.url)
                 album_url_list['user_albums'].append({'urls':images,'name':name.name,'author':author})
             for tagged in name.users.all():
-                if user == tagged.user:
+                if user == tagged.user.username:
                     urls2 = list(name.images.all())
                     images2 = []
                     for x in urls2:
