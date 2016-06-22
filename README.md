@@ -4,7 +4,8 @@ This web app allows for cloud storing of images on an s3 cloud server. The user 
 
 ## Live Demo
 
-* Live Demo: digitalphoto.cloud
+* Live Demo: [digitalphoto.cloud](https://www.digitalphoto.cloud)
+
 
 ## Installation & Requirements
 
