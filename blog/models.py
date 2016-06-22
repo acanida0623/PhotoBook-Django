@@ -36,12 +36,14 @@ class Comment(models.Model):
         return self.comments.filter(approved_comment=True)
 
 class UserProfile(models.Model):
-    user =  models.OneToOneField(User, unique=True)
+    user =  models.OneToOneField(User, unique=True, null = True)
     picture = models.URLField(null = True)
 
 class Friends(models.Model):
     owner = models.ForeignKey(UserProfile, null = True, related_name="friends_owner")
     friends = models.ManyToManyField(UserProfile,related_name="friends_list",blank=True)
+    requests_received = models.ManyToManyField(UserProfile,related_name="friends_requests_received",blank=True)
+    requests_sent = models.ManyToManyField(UserProfile,related_name="friends_requests_sent",blank=True)
 
 class Image(models.Model):
     author = models.ForeignKey(UserProfile, null = True)

@@ -4,8 +4,8 @@
   width: 60px;
   height: 34px;
   top: .6em;
-  right: 1em;
-  visibility: hidden;
+  right: 10em;
+
 }
 
 .switch input {display:none;}

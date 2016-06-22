@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render_to_response
 from django.utils import timezone
 from .models import Image, Album, UserProfile, Friends
-from .forms import UserCreationForm
+from .forms import UserCreationForm, UserProfilePicture
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
@@ -20,7 +20,7 @@ import os
 
 AWS_ACCESS_KEY = os.environ.get('AWS_ACCESS_KEY')
 AWS_SECRET_KEY = os.environ.get('AWS_SECRET_KEY')
-AWS_BUCKET_NAME = os.environ.get('S3_BUCKET_NAME')
+AWS_BUCKET_NAME = 'cloudimgs'
 
 
 def upload_img(request):
@@ -81,22 +81,28 @@ def main_view(request):
 
 def new_account(request):
     form = UserCreationForm()
-    return render(request, 'new_user.html',{'form': form})
+    formb = UserProfilePicture()
+    return render(request, 'new_user.html',{'form': form,
+                                            'formb': formb })
 
 @csrf_exempt
 def submit_new_account(request):
     if request.method == "POST":
         form = UserCreationForm(request.POST)
+        formb = UserProfilePicture(request.POST)
         if form.is_valid():
-            UserProfile.objects.create(user = form.save(commit = True))
-            user = UserProfile.objects.get(user__username=form.cleaned_data.get("username"))
-            Friends.objects.create(owner=user)
-            return redirect('/')
+            print("forma valid")
+            if formb.is_valid():
+                print("formb is valid")
+                UserProfile.objects.create(user = form.save(commit = True),picture = request.POST.get('picture', False))
+                user = UserProfile.objects.get(user__username=form.cleaned_data.get("username"))
+                Friends.objects.create(owner=user)
+                return redirect('/')
     else:
         form = UserCreationForm()
-    return render(request,'new_user.html', {'form': form})
-
-
+        formb = UserProfilePicture()
+    return render(request,'new_user.html', {'form': form,
+                                            'formb': formb })
 
 def upload_images(request):
     return render(request, 'upload.html')
@@ -189,9 +195,8 @@ def get_friends(request):
             user = UserProfile.objects.get(user__username = request.user)
             try:
                 user_friends = Friends.objects.get(owner = user)
-                print(user_friends)
                 for f in user_friends.friends.all():
-                    friends_list.append(f.user.username)
+                    friends_list.append({'name':f.user.username,'url':f.picture})
                 return HttpResponse(
                 json.dumps(friends_list)
                 )
@@ -201,6 +206,17 @@ def get_friends(request):
                 json.dumps(no_friends)
                 )
 
+def get_all_users(request):
+    if request.is_ajax():
+        if request.method == 'GET':
+            user_list = []
+            for user in  UserProfile.objects.all():
+                user_list.append({'name':user.user.username,'url':user.picture})
+                print(user_list[0]['url'])
+            return HttpResponse(
+            json.dumps(user_list)
+            )
+
 def get_user(request):
     if request.is_ajax():
         if request.method == 'GET':
@@ -208,6 +224,72 @@ def get_user(request):
             return HttpResponse(
             json.dumps(user)
             )
+
+def save_friend(request):
+    if request.is_ajax():
+        if request.method == 'POST':
+            user = UserProfile.objects.get(user__username=request.user)
+            req = request.body.decode("utf-8")
+            req = eval(req)
+
+            friend_request = req['friend_request']
+            friend = UserProfile.objects.get(user__username=friend_request)
+            user_friends = Friends.objects.get(owner = user)
+            user_friends.friends.add(friend)
+            user_friends.save()
+            friends_friends =  Friends.objects.get(owner = friend)
+            friends_friends.friends.add(user)
+            friends_friends.save()
+            friends_list = []
+            for f in user_friends.friends.all():
+                friends_list.append({'name':f.user.username,'url':f.picture})
+            return  HttpResponse(
+            json.dumps(friends_list)
+            )
+
+
+def send_friend_request(request):
+    if request.is_ajax():
+        if request.method == 'POST':
+            user = UserProfile.objects.get(user__username=request.user)
+            reque = request.body.decode("utf-8")
+            req = eval(reque)
+            friend_request = req['friend_request']
+            friend = UserProfile.objects.get(user__username=friend_request)
+            if (user == friend):
+                user_friends = Friends.objects.get(owner = user)
+                for f in user_friends.requests_sent.all():
+                    friends_list.append({'name':f.user.username,'url':f.picture})
+                return  HttpResponse(
+                json.dumps(friends_list)
+                )
+            user_friends = Friends.objects.get(owner = user)
+            user_friends.requests_sent.add(friend)
+            user_friends.save()
+            friends_friends =  Friends.objects.get(owner = friend)
+            friends_friends.requests_received.add(user)
+            friends_friends.save()
+            friends_list = []
+            for f in user_friends.requests_sent.all():
+                friends_list.append({'name':f.user.username,'url':f.picture})
+            return  HttpResponse(
+            json.dumps(friends_list)
+            )
+
+def get_friend_requests(request):
+    if request.is_ajax():
+        if request.method == 'GET':
+            friend_requests = {'sent':[],'received':[]}
+            user = UserProfile.objects.get(user__username = request.user)
+            user_friends = Friends.objects.get(owner = user)
+            for f in user_friends.requests_received.all():
+                friend_requests['received'].append({'name':f.user.username,'url':f.picture})
+            for f in user_friends.requests_sent.all():
+                friend_requests['sent'].append({'name':f.user.username,'url':f.picture})
+            return HttpResponse(
+            json.dumps(friend_requests)
+            )
+
 
 
 def get_albums(request):

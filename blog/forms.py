@@ -7,17 +7,16 @@ from django.contrib.admin.widgets import AdminDateWidget
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
 
-class PostForm(forms.ModelForm):
-
+class UserProfilePicture(forms.ModelForm):
+    picture = forms.URLField(label=("Profile Picture"),widget=forms.TextInput(attrs={'id':'new_user_profile_picture_url'}))
     class Meta:
-        model = Post
-        fields = ('title', 'text',)
-
-class CommentForm(forms.ModelForm):
-
-    class Meta:
-        model = Comment
-        fields = ('author', 'text',)
+        model = UserProfile
+        fields = ('picture',)
+    def clean_profile_picture_url(self):
+        profile_picture = self.cleaned_data["picture"]
+        val = URLValidator()
+        val(profile_picture)
+        return profile_picture
 
 
 class UserCreationForm(forms.ModelForm):
@@ -26,7 +25,7 @@ class UserCreationForm(forms.ModelForm):
         'password_mismatch': ("The two password fields didn't match."),
         'invalid_email': ('Email addresses do not match.'),
     }
-    profile_picture_url = forms.CharField(label=("Profile Picture"),widget=forms.TextInput(attrs={'id':'new_user_profile_picture_url'}))
+
     username = forms.RegexField(label=("Username"), max_length=30,
         regex=r'^[\w.@+-]+$',
         help_text=("Required. 30 characters or fewer. Letters, digits and "
@@ -48,7 +47,7 @@ class UserCreationForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ("username",)
+        fields = ("username","email")
 
     def clean(self):
         username = self.cleaned_data.get("username")
@@ -60,12 +59,6 @@ class UserCreationForm(forms.ModelForm):
         if dupe:
             raise forms.ValidationError(self.error_messages['duplicate_username'])
         cleaned_data = super(UserCreationForm, self).clean()
-        profile_picture = cleaned_data.get("profile_picture_url")
-        val = URLValidator()
-        try:
-            val(profile_picture)
-        except:
-            raise forms.ValidationError("Enter a valid Profile Picture URL.")
         email = cleaned_data.get("email")
         confirm_email = cleaned_data.get("confirm")
         if email and confirm_email:
@@ -86,4 +79,5 @@ class UserCreationForm(forms.ModelForm):
         user.set_password(self.cleaned_data["password1"])
         if commit:
             user.save()
+
         return user

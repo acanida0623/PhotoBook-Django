@@ -14,13 +14,22 @@
     </ul>
 {% endif %}
 
-<form  method="post" action="{% url 'submit_new_user' %}">
+{% if formb.non_field_errors %}
+{{ adminform.form.non_field_errors }}
+    <ul class='form-errors'>
+        {% for error in formb.non_field_errors %}
+            <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+<form enctype="multipart/form-data"  method="post" action="{% url 'submit_new_user' %}">
 
 <div class="new_user_form">
   <div id="new_user_profile_picture">
     <input type="file" id="new_user_get_profile_picture"  />
     <span>Profile Picture URL</span>
-    {{form.profile_picture_url}}
+    {{formb.picture}}
 
   </div>
 

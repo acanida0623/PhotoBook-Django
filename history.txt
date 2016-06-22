@@ -95,7 +95,7 @@ cd ~/documents/codeguild/
 pip install imghdr
 pip install boto3
 aws configure
-aws config
+aws config	
 pip install awscli
 pip3 install awscli
 aws ec2 describe-instances

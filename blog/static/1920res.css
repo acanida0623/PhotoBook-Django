@@ -344,14 +344,6 @@
 		animation-timing-function: ease-in; /* Chrome, Safari, Opera */
 	}
 
-	.what {
-
-		opacity: 0;
-		height: 100%;
-		width: 100%;
-		position: absolute;
-		background-color: #1680FF;
-	}
 
 
 	.what img {

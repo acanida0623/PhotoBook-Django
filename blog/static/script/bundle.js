@@ -63,6 +63,10 @@
 	var temp_count = 0;
 	var img_count = 0;
 	var load = null;
+	var user_friends = [];
+	var friend_requests = [];
+	var friend_requests_sent = [];
+	var global_users = [];
 	var loadimage = new Image();
 	loadimage.src = "http://i.imgur.com/Gljcgpk.gif";
 
@@ -169,12 +173,11 @@
 	            reader.readAsDataURL(file);
 	            addEventHandler(reader, 'loadend', function (e, file) {
 	              var bin = this.result;
-
-	              // if(document.getElementById('imgur_check').checked) {
-	              //     uploadImg(bin,load.album_selected,load.album_author,mime_type);
-	              // } else {
-	              uploadImgur(bin, load.album_selected, load.album_author, mime_type);
-	              // }
+	              if (document.getElementById('imgur_check').checked) {
+	                uploadImg(bin, load.album_selected, load.album_author, mime_type);
+	              } else {
+	                uploadImgur(bin, load.album_selected, load.album_author, mime_type);
+	              }
 	            }.bindToEventHandler(file));
 	          }
 	          remount_left(load.album_selected, load.album_author, temp_img_updated, load.user_albums, load.contr_albums, author);
@@ -228,7 +231,6 @@
 
 	  friendsChange: function friendsChange(event) {
 	    new_album_friends_selected = event.split(",");
-	    alert(new_album_friends_selected.length);
 	    new_album_height = 20 + new_album_friends_selected.length / 1.1 + 'em';
 	    $('.new_album_form').css('height', new_album_height);
 	  },
@@ -281,7 +283,36 @@
 	var Friends = React.createClass({
 	  displayName: 'Friends',
 
+	  getInitialState: function getInitialState() {
+	    return {
+	      global_users_state: []
+	    };
+	  },
+
+	  componentWillMount: function componentWillMount() {},
+
+	  searchGlobalUsers: function searchGlobalUsers() {
+	    var _this = this;
+
+	    this.setState({
+	      global_users_state: []
+	    });
+	    var search = document.getElementById("search_friends_global").value;
+	    var matches = global_users.map(function (x) {
+	      return x;
+	    }).filter(function (s) {
+	      return s.name.indexOf(search) !== -1;
+	    });
+	    console.log(matches);
+	    setTimeout(function () {
+	      _this.setState({
+	        global_users_state: matches
+	      });
+	    }, 5);
+	  },
+
 	  render: function render() {
+	    var username = this.props.current_user + "'s";
 	    return React.createElement(
 	      'div',
 	      null,
@@ -289,10 +320,210 @@
 	      React.createElement(
 	        'div',
 	        { className: 'friends_main_container' },
-	        React.createElement('div', { className: 'user_friends_title' }),
-	        React.createElement('div', { className: 'user_friends' }),
-	        React.createElement('div', { className: 'search_friends_title' }),
-	        React.createElement('div', { className: 'search_friends' })
+	        React.createElement(
+	          'div',
+	          { className: 'friend_requests_received_title_container' },
+	          React.createElement(
+	            'span',
+	            { className: 'friend_requests_received_title' },
+	            'New Friend Requests'
+	          )
+	        ),
+	        React.createElement(
+	          Masonry,
+	          {
+	            className: 'friend_requests_received' // default ''
+	            , elementType: 'div' // default 'div'
+	            , options: masonryOptions // default {}
+	            , disableImagesLoaded: false // default false
+	            , onImagesLoaded: this.handleImagesLoaded
+	          },
+	          friend_requests.map(function (x, y) {
+	            var friend = x.name;
+	            var picture = x.url;
+	            return React.createElement(Friend_Request_Received, { key: y, profile_picture: picture, user: friend });
+	          })
+	        ),
+	        React.createElement(
+	          'div',
+	          { className: 'user_friends_title_container' },
+	          React.createElement(
+	            'span',
+	            { className: 'friends_title' },
+	            username,
+	            ' Friends'
+	          )
+	        ),
+	        React.createElement(
+	          Masonry,
+	          {
+	            className: 'user_friends' // default ''
+	            , elementType: 'div' // default 'div'
+	            , options: masonryOptions // default {}
+	            , disableImagesLoaded: false // default false
+	            , onImagesLoaded: this.handleImagesLoaded
+	          },
+	          user_friends.map(function (x, y) {
+	            var friend = x.name;
+	            var picture = x.url;
+	            return React.createElement(User_Friend, { key: y, profile_picture: picture, user: friend });
+	          })
+	        ),
+	        React.createElement(
+	          'div',
+	          { className: 'search_friends_title_container' },
+	          React.createElement(
+	            'span',
+	            { className: 'friends_title' },
+	            'Find Friends'
+	          ),
+	          React.createElement(Search_Friends_Global, { onChangeHandler: this.searchGlobalUsers })
+	        ),
+	        React.createElement(
+	          Masonry,
+	          {
+	            className: 'search_friends' // default ''
+	            , elementType: 'div' // default 'div'
+	            , options: masonryOptions // default {}
+	            , disableImagesLoaded: false // default false
+	            , onImagesLoaded: this.handleImagesLoaded
+	          },
+	          this.state.global_users_state.map(function (x, y) {
+	            var user = x.name;
+	            var picture = x.url;
+	            return React.createElement(User_Friend_Search_Result, { key: y, profile_picture: picture, user: user });
+	          })
+	        )
+	      )
+	    );
+	  }
+	});
+
+	var User_Friend = React.createClass({
+	  displayName: 'User_Friend',
+
+	  getInitialState: function getInitialState() {
+	    return {
+	      profile_picture: this.props.profile_picture
+	    };
+	  },
+	  render: function render() {
+	    var divStyle = {
+	      backgroundImage: 'url(' + this.state.profile_picture + ')'
+	    };
+	    return React.createElement('div', { className: 'user_friend_image', style: divStyle });
+	  }
+	});
+
+	var User_Friend_Search_Result = React.createClass({
+	  displayName: 'User_Friend_Search_Result',
+
+	  getInitialState: function getInitialState() {
+	    return {
+	      profile_picture: this.props.profile_picture
+	    };
+	  },
+	  render: function render() {
+	    var divStyle = {
+	      backgroundImage: 'url(' + this.state.profile_picture + ')'
+	    };
+	    return React.createElement(
+	      'div',
+	      { className: 'user_friend_search_image', style: divStyle },
+	      React.createElement(User_Friend_Search_Cover, { user: this.props.user, profile_picture: this.state.profile_picture })
+	    );
+	  }
+	});
+
+	var User_Friend_Search_Cover = React.createClass({
+	  displayName: 'User_Friend_Search_Cover',
+
+	  onMouseDownHandler: function onMouseDownHandler() {
+	    var result = { 'friend_request': this.props.user, csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken').value };
+	    result = JSON.stringify(result);
+	    $.ajax({
+	      method: 'POST',
+	      url: '/friends/requests/send',
+	      data: result
+	    }).done(function (res) {
+	      var result = JSON.parse(res);
+
+	      console.log(result);
+	    }).error(function (err) {
+	      console.log(err);
+	    });
+	  },
+
+	  render: function render() {
+	    return React.createElement(
+	      'div',
+	      { className: 'user_friend_search_cover', onMouseDown: this.onMouseDownHandler },
+	      React.createElement('img', { src: this.props.profile_picture }),
+	      React.createElement(
+	        'div',
+	        { className: 'user_friend_search_name' },
+	        React.createElement(
+	          'p',
+	          null,
+	          this.props.user
+	        )
+	      )
+	    );
+	  }
+	});
+
+	var Friend_Request_Received = React.createClass({
+	  displayName: 'Friend_Request_Received',
+
+	  getInitialState: function getInitialState() {
+	    return {
+	      profile_picture: this.props.profile_picture
+	    };
+	  },
+	  render: function render() {
+	    var divStyle = {
+	      backgroundImage: 'url(' + this.state.profile_picture + ')'
+	    };
+	    return React.createElement(
+	      'div',
+	      { className: 'friend_requests_received_image', style: divStyle },
+	      React.createElement(Friend_Request_Received_Cover, { user: this.props.user, profile_picture: this.state.profile_picture })
+	    );
+	  }
+	});
+
+	var Friend_Request_Received_Cover = React.createClass({
+	  displayName: 'Friend_Request_Received_Cover',
+
+	  onMouseDownHandler: function onMouseDownHandler() {
+	    var result = { 'friend_request': this.props.user, csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken').value };
+	    result = JSON.stringify(result);
+	    $.ajax({
+	      method: 'POST',
+	      url: 'save/friend',
+	      data: result
+	    }).done(function (res) {
+	      var result = JSON.parse(res);
+	      console.log(result);
+	      user_friends = result;
+	    }).error(function (err) {
+	      console.log(err);
+	    });
+	  },
+
+	  render: function render() {
+	    return React.createElement(
+	      'div',
+	      { className: 'friend_requests_received_cover', onMouseDown: this.onMouseDownHandler },
+	      React.createElement('img', { src: this.props.profile_picture }),
+	      React.createElement(
+	        'div',
+	        { className: 'friend_requests_received_name' },
+	        React.createElement(
+	          'p',
+	          null,
+	          this.props.user
+	        )
 	      )
 	    );
 	  }
@@ -357,7 +588,7 @@
 	          React.createElement(
 	            'label',
 	            { className: 'switch' },
-	            React.createElement('input', { id: 'imgur_check', type: 'checkbox' }),
+	            React.createElement('input', { id: 'imgur_check', type: 'checkbox', checked: 'True' }),
 	            React.createElement('div', { className: 'slider round' })
 	          ),
 	          React.createElement(
@@ -414,7 +645,7 @@
 	          React.createElement(
 	            'label',
 	            { className: 'switch' },
-	            React.createElement('input', { id: 'imgur_check', type: 'checkbox' }),
+	            React.createElement('input', { id: 'imgur_check', type: 'checkbox', checked: 'True' }),
 	            React.createElement('div', { className: 'slider round' })
 	          )
 	        )
@@ -589,7 +820,7 @@
 	  },
 
 	  onChangeHandler: function onChangeHandler() {
-	    var _this = this;
+	    var _this2 = this;
 
 	    this.setState({
 	      user_albums: [],
@@ -604,7 +835,7 @@
 	    });
 
 	    setTimeout(function () {
-	      _this.setState({
+	      _this2.setState({
 	        user_albums: matches,
 	        contr_albums: matches2
 	      });
@@ -643,24 +874,42 @@
 
 	  componentWillMount: function componentWillMount() {
 	    this.getFriends();
+	    this.getFriendRequests();
+	  },
+
+	  getFriendRequests: function getFriendRequests() {
+	    $.ajax({
+	      url: "get/friends/requests",
+	      method: "GET",
+	      data: {}
+	    }).done(function (data) {
+	      var friend_request_data = JSON.parse(data);
+	      friend_request_data['received'].map(function (x) {
+	        friend_requests.push({ name: x['name'], url: x['url'] });
+	      });
+	      friend_request_data['sent'].map(function (x) {
+	        friend_requests_sent.push({ name: x['name'], url: x['url'] });
+	      });
+	    }).error(function (err) {
+	      console.log(err);
+	    });
 	  },
 
 	  getFriends: function getFriends() {
-	    var _this2 = this;
+	    var _this3 = this;
 
 	    $.ajax({
 	      url: "/get/friends",
 	      method: "GET",
 	      data: {}
 	    }).done(function (data) {
-	      var friends = JSON.parse(data);
-
-	      if (friends !== false) {
+	      user_friends = JSON.parse(data);
+	      if (user_friends !== false) {
 	        var friends_options = [];
-	        friends.map(function (x) {
-	          friends_options.push({ value: x, label: x });
+	        user_friends.map(function (x) {
+	          friends_options.push({ value: x['name'], label: x['name'] });
 	        });
-	        _this2.setState({
+	        _this3.setState({
 	          friends_options: friends_options
 	        });
 	      }
@@ -673,7 +922,7 @@
 
 	  //<input type="text_field" id="search_album" onChange={this.onChangeHandler} />
 	  render: function render() {
-	    var _this3 = this;
+	    var _this4 = this;
 
 	    window.scrollTo(0, 0);
 	    var friends_albums = "Friends' Albums";
@@ -710,12 +959,12 @@
 	            var album_name = x.name;
 	            var album_author = x.author;
 	            var last_album = null;
-	            if (_this3.state.contr_albums.length === 0) {
-	              if (_this3.state.contr_albums.indexOf(x) === _this3.state.contr_albums.length - 1) {
+	            if (_this4.state.contr_albums.length === 0) {
+	              if (_this4.state.contr_albums.indexOf(x) === _this4.state.contr_albums.length - 1) {
 	                last_album = true;
 	              }
 	            }
-	            return React.createElement(Album_IMG, { friends_options: _this3.state.friends_options, updateLoad: _this3.updateLoad, last_album: last_album, key: y, contr_albums: _this3.state.contr_albums, user_albums: _this3.state.user_albums, delete_album: _this3.delete_album, select_source_method: _this3.select_source_method, current_user: _this3.props.current_user, key_code: _this3.state.key_code, album_author: album_author, album_name: album_name, class_name: "col-sm album_img selected", urls: img_urls, img_source: album_cover });
+	            return React.createElement(Album_IMG, { friends_options: _this4.state.friends_options, updateLoad: _this4.updateLoad, last_album: last_album, key: y, contr_albums: _this4.state.contr_albums, user_albums: _this4.state.user_albums, delete_album: _this4.delete_album, select_source_method: _this4.select_source_method, current_user: _this4.props.current_user, key_code: _this4.state.key_code, album_author: album_author, album_name: album_name, class_name: "col-sm album_img selected", urls: img_urls, img_source: album_cover });
 	          })
 	        ),
 	        React.createElement(
@@ -733,14 +982,14 @@
 	          },
 	          this.state.contr_albums.map(function (x, y) {
 	            var last_album = null;
-	            if (_this3.state.contr_albums.indexOf(x) === _this3.state.contr_albums.length - 1) {
+	            if (_this4.state.contr_albums.indexOf(x) === _this4.state.contr_albums.length - 1) {
 	              last_album = true;
 	            }
 	            var img_urls = x.urls;
 	            var album_cover = img_urls[0];
 	            var album_name = x.name;
 	            var album_author = x.author;
-	            return React.createElement(Album_IMG, { friends_options: _this3.state.friends_options, key: y, contr_albums: _this3.state.contr_albums, updateLoad: _this3.updateLoad, last_album: last_album, user_albums: _this3.state.user_albums, delete_album: _this3.delete_album, select_source_method: _this3.select_source_method, current_user: _this3.props.current_user, key_code: _this3.state.key_code, album_author: album_author, album_name: album_name, class_name: "col-sm album_img selected", urls: img_urls, img_source: album_cover });
+	            return React.createElement(Album_IMG, { friends_options: _this4.state.friends_options, key: y, contr_albums: _this4.state.contr_albums, updateLoad: _this4.updateLoad, last_album: last_album, user_albums: _this4.state.user_albums, delete_album: _this4.delete_album, select_source_method: _this4.select_source_method, current_user: _this4.props.current_user, key_code: _this4.state.key_code, album_author: album_author, album_name: album_name, class_name: "col-sm album_img selected", urls: img_urls, img_source: album_cover });
 	          })
 	        )
 	      );
@@ -779,7 +1028,7 @@
 	            }
 	            var album_name = x.name;
 	            var album_author = x.author;
-	            return React.createElement(Album_IMG, { friends_options: _this3.state.friends_options, key: y, contr_albums: _this3.state.contr_albums, user_albums: _this3.state.user_albums, delete_album: _this3.delete_album, select_source_method: _this3.select_source_method, current_user: _this3.props.current_user, key_code: _this3.state.key_code, album_author: album_author, album_name: album_name, class_name: "col-sm album_img selected", urls: img_urls, img_source: album_cover });
+	            return React.createElement(Album_IMG, { friends_options: _this4.state.friends_options, key: y, contr_albums: _this4.state.contr_albums, user_albums: _this4.state.user_albums, delete_album: _this4.delete_album, select_source_method: _this4.select_source_method, current_user: _this4.props.current_user, key_code: _this4.state.key_code, album_author: album_author, album_name: album_name, class_name: "col-sm album_img selected", urls: img_urls, img_source: album_cover });
 	          })
 	        ),
 	        React.createElement(
@@ -801,7 +1050,7 @@
 	          },
 	          this.state.contr_albums.map(function (x, y) {
 	            var last_album = null;
-	            if (_this3.state.contr_albums.indexOf(x) === _this3.state.contr_albums.length - 1) {
+	            if (_this4.state.contr_albums.indexOf(x) === _this4.state.contr_albums.length - 1) {
 	              last_album = true;
 	            }
 	            var img_urls = x.urls;
@@ -812,7 +1061,7 @@
 	            }
 	            var album_name = x.name;
 	            var album_author = x.author;
-	            return React.createElement(Album_IMG, { friends_options: _this3.state.friends_options, key: y, contr_albums: _this3.state.contr_albums, updateLoad: _this3.updateLoad, last_album: last_album, user_albums: _this3.state.user_albums, delete_album: _this3.delete_album, select_source_method: _this3.select_source_method, current_user: _this3.props.current_user, key_code: _this3.state.key_code, album_author: album_author, album_name: album_name, class_name: "col-sm album_img selected", urls: img_urls, img_source: album_cover });
+	            return React.createElement(Album_IMG, { friends_options: _this4.state.friends_options, key: y, contr_albums: _this4.state.contr_albums, updateLoad: _this4.updateLoad, last_album: last_album, user_albums: _this4.state.user_albums, delete_album: _this4.delete_album, select_source_method: _this4.select_source_method, current_user: _this4.props.current_user, key_code: _this4.state.key_code, album_author: album_author, album_name: album_name, class_name: "col-sm album_img selected", urls: img_urls, img_source: album_cover });
 	          })
 	        )
 	      );
@@ -951,6 +1200,35 @@
 	  }
 	});
 
+	var Search_Friends_Global = React.createClass({
+	  displayName: 'Search_Friends_Global',
+
+	  getInitialState: function getInitialState() {
+	    return {
+	      onChangeHandler: this.props.onChangeHandler,
+	      placeholder: ""
+	    };
+	  },
+
+	  onFocusHandler: function onFocusHandler() {
+	    // var search = document.getElementById("search_album").value;
+	    // search !== "" && this.state.onChangeHandler()
+	    this.setState({
+	      placeholder: "Search"
+	    });
+	  },
+
+	  onBlurHandler: function onBlurHandler() {
+	    this.setState({
+	      placeholder: ""
+	    });
+	  },
+
+	  render: function render() {
+	    return React.createElement('input', { placeholder: this.state.placeholder, id: 'search_friends_global', onBlur: this.onBlurHandler, onChange: this.state.onChangeHandler, onFocus: this.onFocusHandler });
+	  }
+	});
+
 	var User_Album_Settings = React.createClass({
 	  displayName: 'User_Album_Settings',
 
@@ -1051,7 +1329,7 @@
 	  },
 
 	  updateOrder: function updateOrder() {
-	    var _this4 = this;
+	    var _this5 = this;
 
 	    $.ajax({
 	      url: "/get/",
@@ -1063,7 +1341,7 @@
 	      albums = JSON.parse(data);
 	      var user_albums = albums.album_url_list['user_albums'];
 	      var contr_albums = albums.album_url_list['contr_albums'];
-	      _this4.state.updateAlbumOrder(user_albums, contr_albums);
+	      _this5.state.updateAlbumOrder(user_albums, contr_albums);
 	    }).error(function (err) {
 	      console.log(err);
 	    });
@@ -1134,7 +1412,7 @@
 	  },
 
 	  updateOrder: function updateOrder() {
-	    var _this5 = this;
+	    var _this6 = this;
 
 	    $.ajax({
 	      url: "/get/",
@@ -1146,7 +1424,7 @@
 	      albums = JSON.parse(data);
 	      var user_albums = albums.album_url_list['user_albums'];
 	      var contr_albums = albums.album_url_list['contr_albums'];
-	      _this5.state.updateAlbumOrder(user_albums, contr_albums);
+	      _this6.state.updateAlbumOrder(user_albums, contr_albums);
 	    }).error(function (err) {
 	      console.log(err);
 	    });
@@ -1217,7 +1495,7 @@
 	  },
 
 	  updateOrder: function updateOrder() {
-	    var _this6 = this;
+	    var _this7 = this;
 
 	    $.ajax({
 	      url: "/get/",
@@ -1229,7 +1507,7 @@
 	      albums = JSON.parse(data);
 	      var user_albums = albums.album_url_list['user_albums'];
 	      var contr_albums = albums.album_url_list['contr_albums'];
-	      _this6.state.updateAlbumOrder(user_albums, contr_albums);
+	      _this7.state.updateAlbumOrder(user_albums, contr_albums);
 	    }).error(function (err) {
 	      console.log(err);
 	    });
@@ -1343,18 +1621,18 @@
 	  },
 
 	  uploadImg: function uploadImg() {
-	    var _this7 = this;
+	    var _this8 = this;
 
 	    this.setState({
 	      upload: true
 	    });
 	    setTimeout(function () {
 	      if (load === null) {
-	        load = new Load(_this7.props.album_selected, _this7.props.album_author, _this7.props.images, _this7.props.user_albums, _this7.props.contr_albums);
+	        load = new Load(_this8.props.album_selected, _this8.props.album_author, _this8.props.images, _this8.props.user_albums, _this8.props.contr_albums);
 	        load.listenForDrop();
 	      } else {
-	        load.updateImages(_this7.state.urls);
-	        load.updateSelected(_this7.props.album_selected, _this7.props.album_author);
+	        load.updateImages(_this8.state.urls);
+	        load.updateSelected(_this8.props.album_selected, _this8.props.album_author);
 	      }
 	    }, 200);
 	  },
@@ -1366,7 +1644,7 @@
 	    load = null;
 	  },
 	  render: function render() {
-	    var _this8 = this;
+	    var _this9 = this;
 
 	    var last_image = false;
 
@@ -1396,17 +1674,17 @@
 	          , disableImagesLoaded: false // default false
 	        },
 	        this.props.images.map(function (src, i) {
-	          if (_this8.props.images.indexOf(src) === _this8.props.images.length - 1) {
+	          if (_this9.props.images.indexOf(src) === _this9.props.images.length - 1) {
 	            last_image = true;
 	          }
-	          return React.createElement(View_IMG, { friends_options: _this8.props.friends_options, user_albums: _this8.state.user_albums, contr_albums: _this8.state.contr_albums, album_images: _this8.state.images, last_image: last_image, updateLoad: _this8.updateLoad, img_source: src, key_code: _this8.state.key_code, current_user: _this8.state.current_user, album_author: _this8.props.album_author, album_selected: _this8.props.album_selected, select_source: _this8.state.select_source, select_source_method: _this8.updateSelectedImg, key: i });
+	          return React.createElement(View_IMG, { friends_options: _this9.props.friends_options, user_albums: _this9.state.user_albums, contr_albums: _this9.state.contr_albums, album_images: _this9.state.images, last_image: last_image, updateLoad: _this9.updateLoad, img_source: src, key_code: _this9.state.key_code, current_user: _this9.state.current_user, album_author: _this9.props.album_author, album_selected: _this9.props.album_selected, select_source: _this9.state.select_source, select_source_method: _this9.updateSelectedImg, key: i });
 	        })
 	      )
 	    );
 	  },
 
 	  getUserInfo: function getUserInfo() {
-	    var _this9 = this;
+	    var _this10 = this;
 
 	    $.ajax({
 	      url: "/get/user",
@@ -1414,7 +1692,7 @@
 	      data: {}
 	    }).done(function (data) {
 	      var user_info = JSON.parse(data);
-	      _this9.setState({
+	      _this10.setState({
 	        current_user: user_info
 	      });
 	    }).error(function (err) {
@@ -1462,10 +1740,10 @@
 	  },
 
 	  updateLoad: function updateLoad() {
-	    var _this10 = this;
+	    var _this11 = this;
 
 	    setTimeout(function () {
-	      _this10.state.updateLoad(false);
+	      _this11.state.updateLoad(false);
 	    }, 400);
 	  },
 
@@ -1727,7 +2005,7 @@
 
 
 	  render: function render() {
-	    var _this11 = this;
+	    var _this12 = this;
 
 	    var width = this.props.album_images.length * 9 + 2;
 	    var thumb_style = {
@@ -1744,7 +2022,7 @@
 	          'div',
 	          { className: 'thumbnail_container', style: thumb_style },
 	          this.props.album_images.map(function (x, y) {
-	            return React.createElement(Thumbnail_Image, { updateSelectedImg: _this11.props.updateSelectedImg, key: y, img_source: x, selected_img: _this11.props.selected_img });
+	            return React.createElement(Thumbnail_Image, { updateSelectedImg: _this12.props.updateSelectedImg, key: y, img_source: x, selected_img: _this12.props.selected_img });
 	          })
 	        )
 	      )
@@ -1948,7 +2226,6 @@
 	// };
 	function uploadImg(base64, album, author, mime_type) {
 	  var base64 = base64.replace(/^.*base64,/, '');
-
 	  $.ajax({
 	    method: 'POST',
 	    url: '/upload/s3/',
@@ -2090,10 +2367,25 @@
 	    obj['on' + evt] = handler;
 	  }
 	}
+
+	function getUsers() {
+	  $.ajax({
+	    url: "get/users/all",
+	    method: "GET",
+	    data: {}
+	  }).done(function (data) {
+	    global_users = JSON.parse(data);
+	    console.log(global_users[0]);
+	  }).error(function (err) {
+	    console.log(err);
+	  });
+	}
+
 	function main() {
 
 	  try {
 	    get_albums("a-z", "");
+	    getUsers();
 	  } catch (x) {}
 	}
 
