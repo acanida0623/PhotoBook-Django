@@ -56,7 +56,7 @@ class Album(models.Model):
     author = models.ForeignKey(UserProfile, null = True)
     users = models.ManyToManyField(UserProfile,related_name="tagged_users",blank=True)
     images = models.ManyToManyField(Image)
-    name = models.CharField(max_length=200, unique=True)
+    name = models.CharField(max_length=200, unique=True, null = True)
     created_date = models.DateTimeField(default=timezone.now)
 
     def Publish(self):

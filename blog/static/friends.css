@@ -5,13 +5,22 @@
   width: 100%;
 }
 
+.friend_spacer {
+  visibility: collapse;
+  height: 50em;
+}
 
 .user_friends {
   width: 49.5em;
   margin: 0 auto;
-  margin-bottom: 10em;
+  margin-bottom: 3em;
   z-index: 2;
   background: #000000;
+}
+
+.search_friends_spacer {
+  visibility: collapse;
+  height: 4em;
 }
 
 .user_friend_image {
@@ -94,7 +103,7 @@
 .search_friends_title_container {
   width: 49.5em;
   margin: 0 auto;
-  margin-top: 8em;
+  margin-top: 2em;
   height: 3.5em;
   background-color: #000000;
   border-top-left-radius: 25px;
@@ -224,8 +233,8 @@
 	opacity: 0;
 	height: 100%;
 	width: 100%;
-	position: relative;
 	background-color: #1680FF;
+  text-align: center;
 }
 
 
@@ -258,6 +267,14 @@
   padding-left: .1rem;
   padding-top: .2rem;
 }
+
+.user_friend_search_cover span {
+  position: absolute;
+  font-size: 10pt;
+  font-weight: bold;
+  font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+	color: #FFF;
+}
 .user_friend_search_cover:hover	{
 	opacity: .9;
 	border: none;
@@ -283,6 +300,26 @@
 .friend_requests_received_name p {
   display: inline-block;
   font-size: 17pt;
+  font-weight: bold;
+  font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+	color: #FFF;
+}
+
+.request_sent_check {
+  background-image: url("http://i.imgur.com/RMhmq2m.png");
+  height: 2em;
+  width: 2em;
+  background-size: contain;
+  margin-left: 7.2em;
+  bottom: 2.5em;
+  position: absolute;
+}
+
+.user_friend_search_cover span {
+  position: absolute;
+  left: 5em;
+  bottom: 1.5em;
+  font-size: 10pt;
   font-weight: bold;
   font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
 	color: #FFF;

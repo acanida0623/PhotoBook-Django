@@ -15,6 +15,7 @@ var temp_count = 0;
 var img_count = 0 ;
 var load = null;
 var user_friends = [];
+var friends_options = [];
 var friend_requests = [];
 var friend_requests_sent = [];
 var global_users = [];
@@ -22,30 +23,6 @@ var loadimage = new Image();
 loadimage.src="http://i.imgur.com/Gljcgpk.gif"
 import {StyleRoot} from 'radium';
 var Select = require('react-select');
-
-var options_test = [{value:'Andrew', label:'Andrew'},
-{value:'Andrew', label:'Andrew'},
-{value:'Andrew2', label:'Andrew2'},
-{value:'Andrew3', label:'Andrew3'},
-{value:'Andrew4', label:'Andrew4'},
-{value:'Andrew5', label:'Andrew5'},
-{value:'Andrew6', label:'Andrew6'},
-{value:'Andrew7', label:'Andrew7'},
-{value:'Andrew8', label:'Andrew8'},
-{value:'Andrew9', label:'Andrew9'},
-{value:'Andrew10', label:'Andrew10'},
-{value:'Andrew11', label:'Andrew11'},
-{value:'Andrew12', label:'Andrew12'},
-{value:'Andrew13', label:'Andrew13'},
-{value:'Andrew14', label:'Andrew14'},
-{value:'Andrew15', label:'Andrew15'},
-{value:'Andrew16', label:'Andrew16'},
-{value:'Andrew17', label:'Andrew17'},
-{value:'Andrew18', label:'Andrew18'},
-{value:'Andrew19', label:'Andrew19'},
-{value:'Andrew20', label:'Andrew20'},
-{value:'Andrew21', label:'Andrew21'},
-{value:'Andrew22', label:'Andrew22'}]
 
 $().ready(function(){
   $('#new_user_profile_picture_url').on('keyup',()=>{
@@ -100,13 +77,13 @@ $().ready(function(){
 
 })
 
-
-function Load (selected,author,images,user_albums,contr_albums) {
+function Load (selected,author,images,user_albums,contr_albums,album_friends) {
   this.album_selected = selected;
   this.album_author = author;
   this.images = images;
   this.user_albums = user_albums;
   this.contr_albums = contr_albums;
+  this.album_friends = album_friends;
 
   this.updateImages = function(images){
     this.images = images
@@ -157,11 +134,9 @@ function Load (selected,author,images,user_albums,contr_albums) {
                           } else {
                               uploadImgur(bin,load.album_selected,load.album_author,mime_type);
                           }
-
                       }.bindToEventHandler(file));
-
                   }
-                  remount_left(load.album_selected,load.album_author,temp_img_updated,load.user_albums,load.contr_albums,author);
+                  remount_left(load.album_selected,load.album_author,temp_img_updated,load.user_albums,load.contr_albums,author,friends_options,load.album_friends);
                   return false;
               })
 
@@ -212,7 +187,8 @@ var New_Album = React.createClass({
 
     friendsChange:function(event){
       new_album_friends_selected = event.split(",");
-      new_album_height =  20 + (new_album_friends_selected.length/1.1) +'em'
+      var input_height = $('.Select-control').height();
+      new_album_height =  320 + (input_height) +'px'
       $('.new_album_form').css('height',new_album_height);
     },
 
@@ -237,6 +213,7 @@ var New_Album = React.createClass({
                   options={this.props.friends_options}
                   multi={true}
                   onChange={this.friendsChange}
+
               />
               </div>
               <button  onMouseDown = {this.submitNewAlbum}>Save</button>
@@ -246,6 +223,239 @@ var New_Album = React.createClass({
   }
 })
 
+var album_friends_selected = [];
+var Edit_Album = React.createClass({
+    getInitialState: function () {
+      return {
+        imgs_selected: [],
+        delete_images_verify: false,
+        delete_album_verify: false
+      }
+
+    },
+
+    selectImgs: function (img) {
+      var imgs_selected = this.state.imgs_selected
+      if($.inArray(img, imgs_selected) >= 0) {
+        var index_number = imgs_selected.indexOf(img)
+        imgs_selected.splice(index_number, 1)
+      }else {
+        imgs_selected.push(img)
+      }
+      this.setState({
+        imgs_selected:imgs_selected
+      })
+    },
+
+    componentWillMount: function () {
+      album_friends_selected = this.props.album_friends
+    },
+    componentDidMount:function () {
+      var input_height = $('.Select-control').height();
+      new_album_height =  300 + (input_height) +'px'
+        $('.new_album_form').css('height',new_album_height);
+        $('#name').val(this.props.album_name);
+    },
+
+    saveAlbumChanges: function () {
+        var album_name = document.getElementById('name').value;
+        var users = album_friends_selected;
+        if (album_name === "") {
+          album_name = this.props.album_name
+        }
+            var result = {'album_name':this.props.album_name,'users':users,'new_album_name':album_name};
+            result = JSON.stringify(result);
+            $.ajax({
+                url: "/edit/album",
+                method: "POST",
+                data: result
+            }).done(function (data) {
+              window.location.href = "/";
+            }).error(function (err) {
+                console.log(err);
+            });
+
+    },
+
+    friendsChange:function(event){
+      album_friends_selected = event.split(",");
+      var input_height = $('.Select-control').height();
+      new_album_height =  300 + (input_height) +'px'
+      $('.new_album_form').css('height',new_album_height);
+    },
+
+    deleteAlbum:function(){
+      var result = {'album':this.props.album_name};
+      result = JSON.stringify(result);
+      $.ajax({
+          url: "/delete/album",
+          method: "POST",
+          data: result
+      }).done(function (data) {
+        window.location.href = "/";
+      }).error(function (err) {
+          console.log(err);
+      });
+    },
+
+    deleteSelectedImages: function () {
+      delete_url(this.state.imgs_selected,this.props.album_name)
+    },
+
+    cancelAlbumDelete: function () {
+      this.setState({
+        delete_album_verify: false
+      })
+    },
+
+    cancelImagesDelete: function () {
+      this.setState({
+        delete_images_verify: false
+      })
+    },
+
+    activateAlbumDelete: function () {
+      this.setState({
+        delete_album_verify: true
+      })
+    },
+
+    activateImagesDelete: function () {
+      this.setState({
+        delete_images_verify: true
+      })
+    },
+
+    render: function() {
+    return <div className="new_album" >
+            <Header friends_options = {this.props.friends_options} current_user = {this.props.current_user} user_albums = {this.props.user_albums} contr_albums = {this.props.contr_albums} />
+            {
+              (this.state.delete_album_verify) && <Delete_Album cancelAlbumDelete = {this.cancelAlbumDelete} deleteAlbum = {this.deleteAlbum} />
+            }
+            {
+              (this.state.delete_images_verify) && <Delete_Images imgs_selected = {this.state.imgs_selected} cancelImagesDelete = {this.cancelImagesDelete} deleteSelectedImages = {this.deleteSelectedImages} />
+            }
+            <div className="new_album_form">
+              <span id="create_album_text">
+              Edit Album
+              </span>
+              <span id="create_album_name_text">
+                Name
+              </span>
+              <input type="text" name="name" className="name" id="name" maxLength="20" />
+              <span id="create_album_users_text">
+                Share With Friends
+              </span>
+              <div className="friends_select">
+              <Select
+                  joinValues={true}
+                  name="users"
+                  options={this.props.friends_options}
+                  multi={true}
+                  onChange={this.friendsChange}
+                  value={album_friends_selected}
+              />
+              </div>
+              <button className = "save_album_changes" onMouseDown = {this.saveAlbumChanges}>Save</button>
+            </div>
+
+            <div className = "delete_album_container">
+                <button className = "delete_selected_images" onMouseDown = {this.activateImagesDelete}>Delete Images</button>
+                <button className = "delete_album" onMouseDown = {this.activateAlbumDelete}>Delete Album</button>
+            </div>
+
+                    <div id="edit_album_title">
+                      <span className="album_title">Select Images To Delete</span>
+                    </div>
+                    <Masonry
+                      className={'edit_album_view_images'} // default ''
+                      elementType={'div'} // default 'div'
+                      options={masonryOptions} // default {}
+                      disableImagesLoaded={false} // default false
+                    >
+                    {
+                      this.props.album_images.map((src, i) => {
+                        return <View_IMG_Edit imgs_selected = {this.state.imgs_selected} select_source_method = {this.selectImgs} user_albums = {this.props.user_albums} contr_albums = {this.props.contr_albums} album_images = {this.props.album_images} img_source = {src} current_user = {this.props.current_user} album_selected = {this.props.album_name}  key={i} />
+                      })
+                    }
+                    </Masonry>
+          </div>
+
+  }
+})
+
+var Delete_Album = React.createClass({
+    getInitialState: function () {
+      return {
+        deleteAlbum : this.props.deleteAlbum,
+        cancelAlbumDelete: this.props.cancelAlbumDelete,
+      }
+    },
+
+      render: function () {
+        return  <div className = "delete_album_container_full">
+                  <div className= "confirm_delete_container">
+                    <span className="confirm_album_delete">Are you sure you want to delete this album?</span>
+                    <button className = "delete_album_button" onMouseDown = {this.state.deleteAlbum}>Delete Album</button>
+                    <button className = "cancel_delete_album_button" onMouseDown = {this.state.cancelAlbumDelete}>Cancel</button>
+                  </div>
+                </div>
+      }
+
+})
+
+var Delete_Images = React.createClass({
+    getInitialState: function () {
+      return {
+        deleteSelectedImages: this.props.deleteSelectedImages,
+        cancelImagesDelete: this.props.cancelImagesDelete
+      }
+    },
+
+      render: function () {
+        return  <div className = "delete_album_container_full">
+                  <div className= "confirm_delete_container">
+                    <span className="confirm_album_delete">Are you sure you want to delete the {this.props.imgs_selected.length} selected image(s)?</span>
+                    <button className = "delete_album_button" onMouseDown = {this.state.deleteSelectedImages}>Delete Image(s)</button>
+                    <button className = "cancel_delete_album_button" onMouseDown = {this.state.cancelImagesDelete}>Cancel</button>
+                  </div>
+                </div>
+      }
+
+})
+
+var View_IMG_Edit = React.createClass({
+    getInitialState: function() {
+        return {
+            album_images: this.props.album_images,
+            current_user: this.props.current_user,
+            album_selected: this.props.album_selected,
+            imgs_selected: this.props.imgs_selected,
+            select_source_method: this.props.select_source_method
+
+        }
+    },
+
+    onMouseDownHandler: function() {
+      this.state.select_source_method(this.props.img_source)
+    },
+
+    render: function() {
+      var inarray = $.inArray(this.props.img_source, this.state.imgs_selected)
+        if( inarray >= 0) {
+          return  <div  onMouseDown={this.onMouseDownHandler} className={'view_image_selected'}>
+                  <img src={this.props.img_source} />
+                  </div>
+        }else {
+          return  <div  onMouseDown={this.onMouseDownHandler} className={'view_image'}>
+                  <img src={this.props.img_source} />
+                  </div>
+              }
+      }
+
+
+});
+
 var Friends = React.createClass({
   getInitialState:function() {
     return {
@@ -254,7 +464,8 @@ var Friends = React.createClass({
 
   },
 
-  componentWillMount: function () {
+  componentDidMount: function () {
+    this.searchGlobalUsers();
   },
 
   searchGlobalUsers: function () {
@@ -262,22 +473,25 @@ var Friends = React.createClass({
         global_users_state: []
       })
       var search = document.getElementById("search_friends_global").value;
+      var search_lower = search.toLowerCase();
       var matches =
       global_users.map((x)=>{
         return x
       }).filter((s) => {
-          return s.name.indexOf( search ) !== -1;
+          return s.lower_name.indexOf( search_lower ) !== -1;
       })
-      console.log(matches)
       setTimeout(() => {
         this.setState({
         global_users_state:matches
       })
     },5)
+
+
   },
 
   render: function () {
     var username = this.props.current_user+"'s";
+    if (friend_requests.length !== 0) {
       return <div>
               <Header friends_options={this.props.friends_options} current_user={this.props.current_user} contr_albums = {this.props.contr_albums}  user_albums = {this.props.user_albums} />
                 <div className="friends_main_container">
@@ -296,7 +510,9 @@ var Friends = React.createClass({
                     friend_requests.map((x,y) => {
                       var friend = x.name
                       var picture = x.url
-                      return <Friend_Request_Received key={y} profile_picture={picture} user={friend} />
+
+
+                      return <Friend_Request_Received current_user = {this.props.current_user} user_albums = {this.props.user_albums} contr_albums = {this.props.contr_albums} key={y} profile_picture={picture} user={friend} />
                     })
                   }
                   </Masonry>
@@ -322,9 +538,10 @@ var Friends = React.createClass({
                     })
                   }
                   </Masonry>
-
+                  <div className="search_friends_spacer">
+                  </div>
                   <div className="search_friends_title_container">
-                    <span className="friends_title">Find Friends</span>
+                    <span className="friends_title">Find New Friends</span>
                     <Search_Friends_Global onChangeHandler = {this.searchGlobalUsers} />
                   </div>
 
@@ -343,28 +560,85 @@ var Friends = React.createClass({
                     })
                   }
                   </Masonry>
-
+                  <div className="friend_spacer">
+                  </div>
                 </div>
               </div>
+    }else {
+      return <div>
+              <Header friends_options={this.props.friends_options} current_user={this.props.current_user} contr_albums = {this.props.contr_albums}  user_albums = {this.props.user_albums} />
+                <div className="friends_main_container">
 
+                  <div className="user_friends_title_container">
+                    <span className="friends_title">{username} Friends</span>
+
+                  </div>
+
+                  <Masonry
+                      className={'user_friends'} // default ''
+                      elementType={'div'} // default 'div'
+                      options={masonryOptions} // default {}
+                      disableImagesLoaded={false} // default false
+                      onImagesLoaded={this.handleImagesLoaded}
+                  >
+                  {
+                    user_friends.map((x,y) => {
+                      var friend = x.name
+                      var picture = x.url
+                      return <User_Friend key={y} profile_picture={picture} user={friend}  />
+                    })
+                  }
+                  </Masonry>
+                  <div className="search_friends_spacer">
+                  </div>
+                  <div className="search_friends_title_container">
+                    <span className="friends_title">Find New Friends</span>
+                    <Search_Friends_Global onChangeHandler = {this.searchGlobalUsers} />
+                  </div>
+
+                  <Masonry
+                      className={'search_friends'} // default ''
+                      elementType={'div'} // default 'div'
+                      options={masonryOptions} // default {}
+                      disableImagesLoaded={false} // default false
+                      onImagesLoaded={this.handleImagesLoaded}
+                  >
+                  {
+                    this.state.global_users_state.map((x,y) => {
+                      var user = x.name
+                      var picture = x.url
+                      return <User_Friend_Search_Result key={y} profile_picture={picture} user={user} />
+                    })
+                  }
+                  </Masonry>
+                  <div className="friend_spacer">
+                  </div>
+                </div>
+              </div>
+    }
   }
 })
 
 var User_Friend = React.createClass({
-  getInitialState:function () {
-    return {
-      profile_picture:this.props.profile_picture
-    }
-  },
   render: function () {
       var divStyle = {
-        backgroundImage: 'url(' + this.state.profile_picture + ')'
+        backgroundImage: 'url(' + this.props.profile_picture + ')'
       };
         return  <div className="user_friend_image"  style={divStyle}>
-
+                  <User_Friend_Cover user = {this.props.user} profile_picture = {this.props.profile_picture} />
                 </div>
   }
 })
+
+var User_Friend_Cover = React.createClass({
+  render: function () {
+        return  <div className="user_friend_search_cover" onMouseDown={this.onMouseDownHandler}>
+                  <img src={this.props.profile_picture} />
+                  <div className="user_friend_search_name"><p>{this.props.user}</p></div>
+                </div>
+  }
+})
+
 
 var User_Friend_Search_Result = React.createClass({
   getInitialState:function () {
@@ -383,27 +657,94 @@ var User_Friend_Search_Result = React.createClass({
 })
 
 var User_Friend_Search_Cover = React.createClass({
-  onMouseDownHandler:function () {
+  getInitialState:function () {
+    return {
+      request_change:true
+    }
+  },
+  sendFriendRequest:function () {
     var result = {'friend_request':this.props.user,csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken').value}
     result = JSON.stringify(result);
     $.ajax({
         method: 'POST',
         url: '/friends/requests/send',
         data: result
-    }).done((res) => {
-        var result = JSON.parse(res);
+    }).done((data) => {
+      var friend_request_data = JSON.parse(data);
+        friend_requests.length = 0;
+        friend_requests_sent.length = 0;
+        try {
+          friend_request_data['received'].map((x)=>{
+            friend_requests.push({name:x['name'], url:x['url']})
+          })
+        }catch(x){
+          console.log(x)
+        }
 
-        console.log(result);
+        try {
+          friend_request_data['sent'].map((x)=>{
+            friend_requests_sent.push(x['name'])
+          })
+        }catch(x) {
+          console.log(x)
+        }
+        this.setState({
+          request_change:true
+        })
+    }).error(function (err) {
+        console.log(err);
+    });
+  },
+
+  cancelFriendRequest: function () {
+    var result = {'friend_request':this.props.user,csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken').value}
+    result = JSON.stringify(result);
+    $.ajax({
+        method: 'POST',
+        url: 'delete/friend/request',
+        data: result
+    }).done((data) => {
+      var friend_request_data = JSON.parse(data);
+        friend_requests.length = 0;
+        friend_requests_sent.length = 0;
+        try {
+          friend_request_data['received'].map((x)=>{
+            friend_requests.push({name:x['name'], url:x['url']})
+          })
+        }catch(x){
+          console.log(x)
+        }
+
+        try{
+          friend_request_data['sent'].map((x)=>{
+            friend_requests_sent.push(x['name'])
+          })
+        }catch(x){
+          console.log(x)
+        }
+
+        this.setState({
+          request_change:true
+        })
     }).error(function (err) {
         console.log(err);
     });
   },
 
   render: function () {
-      return<div className="user_friend_search_cover" onMouseDown={this.onMouseDownHandler}>
-      <img src={this.props.profile_picture} />
-      <div className="user_friend_search_name"><p>{this.props.user}</p></div>
-      </div>
+      if($.inArray(this.props.user, friend_requests_sent) >= 0) {
+        return <div className="user_friend_search_cover" onMouseDown={this.cancelFriendRequest}>
+        <img src={this.props.profile_picture} />
+        <div className="request_sent_check"></div>
+        <span>Friend Request Sent</span>
+        <div className="user_friend_search_name"><p>{this.props.user}</p></div>
+        </div>
+      }else {
+        return <div className="user_friend_search_cover" onMouseDown={this.sendFriendRequest}>
+        <img src={this.props.profile_picture} />
+        <div className="user_friend_search_name"><p>{this.props.user}</p></div>
+        </div>
+      }
   }
 })
 
@@ -418,7 +759,7 @@ var Friend_Request_Received = React.createClass({
         backgroundImage: 'url(' + this.state.profile_picture + ')'
       };
         return  <div className="friend_requests_received_image"  style={divStyle}>
-                  <Friend_Request_Received_Cover user = {this.props.user} profile_picture = {this.state.profile_picture} />
+                  <Friend_Request_Received_Cover current_user = {this.props.current_user} user_albums = {this.props.user_albums} contr_albums = {this.props.contr_albums} user = {this.props.user} profile_picture = {this.state.profile_picture} />
                 </div>
   }
 })
@@ -431,10 +772,19 @@ var Friend_Request_Received_Cover = React.createClass({
         method: 'POST',
         url: 'save/friend',
         data: result
-    }).done((res) => {
-        var result = JSON.parse(res);
-        console.log(result);
-        user_friends = result;
+    }).done((data) => {
+        var friend_request_data = JSON.parse(data);
+        user_friends = friend_request_data['friends'];
+          friend_requests.length = 0;
+          friend_requests_sent.length = 0;
+          friend_request_data['received'].map((x)=>{
+            friend_requests.push({name:x['name'], url:x['url']})
+          })
+          friend_request_data['sent'].map((x)=>{
+            friend_requests_sent.push(x['name'])
+          })
+        ReactDOM.unmountComponentAtNode(document.getElementById('main'));
+        ReactDOM.render(React.createElement(Friends,{friends_options:user_friends,current_user:this.props.current_user, user_albums:this.props.user_albums,contr_albums:this.props.contr_albums}), document.getElementById('main'));
     }).error(function (err) {
         console.log(err);
     });
@@ -449,8 +799,6 @@ var Friend_Request_Received_Cover = React.createClass({
 })
 
 
-
-
 var Header = React.createClass({
   getInitialState: function() {
     return {
@@ -460,7 +808,6 @@ var Header = React.createClass({
       current_user:this.props.current_user,
       friends_options:this.props.friends_options
     }
-
   },
 
   backAlbums: function () {
@@ -478,7 +825,6 @@ var Header = React.createClass({
   viewFriends: function () {
     ReactDOM.unmountComponentAtNode(document.getElementById('main'));
     ReactDOM.render(React.createElement(Friends,{friends_options:this.props.friends_options,current_user:this.state.current_user, user_albums:this.state.user_albums,contr_albums:this.state.contr_albums}), document.getElementById('main'));
-
   },
 
   render: function() {
@@ -618,14 +964,13 @@ var Upload_Imgs = React.createClass({
             <div onMouseDown = {this.state.closeUpload} className="upload_drop_zone" id="upload_drop_zone">
               <p>Drag and Drop</p>
             </div>
-            <File_Input album={this.props.current_album} author={this.props.author}/>
+            <File_Input updateLoad={this.props.updateLoad} album={this.props.current_album} author={this.props.author}/>
             </div>
   }
-
 })
 
-
 var loading = true;
+
 var Album_Container = React.createClass({
   updateSelectedImg: function(source,author) {
     this.setState({
@@ -652,7 +997,7 @@ var Album_Container = React.createClass({
       return {
           user_album_holder: this.props.user_albums,
           contr_album_holder: this.props.contr_albums,
-          friends_options: [],
+          friends_options: null,
           delete_album: false,
           user_albums:this.props.user_albums,
           contr_albums:this.props.contr_albums,
@@ -744,8 +1089,13 @@ var Album_Container = React.createClass({
   },
 
   componentWillMount: function() {
-    this.getFriends();
     this.getFriendRequests();
+      getFriends((friends) => {
+      this.setState({
+        friends_options:friends
+      })
+    });
+
   },
 
   getFriendRequests:function () {
@@ -755,37 +1105,20 @@ var Album_Container = React.createClass({
         data: {}
     }).done((data) => {
         var friend_request_data = JSON.parse(data);
+          friend_requests.length = 0;
+          friend_requests_sent.length = 0;
           friend_request_data['received'].map((x)=>{
             friend_requests.push({name:x['name'], url:x['url']})
           })
           friend_request_data['sent'].map((x)=>{
-            friend_requests_sent.push({name:x['name'], url:x['url']})
+            friend_requests_sent.push(x['name'])
           })
     }).error(function (err) {
         console.log(err);
     })
   },
 
-  getFriends: function () {
-    $.ajax({
-        url: "/get/friends",
-        method: "GET",
-        data: {}
-    }).done((data) => {
-        user_friends = JSON.parse(data);
-        if(user_friends !== false) {
-          var friends_options = [];
-          user_friends.map((x)=>{
-            friends_options.push({value:x['name'], label:x['name']})
-          })
-          this.setState({
-            friends_options: friends_options
-          })
-        }
-    }).error(function (err) {
-        console.log(err);
-    });
-  },
+
 
   change:function() {
 
@@ -872,7 +1205,8 @@ var Album_Container = React.createClass({
               >
               {
                 this.state.user_albums.map((x,y) => {
-                  var img_urls = x.urls
+                  var img_urls = x.urls;
+                  var album_friends = x.friends;
                   try {
                   var album_cover = img_urls[0];
                   }catch(x) {
@@ -880,7 +1214,7 @@ var Album_Container = React.createClass({
                   }
                   var album_name = x.name;
                   var album_author = x.author;
-                  return <Album_IMG friends_options={this.state.friends_options} key={y} contr_albums = {this.state.contr_albums}  user_albums = {this.state.user_albums}  delete_album={this.delete_album} select_source_method={this.select_source_method} current_user = {this.props.current_user} key_code = {this.state.key_code}  album_author = {album_author} album_name = {album_name} class_name = {"col-sm album_img selected"} urls = {img_urls} img_source = {album_cover} />
+                  return <Album_IMG album_friends = {album_friends} friends_options={this.state.friends_options} key={y} contr_albums = {this.state.contr_albums}  user_albums = {this.state.user_albums}  delete_album={this.delete_album} select_source_method={this.select_source_method} current_user = {this.props.current_user} key_code = {this.state.key_code}  album_author = {album_author} album_name = {album_name} class_name = {"col-sm album_img selected"} urls = {img_urls} img_source = {album_cover} />
                 })
 
               }
@@ -947,12 +1281,12 @@ var Album_IMG = React.createClass({
 
       if(this.props.last_album) {
         return  <div className="album_image" onLoad = {this.updateLoad} style={divStyle}>
-          <Album_Cover friends_options={this.props.friends_options} contr_albums = {this.props.contr_albums} user_albums = {this.props.user_albums}  delete_album={this.props.delete_album} select_source_method={this.props.select_source_method} current_user = {this.props.current_user} album_author = {this.props.album_author} album_name = {this.props.album_name} urls = {this.props.urls} img_source = {this.props.img_source} />
+          <Album_Cover album_friends = {this.props.album_friends} friends_options={this.props.friends_options} contr_albums = {this.props.contr_albums} user_albums = {this.props.user_albums}  delete_album={this.props.delete_album} select_source_method={this.props.select_source_method} current_user = {this.props.current_user} album_author = {this.props.album_author} album_name = {this.props.album_name} urls = {this.props.urls} img_source = {this.props.img_source} />
 
           </div>
       }else{
         return  <div className="album_image"  style={divStyle}>
-          <Album_Cover friends_options={this.props.friends_options} contr_albums = {this.props.contr_albums} user_albums = {this.props.user_albums}  delete_album={this.props.delete_album} select_source_method={this.props.select_source_method} current_user = {this.props.current_user} album_author = {this.props.album_author} album_name = {this.props.album_name} urls = {this.props.urls} img_source = {this.props.img_source} />
+          <Album_Cover album_friends = {this.props.album_friends} friends_options={this.props.friends_options} contr_albums = {this.props.contr_albums} user_albums = {this.props.user_albums}  delete_album={this.props.delete_album} select_source_method={this.props.select_source_method} current_user = {this.props.current_user} album_author = {this.props.album_author} album_name = {this.props.album_name} urls = {this.props.urls} img_source = {this.props.img_source} />
 
           </div>
       }
@@ -1001,20 +1335,34 @@ var Album_Cover = React.createClass({
     $("#loading").fadeIn("fast")
         album_selected = this.state.album_name;
         album_author = this.state.album_author;
-
-        remount_left(this.props.album_name,this.props.album_author,this.props.urls,this.props.user_albums,this.props.contr_albums,this.props.current_user,this.props.friends_options);
+        remount_left(this.props.album_name,this.props.album_author,this.props.urls,this.props.user_albums,this.props.contr_albums,this.props.current_user,this.props.friends_options,this.props.album_friends);
   },
 
   render: function() {
-    var album_cover = this.props.urls[0];
-    return<div className="what" onMouseDown={this.onMouseDownHandler}>
-    <img src={album_cover} />
-    <div className="circle1"></div>
-    <div className="circle2"></div>
-    <div className="circle3"></div>
-    <div className="title_cont"><p>{this.props.album_name}</p></div>
-    </div>
+    var circle_urls = [];
+    var url_length = this.props.urls.length;
+    var album_cover = this.props.urls[Math.floor( Math.random() * (url_length - 0) + 0 )];
+    for (var x = 0; x < 3; x++) {
+      var random_number = Math.floor( Math.random() * (url_length - 0) + 0 );
+      circle_urls.push(this.props.urls[random_number])
+    }
+    var circle_back1 = {
+        backgroundImage:'url(' + circle_urls[0] + ')'
+    }
+    var circle_back2 = {
+        backgroundImage:'url(' + circle_urls[1] + ')'
+    }
+    var circle_back3 = {
+        backgroundImage:'url(' + circle_urls[2] + ')'
+    }
 
+    return <div className="what" onMouseDown={this.onMouseDownHandler}>
+            <img src={album_cover} />
+            <div style={circle_back1} className="circle1"></div>
+            <div style={circle_back2} className="circle2"></div>
+            <div style={circle_back3} className="circle3"></div>
+            <div className="title_cont"><p>{this.props.album_name}</p></div>
+          </div>
   }
 })
 
@@ -1027,8 +1375,6 @@ var Search_Albums = React.createClass({
   },
 
   onFocusHandler: function () {
-    // var search = document.getElementById("search_album").value;
-    // search !== "" && this.state.onChangeHandler()
     this.setState({
       placeholder: "Search"
     })
@@ -1054,11 +1400,12 @@ var Search_Friends_Global = React.createClass({
   },
 
   onFocusHandler: function () {
-    // var search = document.getElementById("search_album").value;
-    // search !== "" && this.state.onChangeHandler()
     this.setState({
       placeholder: "Search"
     })
+    $('html, body').animate({
+        scrollTop: $(".search_friends_spacer").offset().top
+    }, 500);
   },
 
   onBlurHandler: function () {
@@ -1366,6 +1713,7 @@ var Min_Container = React.createClass({
           album_selected: this.props.album_selected,
           album_author: this.props.album_author,
           current_user: this.props.current_user,
+          album_friends: this.props.album_friends,
           key_code: null,
           loading: true,
           upload:false
@@ -1376,29 +1724,7 @@ var Min_Container = React.createClass({
     this.setState({
       loading:loading_status
     })
-
-
-  },
-  keyDown: function(event){
-    // this.setState({
-    // key_code:event.keyCode
-    // })
-    // var elem = document.getElementById("main_img_container");
-    // if (elem.requestFullscreen) {
-    //   elem.requestFullscreen();
-    // } else if (elem.msRequestFullscreen) {
-    //   elem.msRequestFullscreen();
-    // } else if (elem.mozRequestFullScreen) {
-    //   elem.mozRequestFullScreen();
-    // } else if (elem.webkitRequestFullscreen) {
-    //   elem.webkitRequestFullscreen();
-    // }
-  },
-
-  keyUp:function(event){
-    // this.setState({
-    //   key_code:null
-    // })
+    load = null;
   },
 
   backAlbums: function () {
@@ -1437,9 +1763,10 @@ var Min_Container = React.createClass({
     this.setState({
       upload:true
     })
+
     setTimeout(()=>{
       if (load === null) {
-        load = new Load(this.props.album_selected,this.props.album_author,this.props.images,this.props.user_albums,this.props.contr_albums)
+        load = new Load(this.props.album_selected,this.props.album_author,this.props.images,this.props.user_albums,this.props.contr_albums,this.props.album_friends)
         load.listenForDrop();
       }else {
         load.updateImages(this.state.urls)
@@ -1454,13 +1781,16 @@ var Min_Container = React.createClass({
     })
     load = null;
   },
+
+  editAlbumSettings:function() {
+    ReactDOM.unmountComponentAtNode(document.getElementById('main'));
+    ReactDOM.render(React.createElement(Edit_Album,{album_name:this.state.album_selected,friends_options:this.props.friends_options,current_user:this.state.current_user, user_albums:this.state.user_albums,contr_albums:this.state.contr_albums,album_friends:this.props.album_friends,album_images:this.state.images}), document.getElementById('main'));
+  },
   render: function() {
       var last_image = false
-
-
       return <div id="album_holder">
               {
-                (this.state.upload) && <Upload_Imgs current_album = {this.state.album_selected} author={this.state.current_user} closeUpload = {this.closeUpload} />
+                (this.state.upload) && <Upload_Imgs updateLoad = {this.updateLoad} current_album = {this.state.album_selected} author={this.state.current_user} closeUpload = {this.closeUpload} />
               }
               {
                 (this.state.loading) && <Loading_Cover />
@@ -1469,7 +1799,7 @@ var Min_Container = React.createClass({
               <div id="album_title">
                 <div onMouseDown = {this.uploadImg} id="upload_image" >
                 </div>
-                <div id="album_settings">
+                <div onMouseDown = {this.editAlbumSettings} id="album_settings">
                 </div>
                 <span className="album_title">{this.props.album_selected}</span>
               </div>
@@ -1958,11 +2288,20 @@ function filter_row(image_list, row) {
 };
 
 var File_Input = React.createClass({
+      getInitialState: function () {
+        return {
+          album:this.props.album,
+          author:this.props.author,
+          updateLoad:this.props.updateLoad
+        }
+      },
         onChangeHandler: function(event) {
+        this.state.updateLoad(true)
         var file = event.target.files[0];
         var reader = new FileReader();
-        reader.onload = function (event) {
-            uploadImgur(event.target.result,this.props.album,this.props.author);
+        var mime_type= file.type;
+        reader.onload = (event) => {
+            uploadImg(event.target.result,this.state.album,this.state.author,mime_type);
         };
         reader.readAsDataURL(file);
     },
@@ -2017,9 +2356,9 @@ function update_img_list(res) {
   return images
 }
 
-function remount_left(album_name, album_author, images,user_albums,contr_albums,current_user,friends) {
+function remount_left(album_name, album_author, images,user_albums,contr_albums,current_user,friends,album_friends) {
     ReactDOM.unmountComponentAtNode(document.getElementById('main'));
-    ReactDOM.render(React.createElement(Min_Container, {user_albums: user_albums, contr_albums: contr_albums, images: images, album_author: album_author, album_selected: album_name, current_user:current_user, friends_options:friends}), document.getElementById('main'));
+    ReactDOM.render(React.createElement(Min_Container, {album_friends: album_friends, user_albums: user_albums, contr_albums: contr_albums, images: images, album_author: album_author, album_selected: album_name, current_user:current_user, friends_options:friends}), document.getElementById('main'));
     window.scrollTo(0, 0);
 }
 
@@ -2115,9 +2454,8 @@ function update_server_url(url,album,author) {
       }
       var user_albums = result.albums.user_albums;
       var contr_albums = result.albums.contr_albums;
-
-      remount_left(result.album,result.author,img_result,user_albums,contr_albums,author)
-
+      var album_friends = result.album_friends;
+      remount_left(result.album,result.author,img_result,user_albums,contr_albums,author,friends_options,album_friends)
       if(temp_count === 0) {
         load.updateImages(result.images)
         load.updateSelected(album_selected,album_author)
@@ -2135,11 +2473,7 @@ function delete_url(res,album) {
         method: "POST",
         data: result
     }).done(function (data) {
-        img_lst.length = 0;
-        albums.length = 0;
-        img_lst = [];
-        albums = [];
-        get_albums("a-z","");
+      window.location.href = "/";
     }).error(function (err) {
         console.log(err);
     });
@@ -2177,7 +2511,24 @@ function addEventHandler(obj, evt, handler) {
     }
 }
 
-
+function getFriends(callback) {
+  $.ajax({
+      url: "/get/friends",
+      method: "GET",
+      data: {},
+      async: false
+  }).done((data) => {
+      user_friends = JSON.parse(data);
+      if(user_friends !== false) {
+        user_friends.map((x)=>{
+          friends_options.push({value:x['name'], label:x['name']})
+        })
+      }
+      callback(friends_options)
+  }).error(function (err) {
+      console.log(err);
+  });
+}
 
 function getUsers () {
   $.ajax({
@@ -2186,7 +2537,6 @@ function getUsers () {
       data: {}
   }).done((data) => {
       global_users = JSON.parse(data);
-      console.log(global_users[0])
   }).error(function (err) {
       console.log(err);
   });

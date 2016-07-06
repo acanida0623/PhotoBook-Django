@@ -21,6 +21,7 @@ urlpatterns = [
         'django.contrib.auth.views.password_reset_complete'),
     url(r'^save/$', views.save_urls, name='save_urls'),
     url(r'^save/friend$', views.save_friend, name='save_friend'),
+    url(r'^delete/friend/request$', views.delete_friend_request, name='delete_friend_request'),
     url(r'^delete/$', views.delete_url, name='delete_url'),
     url(r'^delete/album$', views.delete_album, name='delete_album'),
     url(r'^upload/$', views.upload_images, name='upload'),
@@ -32,6 +33,7 @@ urlpatterns = [
     url(r'^friends/requests/send$', views.send_friend_request, name='send_friend_request'),
     url(r'^get/friends/requests$', views.get_friend_requests, name='get_friend_requests'),
     url(r'^new/album$', views.new_album, name='new_album'),
+    url(r'^edit/album$', views.edit_album, name='edit_album'),
     url(r'^accounts/new/$', views.new_account, name='new_account'),
     url(r'^accounts/submit/$', views.submit_new_account, name='submit_new_user'),
 

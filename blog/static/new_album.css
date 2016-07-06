@@ -1,6 +1,7 @@
 .new_album {
   width: 100%;
   margin: 0;
+  position: absolute;
 }
 
 .new_album_form {
@@ -10,7 +11,7 @@
   background: #000000;
   margin: 0 auto;
   margin-top: 12em;
-  height: 20em;
+  height: 320px;
   position: relative;
   box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
 }

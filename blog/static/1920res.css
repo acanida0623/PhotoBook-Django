@@ -55,6 +55,7 @@
 	-webkit-animation-name: photo_animation;
 	-webkit-animation-duration: .3s;
 	animation-timing-function: ease-in; /* Chrome, Safari, Opera */
+	cursor: pointer;
 }
 
 .view_image img {
@@ -119,13 +120,12 @@
 	border: white 3pt solid;
 	position: absolute;
 	top:30%;
-	left: 24%;
+	left: 17%;
 	width: 4em;
 	height: 4em;
 	border-radius: 150px;
 	-webkit-border-radius: 150px;
 	-moz-border-radius: 150px;
-	background: url("http://i.imgur.com/j8PBAXu.jpg") no-repeat;
 	background-size: cover;
 
 	}
@@ -157,7 +157,6 @@
 	border: white 3pt solid;
 	-webkit-border-radius: 150px;
 	-moz-border-radius: 150px;
-	background: url("http://i.imgur.com/j8PBAXu.jpg") no-repeat;
 	background-size: cover;
 
 	}
@@ -167,14 +166,13 @@
 	opacity: 1;
 	position: absolute;
 	top:30%;
-	left: 54%;
+	left: 60%;
 	width: 4em;
 	height: 4em;
 	border-radius: 150px;
 	border: white 3pt solid;
 	-webkit-border-radius: 150px;
 	-moz-border-radius: 150px;
-	background: url("http://i.imgur.com/j8PBAXu.jpg") no-repeat;
 	background-size: cover;
 	}
 
@@ -274,22 +272,7 @@
 	color: #333;
 	margin: 0;
 }
-/*
-@media (min-width: 960px) {
-	#columns {
-		-webkit-column-count: 3;
-		-moz-column-count: 3;
-		column-count: 3;
-	}
-}
 
-@media (min-width: 1100px) {
-	#columns {
-		-webkit-column-count: 5;
-		-moz-column-count: 5;
-		column-count: 5;
-	}
-}*/
 .album_title {
 	position: absolute;
 	color: #ffffff;
@@ -409,6 +392,7 @@
 		margin: 0 auto;
 		margin-top: 8em;
 		height: 3.5em;
+
 		background-color: #000000;
 		border-top-left-radius: 25px;
 		-webkit-border-top-left-radius: 25px;
@@ -429,6 +413,7 @@
 		margin-top: 1em;
 		margin-left:  44.5em;
 		position: absolute;
+		cursor: pointer;
 	}
 
 	#album_settings {
@@ -440,6 +425,7 @@
 		margin-top: 1em;
 		margin-left:  47em;
 		position: absolute;
+		cursor: pointer;
 	}
 
 	#user_albums_settings:hover {
