@@ -204,20 +204,12 @@
 }
 
 .friend_requests_received_cover {
-	-webkit-transform: translateZ(0);
-	-moz-transform: translateZ(0);
-	-ms-transform: translateZ(0);
-	-o-transform: translateZ(0);
-	transform: translateZ(0);
-	-webkit-transition: all .2s ease-in-out;
-	-moz-transition: all .2s ease-in-out;
-	-o-transition: all .2s ease-in-out;
-	transition: all .2s ease-in-out;
 	opacity: 0;
 	height: 100%;
 	width: 100%;
 	position: relative;
 	background-color: #1680FF;
+  pointer-events: none;
 }
 
 .user_friend_search_cover {
@@ -235,6 +227,7 @@
 	width: 100%;
 	background-color: #1680FF;
   text-align: center;
+
 }
 
 
@@ -249,7 +242,7 @@
 .friend_requests_received_cover:hover	{
 	opacity: .9;
 	border: none;
-	cursor: pointer;
+
 	}
 
   .friend_requests_received_name {
@@ -309,7 +302,7 @@
   background-image: url("http://i.imgur.com/RMhmq2m.png");
   height: 2em;
   width: 2em;
-  background-size: contain;
+  background-size: cover;
   margin-left: 7.2em;
   bottom: 2.5em;
   position: absolute;
@@ -323,4 +316,60 @@
   font-weight: bold;
   font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
 	color: #FFF;
+}
+
+.friend_request_accept {
+  background-image: url("http://i.imgur.com/RMhmq2m.png");
+  height: 2em;
+  width: 2em;
+  background-size: cover;
+  margin-left: 4.5em;
+  bottom: 2.5em;
+  position: absolute;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.friend_request_deny {
+  background-image: url("http://i.imgur.com/gMXt45D.png");
+  height: 2em;
+  width: 2em;
+  background-size: cover;
+  margin-left: 9.5em;
+  bottom: 2.5em;
+  position: absolute;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.friend_page_information {
+  margin: 0 auto;
+  background: #000000;
+  height: 25em;
+  width: 49.5em;
+  margin-top: 13em;
+  border-radius: 10px;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+}
+
+.friend_page_photo {
+  position: absolute;
+  margin-left: 2em;
+  margin-top: 2.5em;
+  width: 17em;
+  height: 17em;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+}
+
+.friend_page_username {
+  position: relative;
+  left: 5em;
+  top: 15em;
+  font-size: 17pt;
+  font-weight: bold;
+  font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+  color: #FFF;
 }

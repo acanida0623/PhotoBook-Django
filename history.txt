@@ -1,14 +1,37 @@
 ./manage.py runserver
-. venv/bin/activate.fish
+./manage.py migrate
+./manage.py makemigrations
+git push -u origin
+git commit -m "fix friend requests, allow user to send and cancel"
+git add --all
+git status
 atom .
+. venv/bin/activate.fish
+cd ~/documents/codeguild/django_photo/blog/
+git commit -m "update readme"
+git pull --all
+git commit -m "update friends search function"
+git add -all
+aws config
+aws configure
+open history.txt 
+open history
+pip install urlparse
+webpack
+git commit -m "begin friends page"
+git push -u origin master
+git commit -m "fix friends select on new album creation"
+npm list react
+npm list
+npm install react-select --save
+npm install
+rm -rf node_modules
+pip freeze >  requirements.txt
+history > ./history.txt 
 atom 
 ls
-cd ~/documents/codeguild/django_photo/blog/
 cd ~/documents/codeguild/reactex/
-webpack
-git push -u origin master
 git commit -m "update working slideshow"
-git add --all
 ./manage.py runser
 npm install babel-plugin-transform-decorators-legacy -S
 npm install babel-plugin-add-module-exports --save-dev
@@ -21,7 +44,6 @@ npm install --global gulp
 npm install --save
 npm install react-image-gallery -S
 npm install react-image-gallery
-pip freeze >  requirements.txt
 npm install react-responsive-carousel --save
 [15/Jun/2016 01:00:23] "GET /static/new_album.css HTTP/1.1" 304 0
 [15/Jun/2016 01:00:23] "GET /static/header.css HTTP/1.1" 304 0
@@ -29,13 +51,11 @@ npm install react-responsive-carousel --save
 016 01:00:23] "GET /static/login.css HTTP/1.1" 304 0
 git commit -m "create sorting buttons above the user albums"
 git commit -m "set app to have a-z album ordering working"
-git status
 npm install react-addons-css-transition-group -S
 npm install underscore -S
 npm install react@0.14.8 -S
 ..
 cd node_modules/
-npm list react
 webpack-dev-server --content-base build/
 python -m SimpleHTTPServer 8080
 python -m SimpleHTTPServer
@@ -44,7 +64,6 @@ cat index.html
 open index.html 
 dist/
 atom package.json 
-npm install
 npm instal
 python3 index.jsx 
 src/
@@ -69,7 +88,6 @@ npm install react-masonry-component
 npm update
 git reset --hard dc9558e4bdf9474dea5ae71b4b9bebdb771a4ce9
 ./
-npm list
 git reset --hard 487286e6b2090c6331a5f41f07bf809d9991f763
 git reset --hard f280b5a3a815682fde8643f0628e39d0410c8c7c
 git commit -m "masonry setup started."
@@ -94,8 +112,6 @@ django_photo/
 cd ~/documents/codeguild/
 pip install imghdr
 pip install boto3
-aws configure
-aws config	
 pip install awscli
 pip3 install awscli
 aws ec2 describe-instances
@@ -304,8 +320,6 @@ docker-machine create
 . <venv>/bin/activate.fish
 git commit -m "trash can follow implimented hides cursor"
 ./manage.py runserve
-./manage.py migrate
-./manage.py makemigrations
 git commit -m "create user profile model with a one to one field to django user"
 clear
 python manage.py runserver
@@ -327,7 +341,6 @@ postfresql
 pg_ctl -D /usr/local/var/postgres -l /usr/local/var/postgres/server.log start
 ln -sfv /usr/local/opt/postgresql/*.plist ~/Library/LaunchAgents
 ln -sfv /usr/local/opt/postgresql
-git pull --all
 git reset --hard 3d0fc595625fa36a78c0d0d63ee8ae540e770933
 git log 
 git reset --hard 5d9b7b130552544b5f5a983cab2f97355e4ede77
@@ -450,9 +463,7 @@ postgresql_example/
 mkdir postgresql_example
 git commit -m "jscolor working, changes header color"
 which psql
-open history.txt 
 open 
-history > ./history.txt 
 history
 brew services
 createdb
@@ -546,7 +557,6 @@ wk7day1/blog/
 heroku config:set DEBUG_COLLECTSTATIC=1
 $ heroku config:set DEBUG_COLLECTSTATIC=1
 heroku config:set COLLECTSTATIC=1
-git add -all
 heroku open 
 heroku run
 pip install -r requirements.txt
@@ -643,7 +653,6 @@ install atom
 atom 6.4.md 
 open 6.4.md 
 Week6/
-git push -u origin
 git remote add origin https://github.com/acanida0623/requests_practice.git
 git commit -m "requests practice working"
 git add burrito/

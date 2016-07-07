@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render_to_response
 from django.utils import timezone
-from .models import Image, Album, UserProfile, Friends
+from .models import Image, Album, UserProfile, Friends, Message, MessageBoard
 from .forms import UserCreationForm, UserProfilePicture
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -84,6 +84,7 @@ def submit_new_account(request):
                 UserProfile.objects.create(user = form.save(commit = True),picture = request.POST.get('picture', False))
                 user = UserProfile.objects.get(user__username=form.cleaned_data.get("username"))
                 Friends.objects.create(owner=user)
+
                 return redirect('/')
     else:
         form = UserCreationForm()
@@ -236,14 +237,18 @@ def get_all_users(request):
             user_list = []
             current_user_name = str(request.user)
             friends_list = []
+            requests_received = []
             current_user = UserProfile.objects.get(user__username = request.user)
             user_friends = Friends.objects.get(owner = current_user)
             for f in user_friends.friends.all():
                 friends_list.append(f.user.username)
+            for f in user_friends.requests_received.all():
+                requests_received.append(f.user.username)
             for user in  UserProfile.objects.all():
                 if user.user.username != current_user_name:
                     if user.user.username not in friends_list:
-                        user_list.append({'name':user.user.username,'url':user.picture,'lower_name':user.user.username.lower()})
+                        if user.user.username not in requests_received:
+                            user_list.append({'name':user.user.username,'url':user.picture,'lower_name':user.user.username.lower()})
             return HttpResponse(
             json.dumps(user_list)
             )
@@ -251,10 +256,14 @@ def get_all_users(request):
 def get_user(request):
     if request.is_ajax():
         if request.method == 'GET':
-            user = str(request.user)
+            user_name = str(request.user)
+            user = UserProfile.objects.get(user__username=request.user)
+            profile_picture = user.picture
+            result = {'user_name':user_name,'profile_picture':profile_picture}
             return HttpResponse(
-            json.dumps(user)
+            json.dumps(result)
             )
+
 
 def save_friend(request):
     if request.is_ajax():
@@ -262,8 +271,13 @@ def save_friend(request):
             user = UserProfile.objects.get(user__username=request.user)
             req = request.body.decode("utf-8")
             req = eval(req)
+            current_user_name = str(request.user)
             friend_request = req['friend_request']
             friend = UserProfile.objects.get(user__username=friend_request)
+            new_board = MessageBoard.objects.create(user1=user,user2=friend)
+            new_message = Message.objects.create(owner=user,content="hello")
+            new_board.messages.add(new_message)
+            new_board.save()
             user_friends = Friends.objects.get(owner = user)
             user_friends.friends.add(friend)
             user_friends.requests_received.remove(friend)
@@ -273,19 +287,77 @@ def save_friend(request):
             friends_friends.requests_sent.remove(user)
             friends_friends.save()
             friends_list = []
+            friends_compare = []
+            requests_received = []
+            user_list = []
             friend_requests = {'sent':[],'received':[]}
             for f in user_friends.friends.all():
                 friends_list.append({'name':f.user.username,'url':f.picture})
+                friends_compare.append(f.user.username)
             for f in user_friends.requests_received.all():
                 friend_requests['received'].append({'name':f.user.username,'url':f.picture})
+                requests_received.append(f.user.username)
             for f in user_friends.requests_sent.all():
                 friend_requests['sent'].append({'name':f.user.username})
-            result = {'requests':friend_requests,'friends':friends_list}
+            for users in  UserProfile.objects.all():
+                if users.user.username != current_user_name:
+                    if users.user.username not in friends_compare:
+                        if users.user.username not in requests_received:
+                            user_list.append({'name':users.user.username,'url':users.picture,'lower_name':users.user.username.lower()})
+            result = {'requests':friend_requests,'friends':friends_list,'global_users':user_list}
             print(result)
             return  HttpResponse(
             json.dumps(result)
             )
 
+
+def get_messageboard(request):
+    if request.is_ajax():
+        if request.method == 'GET':
+            friend_name = request.GET.get("friend")
+            user = UserProfile.objects.get(user__username=request.user)
+            friend = UserProfile.objects.get(user__username=friend_name)
+            try:
+                message_board = MessageBoard.objects.get(user1=user,user2=friend)
+            except:
+                message_board = MessageBoard.objects.get(user1=friend,user2=user)
+            messages = []
+            try:
+                for message in message_board.messages.all().order_by(""+"created_date"):
+                    messages.append({'owner':message.owner.user.username,'content':message.content})
+                    print(messages)
+            except:
+                print("no messages")
+            return HttpResponse(
+            json.dumps(messages)
+            )
+
+def send_message(request):
+    if request.is_ajax():
+        if request.method == 'POST':
+            user = UserProfile.objects.get(user__username=request.user)
+            reque = request.body.decode("utf-8")
+            req = eval(reque)
+            friend_name = req['friend']
+            message_content = req['message']
+            print("!@#!@#!@#!")
+            friend = UserProfile.objects.get(user__username=friend_name)
+            try:
+                message_board = MessageBoard.objects.get(user1=user,user2=friend)
+            except:
+                message_board = MessageBoard.objects.get(user1=friend,user2=user)
+            new_message = Message.objects.create(owner=user,content=message_content)
+            message_board.messages.add(new_message)
+            message_board.save()
+            messages=[]
+            try:
+                for message in message_board.messages.all().order_by(""+"created_date"):
+                    messages.append({'owner':message.owner.user.username,'content':message.content})
+            except:
+                print("no messages")
+            return HttpResponse(
+            json.dumps(messages)
+            )
 
 def send_friend_request(request):
     if request.is_ajax():
@@ -301,7 +373,6 @@ def send_friend_request(request):
             friends_friends =  Friends.objects.get(owner = friend)
             friends_friends.requests_received.add(user)
             friends_friends.save()
-
             friend_requests = {'sent':[],'received':[]}
             for f in user_friends.requests_received.all():
                 friend_requests['received'].append({'name':f.user.username,'url':f.picture})
@@ -334,6 +405,41 @@ def delete_friend_request(request):
             json.dumps(friend_requests)
             )
 
+def deny_friend_request(request):
+    if request.is_ajax():
+        if request.method == 'POST':
+            current_user_name = str(request.user)
+            user = UserProfile.objects.get(user__username=request.user)
+            reque = request.body.decode("utf-8")
+            req = eval(reque)
+            friend_request = req['friend_request']
+            friend = UserProfile.objects.get(user__username=friend_request)
+            user_friends = Friends.objects.get(owner = user)
+            user_friends.requests_received.remove(friend)
+            user_friends.save()
+            friends_friends =  Friends.objects.get(owner = friend)
+            friends_friends.requests_sent.remove(user)
+            friends_friends.save()
+            friends_compare = []
+            requests_received = []
+            user_list = []
+            friend_requests = {'sent':[],'received':[],'global_users':[]}
+            for f in user_friends.friends.all():
+                friends_compare.append(f.user.username)
+            for f in user_friends.requests_received.all():
+                friend_requests['received'].append({'name':f.user.username,'url':f.picture})
+                requests_received.append(f.user.username)
+            for f in user_friends.requests_sent.all():
+                friend_requests['sent'].append({'name':f.user.username})
+            for users in  UserProfile.objects.all():
+                if users.user.username != current_user_name:
+                    if users.user.username not in friends_compare:
+                        if users.user.username not in requests_received:
+                            friend_requests['global_users'].append({'name':users.user.username,'url':users.picture,'lower_name':users.user.username.lower()})
+            return  HttpResponse(
+            json.dumps(friend_requests)
+            )
+
 def get_friend_requests(request):
     if request.is_ajax():
         if request.method == 'GET':
@@ -348,7 +454,41 @@ def get_friend_requests(request):
             json.dumps(friend_requests)
             )
 
+def get_friend_albums(request):
+    if request.is_ajax():
+        if request.method == 'GET':
+            album_url_list = {'friends_albums':[],'users_albums':[]}
+            user = str(request.user)
+            friend = request.GET.get("friend")
+            for name in Album.objects.all().order_by(""+'name'):
+                author = str(name.author.user)
+                if friend == author:
+                    for shared_user in name.users.all():
+                        if user == shared_user.user.username:
 
+                            urls = list(name.images.all().order_by('?'))
+                            images = []
+                            friends = []
+                            for x in urls:
+                                images.append(x.url)
+                            for f in name.users.all():
+                                friends.append(f.user.username)
+                            album_url_list['friends_albums'].append({'urls':images,'name':name.name,'author':author,'friends':friends})
+                if user == author:
+                    for shared_user in name.users.all():
+                        if friend == shared_user.user.username:
+                            urls = list(name.images.all().order_by('?'))
+                            images = []
+                            friends = []
+                            for x in urls:
+                                images.append(x.url)
+                            for f in name.users.all():
+                                friends.append(f.user.username)
+                            album_url_list['users_albums'].append({'urls':images,'name':name.name,'author':author,'friends':friends})
+            result = {'album_url_list':album_url_list}
+            return HttpResponse(
+            json.dumps(result)
+            )
 
 def get_albums(request):
     uuid_key = uuid.uuid4()
@@ -356,12 +496,16 @@ def get_albums(request):
         if request.method == 'GET':
             sorting_method = request.GET.get("sorting_method")
             direction = request.GET.get("direction")
-            user = str(request.user)
+            user_name = str(request.user)
+            user = UserProfile.objects.get(user__username=request.user)
+            profile_picture = user.picture
             album_url_list = fill_albums(user,sorting_method,direction)
-            result = {'album_url_list':album_url_list,'user':user}
+            result = {'album_url_list':album_url_list,'user':user_name,'picture':profile_picture}
             return HttpResponse(
             json.dumps(result)
             )
+
+
 
 def fill_albums(user,sorting_method,direction):
     album_url_list = {'user_albums':[],'contr_albums':[]}

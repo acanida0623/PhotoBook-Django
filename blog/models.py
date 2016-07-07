@@ -35,9 +35,21 @@ class Comment(models.Model):
     def approved_comments(self):
         return self.comments.filter(approved_comment=True)
 
+
+
 class UserProfile(models.Model):
     user =  models.OneToOneField(User, unique=True, null = True)
     picture = models.URLField(null = True)
+
+class Message(models.Model):
+    content = models.TextField(null=True)
+    owner = models.ForeignKey(UserProfile, null = True, related_name="board_owner")
+    created_date = models.DateTimeField(default=timezone.now)
+
+class MessageBoard(models.Model):
+    user1 = models.ForeignKey(UserProfile, null = True, related_name="first_user")
+    user2 = models.ForeignKey(UserProfile, null = True, related_name="second_user")
+    messages = models.ManyToManyField(Message,related_name="boards_messages",blank=True)
 
 class Friends(models.Model):
     owner = models.ForeignKey(UserProfile, null = True, related_name="friends_owner")
