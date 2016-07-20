@@ -677,7 +677,10 @@ var User_Friend_Cover = React.createClass({
 })
 
 var Friend_Message_Board = React.createClass({
-
+  componentDidMount: function () {
+    var wtf = $('.message_board_container');
+        var height = wtf[0].scrollHeight;
+        wtf.scrollTop(height);  },
   render: function () {
     return <div className="message_board_container">
             <div className="message_board">

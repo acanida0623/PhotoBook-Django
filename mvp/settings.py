@@ -81,8 +81,8 @@ WSGI_APPLICATION = 'mvp.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'test1',
-        'USER': 'acanida0623',
+        'NAME': 'test2',
+        'USER': 'acanida',
         'PASSWORD': 'gta4gta4',
         'HOST': 'localhost',
         'PORT': '',
